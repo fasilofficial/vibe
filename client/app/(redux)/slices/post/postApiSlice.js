@@ -40,7 +40,7 @@ export const postApiSlice = apiSlice.injectEndpoints({
       query: (data) => ({
         url: `${BASE_URL}/${data.postId}/like`,
         method: "POST",
-        body: data.userId,
+        body: { userId: data.userId },
       }),
     }),
     addComment: builder.mutation({

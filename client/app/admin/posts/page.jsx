@@ -35,7 +35,7 @@ const Posts = () => {
           {posts.map((post, index) => (
             <div
               key={index}
-              className="bg-white shadow-md rounded-lg overflow-hidden"
+              className="bg-white dark:bg-gray-700  shadow-md rounded-lg overflow-hidden"
             >
               <img
                 src={post.imageUrl}
@@ -45,8 +45,8 @@ const Posts = () => {
 
               <div className="p-4">
                 <h2 className="text-xl font-bold mb-2">{post.caption}</h2>
-                <p className="text-gray-600 mb-2">{post.location}</p>
-                <p className="text-gray-600 mb-2">Post by: {post.creator.username}</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-2">{post.location}</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-2">Post by: {post.creator.username}</p>
                 <div className="flex flex-wrap mb-2">
                   {post.tags.map((tag, index) => (
                     <span

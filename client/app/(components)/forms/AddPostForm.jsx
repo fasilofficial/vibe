@@ -88,7 +88,7 @@ const AddPostForm = () => {
 
       setLoading(false);
 
-      // router.push("/");
+      router.push("/");
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error uploading image. Please try again.");

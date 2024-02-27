@@ -15,6 +15,7 @@ const Suggestions = () => {
               src={userInfo?.profileUrl}
               className="w-48 h-48 mx-auto rounded-full object-cover"
             />
+            <p className="text-center">@{userInfo?.username}</p>
             <Link
               href="/profile"
               className="p-2 mb-4 rounded bg-blue-500 text-white text-center"

@@ -33,7 +33,7 @@ const Post = ({ post }) => {
     const res = await likePost({
       postId,
       userId: userInfo._id,
-    }).unwrap();
+    })
   };
 
   const handleDeleteComment = async (postId, commentId) => {
@@ -101,8 +101,8 @@ const Post = ({ post }) => {
           </span>
         </div>
         <div className="mt-2">
-          <p className="font-semibold text-gray-800 dark:text-gray-400">
-            @{post.creator.username}
+          <p className=" text-gray-800 dark:text-gray-400">
+            {post.caption}
           </p>
           {/* Comments */}
           <div className="mt-1">
@@ -119,7 +119,7 @@ const Post = ({ post }) => {
                   <div className="flex flex-col">
                     <Link
                       href={`/profile/${comment?.userId?._id}`}
-                      className="text-gray-500 dark:text-gray-200"
+                      className="text-gray-500 dark:text-gray-200 text-sm"
                     >
                       @{comment.userId.username}
                     </Link>

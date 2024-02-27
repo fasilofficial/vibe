@@ -52,7 +52,6 @@ const SignupForm = () => {
   const [signup, { isLoading }] = useSignupMutation();
 
   const [image, setImage] = useState();
-
   const [timer, setTimer] = useState();
 
   const [sentOtpDisabled, setSentOtpDisabled] = useState(false);
