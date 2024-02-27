@@ -42,13 +42,20 @@ const SignupForm = () => {
   const handleChange = (e) => {
     const value = e.target.value;
     const key = e.target.name;
-    if (key === "email") formData.emailVerified = false;
+    if (key === "email") {
+      formData.emailVerified = false;
+      setTimer();
+    }
     setFormData((prevState) => ({ ...prevState, [key]: value }));
   };
 
   const [signup, { isLoading }] = useSignupMutation();
 
   const [image, setImage] = useState();
+
+  const [timer, setTimer] = useState();
+
+  const [sentOtpDisabled, setSentOtpDisabled] = useState(false);
 
   const emailRef = useRef();
 
@@ -70,12 +77,48 @@ const SignupForm = () => {
     }
 
     setOtpSending(true);
+    setTimer();
 
     const res = await sendOtp({ email }).unwrap();
 
     toast.success(res.message);
     setGeneratedOtp(res.otp);
     setOtpSending(false);
+    setSentOtpDisabled(true);
+
+    function startTimer() {
+      const duration = 1 * 60 * 1000;
+
+      const startTime = Date.now();
+
+      const timerInterval = setInterval(() => {
+        const currentTime = Date.now();
+
+        const remainingTime = duration - (currentTime - startTime);
+
+        if (remainingTime <= 0) {
+          clearInterval(timerInterval);
+          setTimer("OTP Expired");
+        } else {
+          const minutes = Math.floor(
+            (remainingTime % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          let seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+
+          if (seconds < 10) seconds = "0" + seconds;
+
+          setTimer(`${minutes}:${seconds}`);
+        }
+      }, 1000);
+    }
+
+    startTimer();
+
+    setTimeout(() => {
+      toast("OTP expired. Click send OTP button again");
+      setSentOtpDisabled(false);
+      setGeneratedOtp();
+    }, 1 * 60 * 1000); // 2 minutes
   };
 
   const handleVerifyOtp = async () => {
@@ -91,10 +134,11 @@ const SignupForm = () => {
     ) {
       toast.success("Email verified successfully");
       formData.emailVerified = true;
-      setOtpVerifying(false);
+      setTimer();
     } else {
       toast.error("Invalid OTP. Please try again");
     }
+    setOtpVerifying(false);
   };
 
   const handleSubmit = async (e) => {
@@ -198,6 +242,7 @@ const SignupForm = () => {
               type="button"
               onClick={handleSendOtp}
               className="text-blue-500"
+              disabled={sentOtpDisabled ? true : false}
             >
               {otpSending ? "Sending..." : "Send OTP"}
             </button>
@@ -219,6 +264,7 @@ const SignupForm = () => {
               {otpVerifying ? "Verifying..." : "Verify OTP"}
             </button>
           </div>
+          {timer && <h1 className=" text-right ">{timer}</h1>}
           <input
             type="date"
             name="dob"
