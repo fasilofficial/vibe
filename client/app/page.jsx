@@ -8,12 +8,8 @@ import { useSelector } from "react-redux";
 import HomeContent from "./(components)/HomeContent";
 
 const Home = async () => {
-  // const session = await getServerSession(options);
-  
 
-  return (
-    <HomeContent />
-  )
+  return <HomeContent />;
 };
 
 export default Home;

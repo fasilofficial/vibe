@@ -99,7 +99,12 @@ export const getUserPosts = expressAsyncHandler(async (req, res) => {
 // get users
 export const getUsers = expressAsyncHandler(async (req, res) => {
   try {
-    const users = await User.find({});
+    const { email } = req.query;
+
+    let users;
+
+    if (email) users = await User.findOne({ email });
+    else users = await User.find({});
 
     if (users) {
       res.status(200).json(users);
@@ -155,7 +160,6 @@ export const blockUser = expressAsyncHandler(async (req: any, res: any) => {
 // send otp
 export const sendOtp = expressAsyncHandler(async (req: any, res: any) => {
   const { email } = req.body;
- 
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -171,7 +175,6 @@ export const sendOtp = expressAsyncHandler(async (req: any, res: any) => {
     upperCaseAlphabets: false,
     specialChars: false,
   });
-
 
   const mailOptions = {
     from: "mfasilofficial@gmail.com",

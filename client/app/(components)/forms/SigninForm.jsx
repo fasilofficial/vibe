@@ -123,7 +123,7 @@ const SigninForm = () => {
             Signin
           </button>
         </form>
-        {/* <div className="w-full flex items-center justify-center my-2">
+        <div className="w-full flex items-center justify-center my-2">
           <hr className="w-full border-gray-400" />
           <span className="mx-4 text-gray-500">or</span>
           <hr className="w-full border-gray-400" />
@@ -150,7 +150,7 @@ const SigninForm = () => {
                 )
               );
             })}
-        </div> */}
+        </div>
         <div className="mt-4">
           Don't have an account?{" "}
           <Link href="/auth/signup" className="text-blue-500">

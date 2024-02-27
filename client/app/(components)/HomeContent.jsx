@@ -1,14 +1,34 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import UserLayout from "./UserLayout";
 import Feed from "./Feed";
+import { useSession } from "next-auth/react";
+import { setCredentials } from "../(redux)/slices/auth/authSlice";
+import { useGetUserByEmailMutation } from "../(redux)/slices/user/userApiSlice";
 
 const HomeContent = () => {
   const { userInfo } = useSelector((state) => state.auth);
+  const { data: session } = useSession();
+
+  const [getUserByEmail] = useGetUserByEmailMutation();
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (session && !userInfo) {
+        const { email } = session?.user;
+        const res = await getUserByEmail(email).unwrap();
+        dispatch(setCredentials(res));
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   return (
     <>
@@ -30,7 +50,7 @@ const HomeContent = () => {
         </div>
       ) : (
         <UserLayout>
-          <Feed  />
+          <Feed />
         </UserLayout>
       )}
     </>

@@ -2,42 +2,96 @@ import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-
 export const options = {
   providers: [
     GitHubProvider({
-      profile(profile) {
-        let userRole = "GitHub User";
-        
+      async profile(profile) {
+        const res = await fetch(
+          `http://localhost:3300/api/v1/users?email=${profile?.email}`
+        );
 
-        if (profile?.email === "muhammedfasilofficial@gmail.com") {
-          userRole = "admin";
+        if (res.ok) {
+          // user exist
+          const user = await res.json();
+
+          return {
+            ...user,
+            id: profile?.id,
+          };
+        } else {
+          // user doesn't exist
+          const res = await fetch("http://localhost:3300/api/v1/users", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: profile?.name,
+              email: profile?.email,
+              profileUrl: profile?.avatar_url,
+              username: profile?.login,
+            }),
+          });
+
+          if (res.ok) {
+            // user created
+            const user = await res.json();
+
+            return {
+              ...user,
+              id: profile?.id,
+            };
+          } else {
+            const err = await res.json();
+            throw new Error(err?.message);
+          }
         }
-
-        return {
-          ...profile,
-          role: userRole,
-          image: profile.avatar_url,
-        };
       },
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
     }),
     GoogleProvider({
-      profile(profile) {
-        let userRole = "Google User";
-        console.log("Google", profile);
+      async profile(profile) {
+        const res = await fetch(
+          `http://localhost:3300/api/v1/users?email=${profile?.email}`
+        );
 
-        if (profile?.email === "muhammedfasilofficial@gmail.com") {
-          userRole = "admin";
+        if (res.ok) {
+          // user exist
+          const user = await res.json();
+
+          return {
+            ...user,
+            id: profile.sub,
+          };
+        } else {
+          // user doesn't exist
+          const res = await fetch("http://localhost:3300/api/v1/users", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              name: profile?.given_name + " " + profile?.family_name,
+              email: profile?.email,
+              profileUrl: profile?.picture,
+              username: profile?.email.split("@")[0],
+            }),
+          });
+
+          if (res.ok) {
+            // user created
+            const user = await res.json();
+
+            return {
+              ...user,
+              id: profile.sub,
+            };
+          } else {
+            const err = await res.json();
+            throw new Error(err?.message);
+          }
         }
-
-        return {
-          ...profile,
-          id: profile.sub,
-          role: userRole,
-          image: profile.picture,
-        };
       },
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
@@ -59,8 +113,6 @@ export const options = {
       async authorize(credentials) {
         try {
           let userRole = "user";
-
-        
 
           const response = await fetch(
             "http://localhost:3300/api/v1/users/auth",

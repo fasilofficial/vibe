@@ -168,12 +168,12 @@ const PostsGrid = ({ userInfo }) => {
 
   const handleDeletePost = async (postId) => {
     const res = await deletePost(postId).unwrap();
-
   };
 
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await getPosts(userInfo._id).unwrap();
+      console.log("res:", res);
       setPosts(res);
     };
     fetchPosts();
@@ -185,7 +185,7 @@ const PostsGrid = ({ userInfo }) => {
         ? posts.map((post, index) => (
             <PostCard key={index} post={post} onDelete={handleDeletePost} />
           ))
-        : "Loading..."}
+        : "No posts"}
     </div>
   );
 };

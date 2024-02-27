@@ -36,6 +36,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getUserByEmail: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}?email=${data}`,
+        method: "GET",
+      }),
+    }),
+
     blockUser: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}`,
@@ -75,4 +82,5 @@ export const {
   useBlockUserMutation,
   useSendOtpMutation,
   useForgotPasswordMutation,
+  useGetUserByEmailMutation,
 } = usersApiSlice;
