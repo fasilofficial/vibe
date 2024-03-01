@@ -9,6 +9,7 @@ import {
   getPost,
   addPost,
   editPost,
+  addReply,
 } from "../controllers/postController";
 import { protect } from "../middleware/authMiddleware";
 
@@ -20,12 +21,15 @@ router.get("/", getPosts);
 // get posts
 router.delete("/:postId", deletePost);
 
-router.post('/',addPost)
+router.post("/", addPost);
 
 router.patch("/:id", editPost);
 
 // add comment
 router.post("/:postId/comments", addComment);
+
+// add reply
+router.post("/:postId/comments/:commentId", addReply);
 
 // delete comment
 router.delete("/:postId/comments/:commentId", deleteComment);

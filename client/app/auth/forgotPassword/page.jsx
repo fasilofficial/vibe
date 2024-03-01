@@ -51,11 +51,17 @@ const ForgotPassword = () => {
 
     setOtpSending(true);
 
-    const res = await sendOtp({ email }).unwrap();
+    try {
+      const res = await sendOtp({ email, forgotPassword: true }).unwrap();
 
-    toast.success(res.message);
-    setGeneratedOtp(res.otp);
-    setOtpSending(false);
+      toast.success(res.message);
+      setGeneratedOtp(res.otp);
+      setOtpSending(false);
+    } catch (error) {
+      setOtpSending(false)
+      console.log("error:", error);
+      toast.error(error?.data?.message);
+    }
   };
 
   const handleVerifyOtp = async () => {
@@ -80,8 +86,6 @@ const ForgotPassword = () => {
   const handleSubmit = async () => {
     try {
       if (validateForm(formData, true)) {
-   
-
         const res = await forgotPassword({
           email: formData.email,
           newPassword: formData.password,

@@ -10,6 +10,11 @@ import {
   getUsers,
   sendOtp,
   handleForgotPassword,
+  getFollowings,
+  getFollowers,
+  followUser,
+  unfollowUser,
+  getSuggestions,
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -33,12 +38,31 @@ router.post("/forgotPassword", handleForgotPassword);
 // get users
 router.get("/", getUsers);
 
-// get user
-router.get("/:id", getUser);
-
 // get user posts
 router.get("/:userId/posts", getUserPosts);
 
+// block user
 router.put("/:userId", blockUser);
+
+// get followings
+router.get("/:userId/followings", getFollowings);
+
+// get followers
+router.get("/:userId/followers", getFollowers);
+
+// follow a user
+router.post("/:userId/followings", followUser);
+
+// unfollow a user
+router.delete("/:userId/followings", unfollowUser);
+
+// unfollow a user
+router.get("/:userId/suggestions", getSuggestions);
+
+// get user
+router.get("/:id", getUser);
+
+// unFollow user
+// router.delete("/:userId/following/:followingId", unFollowUser);
 
 export default router;

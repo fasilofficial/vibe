@@ -59,7 +59,7 @@ const page = ({ params: { postId } }) => {
     <UserLayout>
       <div className="py-4 flex justify-center">
         <Toaster />
-        <div className="max-w-md bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl report-post">
+        <div className="max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl report-post">
           <div className="md:flex">
             <div className="md:flex-shrink-0">
               <img
@@ -75,7 +75,7 @@ const page = ({ params: { postId } }) => {
               <div className="mt-2 text-gray-600">{post?.caption}</div>
               <form onSubmit={handleReportSubmit}>
                 <input
-                  className="mt-4 border rounded-md p-2 w-full"
+                  className="mt-4 border rounded-md p-2 w-full dark:bg-gray-600 dark:text-white"
                   value={formData.reportDescription}
                   name="reportDescription"
                   onChange={handleChange}

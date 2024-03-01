@@ -24,18 +24,6 @@ export const adminApiSlice = apiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
-    getUsers: builder.mutation({
-      query: () => ({
-        url: `${BASE_URL}/users`,
-        method: "GET",
-      }),
-    }),
-    getPosts: builder.mutation({
-      query: () => ({
-        url: `${BASE_URL}/posts`,
-        method: "GET",
-      }),
-    }),
   }),
 });
 

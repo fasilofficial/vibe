@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   useAddCommentMutation,
   useAddPostMutation,
 } from "@/app/(redux)/slices/post/postApiSlice";
+// import { setPost } from "@/app/(redux)/slices/data/dataSlice";
 
 const AddPostForm = () => {
   const router = useRouter();
@@ -24,6 +25,8 @@ const AddPostForm = () => {
   const [addPost] = useAddPostMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
+
+  // const dispatch = useDispatch();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -85,6 +88,9 @@ const AddPostForm = () => {
 
       const res = await addPost(newPost).unwrap();
 
+      console.log(res);
+
+      // dispatch(setPost(res));
 
       setLoading(false);
 
@@ -113,7 +119,7 @@ const AddPostForm = () => {
           id="caption"
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          className="dark:bg-gray-600 dark:text-white shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         />
       </div>
       <div className="mb-4">
@@ -131,7 +137,7 @@ const AddPostForm = () => {
           onFocus={() => setIsLocationListVisible(true)}
           onBlur={() => setIsLocationListVisible(false)}
           autoComplete="false"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+          className="dark:bg-gray-600 dark:text-white shadow appearance-none border rounded w-full py-2 px-3 text-gray-700  leading-tight focus:outline-none focus:shadow-outline"
         />
         {isLocationListVisible && (
           <ul className="absolute z-10 bg-white border border-gray-300 rounded-md mt-1 w-4/6">
@@ -159,7 +165,7 @@ const AddPostForm = () => {
           id="tags"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+          className="dark:bg-gray-600 dark:text-white shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
         />
       </div>
       <div className="mb-4">
@@ -173,7 +179,7 @@ const AddPostForm = () => {
           type="file"
           id="image"
           onChange={handleImageChange}
-          className="appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+          className="dark:bg-gray-600 dark:text-white appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
         />
 
         <img

@@ -17,8 +17,6 @@ export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
   try {
     const newPostData = { ...req.body };
 
-    console.log(newPostData);
-
     const newPost = new Post(newPostData);
 
     const createdPost = await newPost.save();
@@ -40,7 +38,8 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
       .populate({
         path: "comments.userId",
         model: "User",
-      });
+      })
+      .sort({ updatedAt: -1 });
 
     if (posts.length > 0) {
       res.status(200).json(posts);
@@ -171,3 +170,39 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
+
+export const addReply = expressAsyncHandler(
+  async (req: any, res): Promise<void> => {
+//     const {
+//       userId,
+//       comment,
+//       commentId,
+//     }: { userId: string; comment: string; commentId: string } = req.body;
+
+//     const { postId } = req.params;
+
+//     try {
+//       const post = await Post.findOne({ _id: postId });
+
+//       if (post) {
+//         const commentIndex = post.comments.findIndex(
+//           (c) => c._id.toString() === commentId
+//         );
+
+//         if (commentIndex !== -1) {
+//           post.comments[commentIndex].replies.push({ userId, comment });
+
+//           await post.save();
+//           res.status(201).json({ message: "Reply added successfully" });
+//         } else {
+//           res.status(404).json({ message: "Comment not found" });
+//         }
+//       } else {
+//         res.status(404).json({ message: "Post not found" });
+//       }
+//     } catch (error) {
+//       console.error("Error adding reply:", error);
+//       res.status(500).json({ message: "Internal server error" });
+//     }
+  }
+);

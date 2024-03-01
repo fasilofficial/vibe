@@ -159,7 +159,21 @@ export const blockUser = expressAsyncHandler(async (req: any, res: any) => {
 
 // send otp
 export const sendOtp = expressAsyncHandler(async (req: any, res: any) => {
-  const { email } = req.body;
+  const { email, forgotPassword } = req.body;
+
+  const user = await User.findOne({ email });
+
+  console.log(forgotPassword)
+
+  if (forgotPassword && !user) {
+    res.status(404);
+    throw new Error("User doesn't exist");
+  }
+
+  if (!forgotPassword && user) {
+    res.status(401);
+    throw new Error("User already exist");
+  }
 
   const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -214,5 +228,118 @@ export const handleForgotPassword = expressAsyncHandler(
       console.error("Error updating password:", error);
       res.status(500).json({ message: "Internal server error" });
     }
+  }
+);
+
+// follow
+export const followUser = expressAsyncHandler(async (req: any, res: any) => {
+  const { followingId } = req.body;
+  const { userId } = req.params;
+
+  console.log(followingId, userId);
+
+  const user = await User.findById(userId);
+  const following = await User.findById(followingId);
+
+  if (!user || !following) {
+    return res.status(401).send({ message: "Bad request" });
+  }
+
+  // Check if the user is already following the target user
+  const isFollowing = user.followings.some(
+    (following) => following._id === followingId
+  );
+
+  if (!isFollowing) {
+    // Follow the user
+    user.followings.push({ _id: followingId });
+    following.followers.push({ _id: userId });
+
+    await user.save();
+    await following.save();
+
+    return res.status(200).send({ message: "User followed successfully" });
+  }
+
+  return res.status(400).send({ message: "User is already being followed" });
+});
+
+// unfollow
+export const unfollowUser = expressAsyncHandler(async (req: any, res: any) => {
+  const { followingId } = req.body;
+  const { userId } = req.params;
+
+  console.log(followingId, userId);
+
+  const user = await User.findById(userId);
+  const following = await User.findById(followingId);
+
+  if (!user || !following) {
+    return res.status(401).send({ message: "Bad request" });
+  }
+
+  // Check if the user is following the target user
+  const isFollowing = user.followings.some(
+    (following) => following._id === followingId
+  );
+
+  if (isFollowing) {
+    // Unfollow the user
+    user.followings = user.followings.filter(
+      (following) => following._id !== followingId
+    );
+    following.followers = following.followers.filter(
+      (follower) => follower._id !== userId
+    );
+
+    await user.save();
+    await following.save();
+
+    return res.status(200).send({ message: "User unfollowed successfully" });
+  }
+
+  return res.status(400).send({ message: "User is not being followed" });
+});
+
+// get followings
+export const getFollowings = expressAsyncHandler(async (req: any, res: any) => {
+  const { userId } = req.params;
+
+  const user = await User.findById(userId).populate({
+    path: "followings._id",
+    model: "User",
+  });
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  res.status(200).json(user.followings);
+});
+
+// get followers
+export const getFollowers = expressAsyncHandler(async (req: any, res: any) => {
+  const { userId } = req.params;
+
+  const user = await User.findById(userId).populate({
+    path: "followers._id",
+    model: "User",
+  });
+
+  if (!user) {
+    res.status(404);
+    throw new Error("User not found");
+  }
+
+  res.status(200).json(user.followers);
+});
+
+// get suggestions
+export const getSuggestions = expressAsyncHandler(
+  async (req: any, res: any) => {
+    const suggestions = await User.find({});
+
+    res.status(200).json();
   }
 );

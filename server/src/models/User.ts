@@ -10,6 +10,12 @@ interface IUser extends Document {
   password: string;
   blocked: boolean;
   dob: Date;
+  followings: {
+    _id: string;
+  }[];
+  followers: {
+    _id: string;
+  }[];
   matchPasswords(enteredPassword: string): Promise<boolean>;
 }
 
@@ -22,6 +28,8 @@ const userSchema = new Schema(
     password: { type: String },
     dob: { type: Date },
     blocked: { type: Boolean, required: true, default: false },
+    followings: { type: [], default: [] },
+    followers: { type: [], default: [] },
   },
   { timestamps: true }
 );
@@ -33,7 +41,7 @@ userSchema.pre(
       next();
     }
     const salt = await bcrypt.genSalt(10);
-    
+
     if (this?.password) {
       this.password = await bcrypt.hash(this?.password, salt);
     }

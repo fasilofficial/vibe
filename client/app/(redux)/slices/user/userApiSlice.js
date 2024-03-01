@@ -30,12 +30,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
-    getUser: builder.mutation({
-      query: (data) => ({
-        url: `${BASE_URL}/${data}`,
-        method: "GET",
-      }),
-    }),
+
     getUserByEmail: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}?email=${data}`,
@@ -69,6 +64,31 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    followUser: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}/following`,
+        method: "POST",
+        body: data.followingId,
+      }),
+    }),
+    getUser: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data}`,
+        method: "GET",
+      }),
+    }),
+    getFollowings: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data}/followings`,
+        method: "GET",
+      }),
+    }),
+    getFollowers: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data}/followers`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -78,9 +98,12 @@ export const {
   useLogoutMutation,
   useGetUserPostsMutation,
   useGetUsersMutation,
-  useGetUserMutation,
   useBlockUserMutation,
   useSendOtpMutation,
   useForgotPasswordMutation,
   useGetUserByEmailMutation,
+  useFollowUserMutation,
+  useGetUserMutation,
+  useGetFollowingsMutation,
+  useGetFollowersMutation,
 } = usersApiSlice;

@@ -114,12 +114,6 @@ const AdminSigninForm = () => {
               {showPassword ? <IoEyeOff /> : <IoEye />}
             </button>
           </div>
-          {/* <div className="mt-4">
-            Forgot password?{" "}
-            <Link href="/auth/forgotPassword" className="text-blue-500">
-              Click
-            </Link>
-          </div> */}
           <button
             className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300"
             type="button"
@@ -128,34 +122,6 @@ const AdminSigninForm = () => {
             Signin
           </button>
         </form>
-        {/* <div className="w-full flex items-center justify-center my-2">
-          <hr className="w-full border-gray-400" />
-          <span className="mx-4 text-gray-500">or</span>
-          <hr className="w-full border-gray-400" />
-        </div>
-        <div className="flex items-center flex-col my-3">
-          {providers &&
-            Object.values(providers).map((provider) => {
-              return (
-                provider.id !== "credentials" && (
-                  <div key={provider.name} style={{ marginBottom: "0.5rem" }}>
-                    <button
-                      className="flex items-center bg-gray-200 text-gray-800 py-2 px-8 rounded-md hover:bg-gray-300 transition-colors duration-300"
-                      onClick={() => signIn(provider.id)}
-                    >
-                      {provider.id === "google" && (
-                        <FaGoogle className="mr-2" />
-                      )}
-                      {provider.id === "github" && (
-                        <FaGithub className="mr-2" />
-                      )}
-                      Sign in with {provider.name}
-                    </button>
-                  </div>
-                )
-              );
-            })}
-        </div> */}
         <div className="mt-4">
           Don't have an account?{" "}
           <Link href="/auth/admin/signup" className="text-blue-500">

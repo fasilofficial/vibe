@@ -2,29 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-
-import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useGetUserPostsMutation } from "../(redux)/slices/user/userApiSlice";
-import { setUserPosts } from "../(redux)/slices/user/userSlice";
-import { StyledListItem } from "@mui/joy/ListItem/ListItem";
-
-const fakeFollowers = [
-  { id: 1, name: "Follower 1", isFollowing: true },
-  { id: 2, name: "Follower 2", isFollowing: false },
-  { id: 3, name: "Follower 3", isFollowing: true },
-  { id: 4, name: "Follower 4", isFollowing: false },
-];
-
-const fakeFollowing = [
-  { id: 1, name: "Following 1" },
-  { id: 2, name: "Following 2" },
-  { id: 3, name: "Following 3" },
-  { id: 4, name: "Following 4" },
-];
+import {
+  useGetFollowersMutation,
+  useGetFollowingsMutation,
+  useGetUserPostsMutation,
+} from "../(redux)/slices/user/userApiSlice";
 
 const UserProfile = () => {
-  const [activeTab, setActiveTab] = useState("posts");
+  const [activeTab, setActiveTab] = useState("followings");
 
   const { userInfo } = useSelector((state) => state.auth);
 
@@ -76,10 +62,10 @@ const Navigation = ({ setActiveTab }) => {
         Followers
       </button>
       <button
-        onClick={() => setActiveTab("following")}
+        onClick={() => setActiveTab("followings")}
         className="px-4 py-2 bg-transparent border border-gray-500 rounded-md"
       >
-        Following
+        Followings
       </button>
     </div>
   );
@@ -91,9 +77,9 @@ const MainContent = ({ activeTab, userInfo }) => {
       case "posts":
         return <PostsGrid userInfo={userInfo} />;
       case "followers":
-        return <FollowersList />;
-      case "following":
-        return <FollowingList />;
+        return <FollowersList userInfo={userInfo} />;
+      case "followings":
+        return <FollowingsList userInfo={userInfo} />;
       default:
         return <PostsGrid userInfo={userInfo} />;
     }
@@ -190,63 +176,190 @@ const PostsGrid = ({ userInfo }) => {
   );
 };
 
-const FollowersList = () => {
+const FollowersList = ({ userInfo }) => {
+  const [followers, setFollowers] = useState();
+  const [getfollowers] = useGetFollowersMutation();
+
+  const [followings, setFollowings] = useState();
+  const [getFollowings] = useGetFollowingsMutation();
+
+  const handleFollow = async (followingId) => {
+    console.log("Follow:", followingId);
+    console.log(userInfo._id);
+
+    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
+
+    const res = await fetch(
+      `http://localhost:3300/api/v1/users/${userInfo._id}/followings`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followingId }),
+      }
+    );
+
+    const data = await res.json();
+    console.log(data);
+  };
+
+  const handleRemove = async (followingId) => {
+    console.log("Remove:", followingId);
+    console.log(userInfo._id);
+
+    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
+
+    const res = await fetch(
+      `http://localhost:3300/api/v1/users/${followingId}/followings`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followingId: userInfo._id }),
+      }
+    );
+
+    const data = await res.json();
+    console.log(data);
+  };
+
+  useEffect(() => {
+    const fetchfollowers = async () => {
+      const res = await getfollowers(userInfo._id).unwrap();
+      console.log(res);
+      setFollowers(res);
+    };
+    const fetchFollowings = async () => {
+      const res = await getFollowings(userInfo._id).unwrap();
+      console.log(res);
+      setFollowings(res);
+    };
+
+    fetchfollowers();
+    fetchFollowings();
+
+    console.log(followings);
+  }, []);
+
   return (
     <div className="w-1/2">
       <h2 className="text-xl font-semibold mb-4">Followers</h2>
-      <ul>
-        {fakeFollowers.map((follower) => (
-          <li
-            key={follower.id}
-            className="flex items-center justify-between space-x-4 py-2"
-          >
-            <div className="flex items-center space-x-4">
-              <img
-                src={`https://source.unsplash.com/100x100/?portrait,${follower.id}`}
-                alt={follower.name}
-                className="w-10 h-10 rounded-full"
-              />
-              <span>{follower.name}</span>
-            </div>
-            {follower.isFollowing ? (
-              <button
-                onClick={() => handleFollowBack(follower.id)}
-                className="px-3 py-1 bg-blue-500 text-white rounded-md"
-              >
-                Follow Back
-              </button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+
+      {followers && followings ? (
+        <ul>
+          {followers.map((follower) => (
+            <li
+              key={follower._id._id}
+              className="flex items-center justify-between space-x-4 py-2"
+            >
+              <div className="flex items-center space-x-4">
+                <img
+                  src={follower._id.profileUrl}
+                  alt={follower._id.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <Link href={`/profile/${follower._id._id}`}>
+                  {follower._id.name}
+                </Link>
+                <button
+                  className="text-red-500 hover:text-red-400 transition-colors"
+                  onClick={() => handleRemove(follower._id._id)}
+                >
+                  Remove
+                </button>
+
+                {/* {!followings.includes(follower._id._id) ? (
+                  <button
+                    className="text-blue-500 hover:text-blue-400 transition-colors"
+                    onClick={() => handleFollow(follower._id._id)}
+                  >
+                    Follow Back
+                  </button>
+                ) : (
+                  ""
+                )} */}
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "Loading..."
+      )}
     </div>
   );
 };
 
-import List from "@mui/joy/List";
-import ListDivider from "@mui/joy/ListDivider";
-import ListItem from "@mui/joy/ListItem";
-import ListItemDecorator from "@mui/joy/ListItemDecorator";
-import Avatar from "@mui/joy/Avatar";
 import { useDeletePostMutation } from "../(redux)/slices/post/postApiSlice";
 
-const FollowingList = () => {
+const FollowingsList = ({ userInfo }) => {
+  const [followings, setFollowings] = useState();
+  const [getFollowings] = useGetFollowingsMutation();
+
+  const handleUnfollow = async (followingId) => {
+    console.log("Unfollow:", followingId);
+    console.log(userInfo._id);
+
+    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
+
+    const res = await fetch(
+      `http://localhost:3300/api/v1/users/${userInfo._id}/followings`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followingId }),
+      }
+    );
+
+    const data = await res.json();
+    console.log(data);
+  };
+
+  useEffect(() => {
+    const fetchFollowings = async () => {
+      const res = await getFollowings(userInfo._id).unwrap();
+      console.log(res);
+      setFollowings(res);
+    };
+    fetchFollowings();
+  }, []);
+
   return (
     <div className="w-1/2">
-      <h2 className="text-xl font-semibold mb-4">Following</h2>
-      <List variant="outlined">
-        {fakeFollowing.map((following) => (
-          <>
-            <ListItem>
-              <ListItemDecorator>
-                <Avatar size="sm" src="/static/images/avatar/1.jpg" />
-              </ListItemDecorator>
-              {following.name}
-            </ListItem>
-            <ListDivider />
-          </>
-        ))}
-      </List>
+      <h2 className="text-xl font-semibold mb-4">Followings</h2>
+
+      {followings ? (
+        <ul>
+          {followings.map((following) => (
+            <li
+              key={following._id._id}
+              className="flex items-center justify-between space-x-4 py-2"
+            >
+              <div className="flex items-center space-x-4">
+                <img
+                  src={following._id.profileUrl}
+                  alt={following._id.name}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <Link href={`/profile/${following._id._id}`}>
+                  {following._id.name}
+                </Link>
+                <button
+                  className="text-blue-500 hover:text-blue-400 transition-colors"
+                  onClick={() => handleUnfollow(following._id._id)}
+                >
+                  Unfollow
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "Loading..."
+      )}
     </div>
   );
 };

@@ -75,49 +75,54 @@ const SignupForm = () => {
       return toast.error("Please enter a valid email address");
     }
 
-    setOtpSending(true);
-    setTimer();
+    try {
+      setOtpSending(true);
+      setTimer();
 
-    const res = await sendOtp({ email }).unwrap();
+      const res = await sendOtp({ email }).unwrap();
 
-    toast.success(res.message);
-    setGeneratedOtp(res.otp);
-    setOtpSending(false);
-    setSentOtpDisabled(true);
+      toast.success(res.message);
+      setGeneratedOtp(res.otp);
+      setOtpSending(false);
+      setSentOtpDisabled(true);
 
-    function startTimer() {
-      const duration = 1 * 60 * 1000;
+      function startTimer() {
+        const duration = 1 * 60 * 1000;
 
-      const startTime = Date.now();
+        const startTime = Date.now();
 
-      const timerInterval = setInterval(() => {
-        const currentTime = Date.now();
+        const timerInterval = setInterval(() => {
+          const currentTime = Date.now();
 
-        const remainingTime = duration - (currentTime - startTime);
+          const remainingTime = duration - (currentTime - startTime);
 
-        if (remainingTime <= 0) {
-          clearInterval(timerInterval);
-          setTimer("OTP Expired");
-        } else {
-          const minutes = Math.floor(
-            (remainingTime % (1000 * 60 * 60)) / (1000 * 60)
-          );
-          let seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+          if (remainingTime <= 0) {
+            clearInterval(timerInterval);
+            setTimer("OTP Expired");
+          } else {
+            const minutes = Math.floor(
+              (remainingTime % (1000 * 60 * 60)) / (1000 * 60)
+            );
+            let seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
 
-          if (seconds < 10) seconds = "0" + seconds;
+            if (seconds < 10) seconds = "0" + seconds;
 
-          setTimer(`${minutes}:${seconds}`);
-        }
-      }, 1000);
+            setTimer(`${minutes}:${seconds}`);
+          }
+        }, 1000);
+      }
+
+      startTimer();
+
+      setTimeout(() => {
+        toast("OTP expired. Click send OTP button again");
+        setSentOtpDisabled(false);
+        setGeneratedOtp();
+      }, 1 * 60 * 1000); // 2 minutes
+    } catch (error) {
+      setOtpSending(false);
+      toast.error(error?.data?.message);
     }
-
-    startTimer();
-
-    setTimeout(() => {
-      toast("OTP expired. Click send OTP button again");
-      setSentOtpDisabled(false);
-      setGeneratedOtp();
-    }, 1 * 60 * 1000); // 2 minutes
   };
 
   const handleVerifyOtp = async () => {

@@ -32,44 +32,62 @@ const Users = () => {
       <h1>User Management</h1>
       <div>
         {users ? (
-          <table className="border">
-            <thead className="border-b">
-              <tr>
-                <th className="p-2">Full Name</th>
-                <th className="p-2">Email</th>
-                <th className="p-2">Username</th>
-                <th className="p-2">Action</th>
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Full Name
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Email
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Username
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {users.map((user, index) => (
+              <tr key={index} className="bg-white">
+                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{user.username}</td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {user.blocked ? (
+                    <button
+                      type="button"
+                      className="text-green-500"
+                      onClick={() => handleBlock(user._id)}
+                    >
+                      Unblock
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="text-red-500"
+                      onClick={() => handleBlock(user._id)}
+                    >
+                      Block
+                    </button>
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {users.map((user, index) => (
-                <tr>
-                  <td className="px-2">{user.name}</td>
-                  <td className="px-2">{user.email}</td>
-                  <td className="px-2">{user.username}</td>
-                  <td className="px-2">
-                    {user.blocked ? (
-                      <button
-                        type="button"
-                        className="text-green-500"
-                        onClick={() => handleBlock(user._id)}
-                      >
-                        Unblock
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        className="text-red-500"
-                        onClick={() => handleBlock(user._id)}
-                      >
-                        Block
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+          </tbody>
+        </table>
+        
         ) : (
           <h1>Loading...</h1>
         )}

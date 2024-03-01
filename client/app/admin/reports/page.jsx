@@ -35,28 +35,45 @@ const Reports = () => {
       <h1>Reports Management</h1>
       <div>
         {reports ? (
-          <table className="border">
-            <thead className="border-b">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
+            <thead className="border-b bg-gray-50">
               <tr>
-                <th className="p-2">PostID</th>
-                <th className="p-2">UserId</th>
-                <th className="p-2">Description</th>
-                <th className="p-2">Action</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  PostID
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  UserId
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Description
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Action
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-200">
               {reports.map((report, index) => (
-                <tr>
-                  <td className="px-2">{report.postId._id}</td>
-                  <td className="px-2">{report.userId}</td>
-                  <td className="px-2">{report.description}</td>
-                  <td className="px-2">
-                    {report?.resolved ? (
-                      <h2 className=" text-green-500  ">Resolved</h2>
+                <tr
+                  key={index}
+                  className={report.resolved ? "bg-gray-100" : "bg-white"}
+                >
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {report.postId._id}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {report.userId}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {report.description}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {report.resolved ? (
+                      <h2 className="text-green-500">Resolved</h2>
                     ) : (
                       <button
                         type="button"
-                        className=" text-blue-500 "
+                        className="text-blue-500"
                         onClick={() => handleResolve(report._id)}
                       >
                         Resolve

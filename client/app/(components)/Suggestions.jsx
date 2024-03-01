@@ -1,11 +1,51 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
+import {
+  useFollowUserMutation,
+  useGetUsersMutation,
+} from "../(redux)/slices/user/userApiSlice";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
+
+  const [suggestions, setSuggestions] = useState();
+
+  const [getUsers] = useGetUsersMutation();
+
+  const [followUser] = useFollowUserMutation();
+
+  const handleFollowUser = async (followingId) => {
+    console.log(followingId);
+    console.log(userInfo._id);
+    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
+
+    const res = await fetch(
+      `http://localhost:3300/api/v1/users/${userInfo._id}/followings`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ followingId }),
+      }
+    );
+
+    const data = await res.json();
+    console.log(data);
+  };
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      const res = await getUsers().unwrap();
+
+      setSuggestions(res.filter((user) => user._id !== userInfo._id));
+    };
+    fetchSuggestions();
+  }, []);
+
   return (
     <div className="p-4 w-80 fixed right-0 ">
       <div className="bg-white dark:bg-gray-800 p-4">
@@ -28,24 +68,30 @@ const Suggestions = () => {
         <div className="p-4 pr-8 dark:bg-gray-800 shadow-md rounded flex flex-col gap-4">
           <h1>People you may know</h1>
           <div>
-            {[
-              { username: "someone123", icon: "S" },
-              { username: "ajzalbyte", icon: "A" },
-            ].map((user, index) => {
-              return (
-                <div key={index} className="mb-2 flex gap-2 items-center">
-                  <div className="w-12 h-12 rounded-full border-gray-400 border flex justify-center items-center">
-                    <h2 className="">{user.icon}</h2>
+            {suggestions ? (
+              suggestions.map((user, index) => {
+                return (
+                  <div key={index} className="mb-2 flex gap-2 items-center">
+                    <img
+                      src={user.profileUrl}
+                      className="w-12 h-12 rounded-full object-cover border-gray-400 border flex justify-center items-center"
+                    />
+
+                    <div className="flex flex-col">
+                      <h1>{user.username}</h1>
+                      <h3
+                        onClick={() => handleFollowUser(user._id)}
+                        className="text-blue-700 cursor-pointer hover:text-blue-600 "
+                      >
+                        Follow
+                      </h3>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <h1>{user.username}</h1>
-                    <h3 className="text-blue-700 cursor-pointer hover:text-blue-600 ">
-                      Follow
-                    </h3>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <h1>Loading...</h1>
+            )}
           </div>
         </div>
       </div>

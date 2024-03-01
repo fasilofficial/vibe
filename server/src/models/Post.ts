@@ -11,9 +11,32 @@ interface IPost extends Document {
     {
       userId: string;
       comment: string;
+      replies?: [
+        {
+          userId: string;
+          comment: string;
+        }
+      ];
     }
   ];
 }
+
+const replySchema = new Schema(
+  {
+    userId: { type: String, required: true },
+    comment: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+const commentSchema = new Schema(
+  {
+    userId: String,
+    comment: String,
+    replies: [replySchema],
+  },
+  { timestamps: true }
+);
 
 const postSchema = new Schema(
   {
@@ -23,7 +46,7 @@ const postSchema = new Schema(
     imageUrl: { type: String },
     creator: { type: String },
     likes: [{ type: String }],
-    comments: [{ userId: String, comment: String }],
+    comments: [commentSchema],
   },
   { timestamps: true }
 );

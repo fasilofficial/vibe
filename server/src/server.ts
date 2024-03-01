@@ -9,6 +9,18 @@ const io = new socketio.Server(server);
 io.on("connection", (socket) => {
   console.log("A user connected");
 
+  socket.on("message", (message, roomName) => {
+    if (roomName.length) {
+      io.to(roomName).emit("message", message); // send message to specific room (if any)
+    } else {
+      io.emit("message", message); // send message to everyone
+    }
+  });
+
+  socket.on("joinRoom", (roomName) => {
+    socket.join(roomName);
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected");
   });
