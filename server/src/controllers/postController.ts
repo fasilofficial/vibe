@@ -1,6 +1,7 @@
 import expressAsyncHandler from "express-async-handler";
 import Post from "../models/Post";
 import Activity from "../models/Activity";
+import { Request, Response } from "express";
 
 export const getUserPosts = expressAsyncHandler(async (req, res) => {
   const { creator } = req.query;
@@ -57,17 +58,24 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
 
 // add comment
 export const addComment = expressAsyncHandler(
-  async (req: any, res): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     const { userId, comment }: { userId: string; comment: string } = req.body;
-
     const { postId } = req.params;
 
-    const post = await Post.findById(postId);
+    try {
+      const post = await Post.findById(postId).populate({
+        path: "creator",
+        model: "User",
+      });
 
-    if (post) {
+      if (!post) {
+        res.status(404).json({ message: "Post not found" });
+        return;
+      }
+
       post.comments.push({ userId, comment });
 
-      if (userId !== post.creator) {
+      if (userId !== post.creator.toString()) {
         const activity = new Activity({
           type: "comment",
           by: userId,
@@ -77,9 +85,15 @@ export const addComment = expressAsyncHandler(
       }
 
       await post.save();
-    } else {
-      res.status(404);
-      throw new Error("Post not found");
+
+      await post.populate({
+        path: "comments.userId",
+        model: "User",
+      });
+
+      res.status(201).json({ message: "Comment added successfully", post });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 );
@@ -121,28 +135,48 @@ export const likePost = expressAsyncHandler(
 );
 
 // delete comment
-export const deleteComment = expressAsyncHandler(async (req: any, res: any) => {
-  const { postId, commentId } = req.params;
-  const post = await Post.findById(postId);
+export const deleteComment = expressAsyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { postId, commentId } = req.params;
 
-  if (post) {
-    const commentIndex = post.comments.findIndex((comment: any) => {
-      return String(comment._id) === commentId;
-    });
+    try {
+      const post = await Post.findById(postId).populate({
+        path: "creator",
+        model: "User",
+      });
 
-    if (commentIndex === -1) {
-      return res.status(404).json({ message: "Comment not found" });
+      if (!post) {
+        res.status(404).json({ message: "Post not found" });
+        return;
+      }
+
+      const commentIndex = post.comments.findIndex(
+        (comment: any) => String(comment._id) === commentId
+      );
+
+      if (commentIndex === -1) {
+        res.status(404).json({ message: "Comment not found" });
+        return;
+      }
+
+      post.comments.splice(commentIndex, 1);
+      await post.save();
+
+      await post.populate({
+        path: "comments.userId",
+        model: "User",
+      });
+
+      res.status(200).json({
+        message: "Comment deleted successfully",
+        post
+      });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    post.comments.splice(commentIndex, 1);
-
-    await post.save();
-
-    res.status(200).json({ message: "Comment deleted successfully" });
-  } else {
-    res.status(404).send("Post not found");
   }
-});
+);
 
 // delete post
 export const deletePost = expressAsyncHandler(async (req: any, res: any) => {

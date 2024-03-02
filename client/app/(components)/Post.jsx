@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import {
   FaComment,
@@ -13,80 +13,24 @@ import { MdDelete, MdReport } from "react-icons/md";
 import Link from "next/link";
 
 import { useSelector } from "react-redux";
-import {
-  useAddCommentMutation,
-  useDeleteCommentMutation,
-  useLikePostMutation,
-} from "../(redux)/slices/post/postApiSlice";
 
 import moment from "moment";
+import { IoSend } from "react-icons/io5";
 
-const Post = ({ post }) => {
+const Post = ({
+  post,
+  handleLike,
+  handleAddComment,
+  handleDeleteComment,
+  handleSavePost,
+  handleReply,
+}) => {
   const { userInfo } = useSelector((state) => state.auth);
   const [liked, setLiked] = useState(post.likes.includes(userInfo._id));
   const [comment, setComment] = useState("");
-  const [postComments, setPostComments] = useState([]);
-
   const [showComments, setShowComments] = useState(false);
-
   const [showReplyInput, setShowReplyInput] = useState(false);
-
   const [reply, setReply] = useState("");
-
-  const [likePost] = useLikePostMutation();
-  const [deleteComment] = useDeleteCommentMutation();
-  const [addComment] = useAddCommentMutation();
-
-  const handleCommentChange = (e) => {
-    setComment(e.target.value);
-  };
-
-  const handleLike = async (postId) => {
-    setLiked(!liked);
-
-    const res = await likePost({
-      postId,
-      userId: userInfo._id,
-    });
-  };
-
-  const handleDeleteComment = async (postId, commentId) => {
-    const res = await deleteComment({
-      postId,
-      commentId,
-    }).unwrap();
-  };
-
-  const handleAddComment = async (e) => {
-    e.preventDefault();
-
-    if (comment.trim() === "") return;
-
-    setComment("");
-
-    const postId = e.target.dataset.postid;
-
-    const res = await addComment({
-      comment,
-      postId,
-      userId: userInfo._id,
-    }).unwrap();
-
-    setPostComments((prevComments) => [...prevComments, { comment }]);
-  };
-
-  const handleSavePost = async (postId) => {
-    console.log("Save:", postId);
-  };
-
-  const handleReply = async (e, postId, commentId) => {
-    e.preventDefault()
-    console.log(postId, commentId, reply);
-  };
-
-  useEffect(() => {
-    setPostComments(post.comments);
-  }, [postComments]);
 
   return (
     <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden mb-8">
@@ -113,7 +57,7 @@ const Post = ({ post }) => {
             <div className="flex items-center">
               <button
                 onClick={() => {
-                  handleLike(post._id);
+                  handleLike(post._id, userInfo._id, setLiked);
                 }}
                 data-postid={post._id}
                 className="text-gray-800 focus:outline-none"
@@ -148,7 +92,9 @@ const Post = ({ post }) => {
             <FaSave />
           </div>
         </div>
-        <p className=" text-gray-800 dark:text-gray-400 mt-4 mb-1">{post.caption}</p>
+        <p className=" text-gray-800 dark:text-gray-400 mt-4 mb-1">
+          {post.caption}
+        </p>
         <p className=" text-gray-400 dark:text-gray-400 mb-4">
           {moment(post.createdAt).startOf("minute").fromNow()}
         </p>
@@ -157,7 +103,7 @@ const Post = ({ post }) => {
             <div className="mt-2">
               {/* Comments */}
               <div className="mt-1 max-h-44 overflow-y-scroll ">
-                {postComments.map((comment, index) => (
+                {post.comments.map((comment, index) => (
                   <div
                     key={index}
                     className="flex justify-between items-center p-1 border rounded mb-2"
@@ -178,7 +124,9 @@ const Post = ({ post }) => {
                           {comment.comment}
                         </p>
                         <p className="text-gray-300 dark:text-gray-200">
-                        {moment(comment.createdAt).startOf("minute").fromNow()}
+                          {moment(comment.createdAt)
+                            .startOf("minute")
+                            .fromNow()}
                         </p>
                         {comment.userId._id !== userInfo._id ? (
                           <>
@@ -190,20 +138,41 @@ const Post = ({ post }) => {
                               Replay
                             </p>
                             {showReplyInput ? (
-                              <form
-                                onSubmit={(e) => handleReply(e, post._id, comment._id)}
-                                data-postid={post._id}
-                                className="mt-2"
-                              >
-                                <input
-                                  type="text"
-                                  placeholder="Add a comment..."
-                                  value={reply}
-                                  onChange={(e) => setReply(e.target.value)}
-                                  className="w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 focus:outline-none focus:border-blue-500"
-                                />
+                              <form className="mt-2">
+                                <div className="flex justify-between items-center w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
+                                  <input
+                                    type="text"
+                                    placeholder="Reply for comment..."
+                                    value={reply}
+                                    onChange={(e) => setReply(e.target.value)}
+                                    className="focus:outline-none"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleReply(post._id, comment._id, reply)
+                                    }
+                                  >
+                                    <IoSend />
+                                  </button>
+                                </div>
                               </form>
                             ) : (
+                              // <form
+                              //   onSubmit={(e) =>
+                              //     handleReply(e, post._id, comment._id, reply)
+                              //   }
+                              //   data-postid={post._id}
+                              //   className="mt-2"
+                              // >
+                              //   <input
+                              //     type="text"
+                              //     placeholder="Add a comment..."
+                              //     value={reply}
+                              //     onChange={(e) => setReply(e.target.value)}
+                              //     className="w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 focus:outline-none focus:border-blue-500"
+                              //   />
+                              // </form>
                               ""
                             )}
                           </>
@@ -230,18 +199,29 @@ const Post = ({ post }) => {
                 ))}
               </div>
             </div>
-            <form
-              onSubmit={handleAddComment}
-              data-postid={post._id}
-              className="mt-2"
-            >
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                value={comment}
-                onChange={handleCommentChange}
-                className="w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 focus:outline-none focus:border-blue-500"
-              />
+            <form className="mt-2">
+              <div className="flex justify-between items-center w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleAddComment(
+                      post._id,
+                      userInfo._id,
+                      comment,
+                      setComment
+                    )
+                  }
+                >
+                  <IoSend />
+                </button>
+              </div>
             </form>
           </>
         ) : (
