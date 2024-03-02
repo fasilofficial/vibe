@@ -1,5 +1,6 @@
 import expressAsyncHandler from "express-async-handler";
 import Post from "../models/Post";
+import Activity from "../models/Activity";
 
 export const getUserPosts = expressAsyncHandler(async (req, res) => {
   const { creator } = req.query;
@@ -13,6 +14,7 @@ export const getUserPosts = expressAsyncHandler(async (req, res) => {
   }
 });
 
+// add post
 export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
   try {
     const newPostData = { ...req.body };
@@ -28,6 +30,7 @@ export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
   }
 });
 
+// get posts
 export const getPosts = expressAsyncHandler(async (req, res) => {
   try {
     const posts = await Post.find({})
@@ -39,7 +42,7 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
         path: "comments.userId",
         model: "User",
       })
-      .sort({ updatedAt: -1 });
+      .sort({ createdAt: -1 });
 
     if (posts.length > 0) {
       res.status(200).json(posts);
@@ -52,6 +55,7 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
   }
 });
 
+// add comment
 export const addComment = expressAsyncHandler(
   async (req: any, res): Promise<void> => {
     const { userId, comment }: { userId: string; comment: string } = req.body;
@@ -63,6 +67,15 @@ export const addComment = expressAsyncHandler(
     if (post) {
       post.comments.push({ userId, comment });
 
+      if (userId !== post.creator) {
+        const activity = new Activity({
+          type: "comment",
+          by: userId,
+          userId: post.creator,
+        });
+        await activity.save();
+      }
+
       await post.save();
     } else {
       res.status(404);
@@ -71,6 +84,7 @@ export const addComment = expressAsyncHandler(
   }
 );
 
+// like post
 export const likePost = expressAsyncHandler(
   async (req: any, res): Promise<void> => {
     const { userId } = req.body;
@@ -86,9 +100,19 @@ export const likePost = expressAsyncHandler(
         post.likes.splice(userIdIndex, 1); // Remove the like
       } else {
         post.likes.push(userId); // Add the like
+
+        if (userId !== post.creator) {
+          const activity = new Activity({
+            type: "like",
+            by: userId,
+            userId: post.creator,
+          });
+          await activity.save();
+        }
       }
 
       await post.save();
+
       res.status(200).send("Post like toggled!"); // Send a success response
     } else {
       res.status(404).send("Post not found");
@@ -96,6 +120,7 @@ export const likePost = expressAsyncHandler(
   }
 );
 
+// delete comment
 export const deleteComment = expressAsyncHandler(async (req: any, res: any) => {
   const { postId, commentId } = req.params;
   const post = await Post.findById(postId);
@@ -119,6 +144,7 @@ export const deleteComment = expressAsyncHandler(async (req: any, res: any) => {
   }
 });
 
+// delete post
 export const deletePost = expressAsyncHandler(async (req: any, res: any) => {
   try {
     const { postId } = req.params;
@@ -135,6 +161,7 @@ export const deletePost = expressAsyncHandler(async (req: any, res: any) => {
   }
 });
 
+// get post
 export const getPost = expressAsyncHandler(async (req: any, res: any) => {
   const { id: postId } = req.params;
 
@@ -148,6 +175,7 @@ export const getPost = expressAsyncHandler(async (req: any, res: any) => {
   }
 });
 
+// edit post
 export const editPost = expressAsyncHandler(async (req: any, res: any) => {
   const { id: postId } = req.params;
 
@@ -171,38 +199,34 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
   }
 });
 
+// add reply
 export const addReply = expressAsyncHandler(
   async (req: any, res): Promise<void> => {
-//     const {
-//       userId,
-//       comment,
-//       commentId,
-//     }: { userId: string; comment: string; commentId: string } = req.body;
-
-//     const { postId } = req.params;
-
-//     try {
-//       const post = await Post.findOne({ _id: postId });
-
-//       if (post) {
-//         const commentIndex = post.comments.findIndex(
-//           (c) => c._id.toString() === commentId
-//         );
-
-//         if (commentIndex !== -1) {
-//           post.comments[commentIndex].replies.push({ userId, comment });
-
-//           await post.save();
-//           res.status(201).json({ message: "Reply added successfully" });
-//         } else {
-//           res.status(404).json({ message: "Comment not found" });
-//         }
-//       } else {
-//         res.status(404).json({ message: "Post not found" });
-//       }
-//     } catch (error) {
-//       console.error("Error adding reply:", error);
-//       res.status(500).json({ message: "Internal server error" });
-//     }
+    //     const {
+    //       userId,
+    //       comment,
+    //       commentId,
+    //     }: { userId: string; comment: string; commentId: string } = req.body;
+    //     const { postId } = req.params;
+    //     try {
+    //       const post = await Post.findOne({ _id: postId });
+    //       if (post) {
+    //         const commentIndex = post.comments.findIndex(
+    //           (c) => c._id.toString() === commentId
+    //         );
+    //         if (commentIndex !== -1) {
+    //           post.comments[commentIndex].replies.push({ userId, comment });
+    //           await post.save();
+    //           res.status(201).json({ message: "Reply added successfully" });
+    //         } else {
+    //           res.status(404).json({ message: "Comment not found" });
+    //         }
+    //       } else {
+    //         res.status(404).json({ message: "Post not found" });
+    //       }
+    //     } catch (error) {
+    //       console.error("Error adding reply:", error);
+    //       res.status(500).json({ message: "Internal server error" });
+    //     }
   }
 );

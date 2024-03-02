@@ -71,12 +71,6 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body: data.followingId,
       }),
     }),
-    getUser: builder.mutation({
-      query: (data) => ({
-        url: `${BASE_URL}/${data}`,
-        method: "GET",
-      }),
-    }),
     getFollowings: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}/followings`,
@@ -86,6 +80,18 @@ export const usersApiSlice = apiSlice.injectEndpoints({
     getFollowers: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}/followers`,
+        method: "GET",
+      }),
+    }),
+    getActivities: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data}/activities`,
+        method: "GET",
+      }),
+    }),
+    getUser: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data}`,
         method: "GET",
       }),
     }),
@@ -106,4 +112,5 @@ export const {
   useGetUserMutation,
   useGetFollowingsMutation,
   useGetFollowersMutation,
+  useGetActivitiesMutation,
 } = usersApiSlice;

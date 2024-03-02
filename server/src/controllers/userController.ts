@@ -5,6 +5,7 @@ import Post from "../models/Post";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
+import Activity from "../models/Activity";
 
 // register
 export const registerUser = expressAsyncHandler(
@@ -163,7 +164,7 @@ export const sendOtp = expressAsyncHandler(async (req: any, res: any) => {
 
   const user = await User.findOne({ email });
 
-  console.log(forgotPassword)
+  console.log(forgotPassword);
 
   if (forgotPassword && !user) {
     res.status(404);
@@ -253,8 +254,16 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
   if (!isFollowing) {
     // Follow the user
     user.followings.push({ _id: followingId });
+
     following.followers.push({ _id: userId });
 
+    const activity = new Activity({
+      type: "follow",
+      by: userId,
+      userId: following._id,
+    });
+    
+    await activity.save();
     await user.save();
     await following.save();
 
@@ -343,3 +352,26 @@ export const getSuggestions = expressAsyncHandler(
     res.status(200).json();
   }
 );
+
+// get activities
+export const getActivities = expressAsyncHandler(async (req: any, res: any) => {
+  const { userId } = req.params;
+
+  try {
+    const activities = await Activity.find({ userId })
+      .populate({
+        path: "by",
+        model: "User",
+      })
+      .sort({ createdAt: -1 });
+
+    if (activities.length > 0) {
+      res.status(200).json(activities);
+    } else {
+      res.status(404).json({ message: "No activities found for the user" });
+    }
+  } catch (error) {
+    console.error("Error fetching activities:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});

@@ -15,6 +15,7 @@ import {
   followUser,
   unfollowUser,
   getSuggestions,
+  getActivities,
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -49,6 +50,9 @@ router.get("/:userId/followings", getFollowings);
 
 // get followers
 router.get("/:userId/followers", getFollowers);
+
+// get activities
+router.get("/:userId/activities", getActivities);
 
 // follow a user
 router.post("/:userId/followings", followUser);
