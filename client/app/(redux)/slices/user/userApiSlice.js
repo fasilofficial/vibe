@@ -89,6 +89,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    savePost: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}/saves`,
+        method: "POST",
+        body: data,
+      }),
+    }),
     getUser: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}`,
@@ -113,4 +120,5 @@ export const {
   useGetFollowingsMutation,
   useGetFollowersMutation,
   useGetActivitiesMutation,
+  useSavePostMutation,
 } = usersApiSlice;

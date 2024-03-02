@@ -12,6 +12,7 @@ import { IoEye, IoEyeOff } from "react-icons/io5";
 import { useSigninMutation } from "@/app/(redux)/slices/user/userApiSlice";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "@/app/(redux)/slices/auth/authSlice";
+import { setPosts } from "@/app/(redux)/slices/data/dataSlice";
 
 const SigninForm = () => {
   const [formData, setFormData] = useState({
@@ -53,9 +54,12 @@ const SigninForm = () => {
 
     try {
       if (validateForm(formData)) {
-        const result = await signinMutation(formData).unwrap();
+        const res = await signinMutation(formData).unwrap();
 
-        dispatch(setCredentials(result));
+        console.log(res);
+
+        dispatch(setCredentials(res.user));
+        dispatch(setPosts(res.posts));
         router.push("/");
       }
     } catch (error) {

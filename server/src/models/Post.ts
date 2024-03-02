@@ -1,24 +1,24 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-interface IPost extends Document {
+interface IComment {
+  userId: string;
+  comment: string;
+  replies: IReply[];
+}
+
+interface IReply {
+  userId: string;
+  comment: string;
+}
+
+interface IPost {
   caption: string;
   location: string;
   tags: string[];
   imageUrl: string;
   creator: string;
   likes: string[];
-  comments: [
-    {
-      userId: string;
-      comment: string;
-      replies?: [
-        {
-          userId: string;
-          comment: string;
-        }
-      ];
-    }
-  ];
+  comments: IComment[];
 }
 
 const replySchema = new Schema(

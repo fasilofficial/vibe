@@ -67,6 +67,12 @@ const Navigation = ({ setActiveTab }) => {
       >
         Followings
       </button>
+      <button
+        onClick={() => setActiveTab("saves")}
+        className="px-4 py-2 bg-transparent border border-gray-500 rounded-md"
+      >
+        Saves
+      </button>
     </div>
   );
 };
@@ -80,6 +86,8 @@ const MainContent = ({ activeTab, userInfo }) => {
         return <FollowersList userInfo={userInfo} />;
       case "followings":
         return <FollowingsList userInfo={userInfo} />;
+      case "saves":
+        return <SavesList userInfo={userInfo} />;
       default:
         return <PostsGrid userInfo={userInfo} />;
     }
@@ -226,22 +234,9 @@ const FollowersList = ({ userInfo }) => {
   };
 
   useEffect(() => {
-    const fetchfollowers = async () => {
-      const res = await getfollowers(userInfo._id).unwrap();
-      console.log(res);
-      setFollowers(res);
-    };
-    const fetchFollowings = async () => {
-      const res = await getFollowings(userInfo._id).unwrap();
-      console.log(res);
-      setFollowings(res);
-    };
-
-    fetchfollowers();
-    fetchFollowings();
-
-    console.log(followings);
-  }, []);
+    setFollowings(userInfo.followings);
+    setFollowers(userInfo.followers);
+  }, [userInfo]);
 
   return (
     <div className="w-1/2">
@@ -319,13 +314,8 @@ const FollowingsList = ({ userInfo }) => {
   };
 
   useEffect(() => {
-    const fetchFollowings = async () => {
-      const res = await getFollowings(userInfo._id).unwrap();
-      console.log(res);
-      setFollowings(res);
-    };
-    fetchFollowings();
-  }, []);
+    setFollowings(userInfo.followings);
+  }, [userInfo]);
 
   return (
     <div className="w-1/2">
@@ -336,9 +326,9 @@ const FollowingsList = ({ userInfo }) => {
           {followings.map((following) => (
             <li
               key={following._id._id}
-              className="flex items-center justify-between space-x-4 py-2"
+              className="flex items-center justify-between py-2"
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-2">
                 <img
                   src={following._id.profileUrl}
                   alt={following._id.name}
@@ -347,19 +337,37 @@ const FollowingsList = ({ userInfo }) => {
                 <Link href={`/profile/${following._id._id}`}>
                   {following._id.name}
                 </Link>
-                <button
-                  className="text-blue-500 hover:text-blue-400 transition-colors"
-                  onClick={() => handleUnfollow(following._id._id)}
-                >
-                  Unfollow
-                </button>
               </div>
+              <button
+                className="text-blue-500 hover:text-blue-400 transition-colors"
+                onClick={() => handleUnfollow(following._id._id)}
+              >
+                Unfollow
+              </button>
             </li>
           ))}
         </ul>
       ) : (
         "Loading..."
       )}
+    </div>
+  );
+};
+
+const SavesList = ({ userInfo }) => {
+  const [saves, setSaves] = useState();
+
+  useEffect(() => {
+    setSaves(userInfo.saves);
+  }, [userInfo]);
+
+  return (
+    <div>
+      {saves
+        ? saves.map((save) => {
+            return <p>{save._id._id}</p>;
+          })
+        : ""}
     </div>
   );
 };

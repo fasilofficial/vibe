@@ -43,6 +43,10 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
         path: "comments.userId",
         model: "User",
       })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+      })
       .sort({ createdAt: -1 });
 
     if (posts.length > 0) {
@@ -73,7 +77,7 @@ export const addComment = expressAsyncHandler(
         return;
       }
 
-      post.comments.push({ userId, comment });
+      post.comments.push({ userId, comment, replies: [] });
 
       if (userId !== post.creator.toString()) {
         const activity = new Activity({
@@ -88,6 +92,10 @@ export const addComment = expressAsyncHandler(
 
       await post.populate({
         path: "comments.userId",
+        model: "User",
+      });
+      await post.populate({
+        path: "comments.replies.userId",
         model: "User",
       });
 
@@ -166,10 +174,14 @@ export const deleteComment = expressAsyncHandler(
         path: "comments.userId",
         model: "User",
       });
+      await post.populate({
+        path: "comments.replies.userId",
+        model: "User",
+      });
 
       res.status(200).json({
         message: "Comment deleted successfully",
-        post
+        post,
       });
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -236,31 +248,105 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
 // add reply
 export const addReply = expressAsyncHandler(
   async (req: any, res): Promise<void> => {
-    //     const {
-    //       userId,
-    //       comment,
-    //       commentId,
-    //     }: { userId: string; comment: string; commentId: string } = req.body;
-    //     const { postId } = req.params;
-    //     try {
-    //       const post = await Post.findOne({ _id: postId });
-    //       if (post) {
-    //         const commentIndex = post.comments.findIndex(
-    //           (c) => c._id.toString() === commentId
-    //         );
-    //         if (commentIndex !== -1) {
-    //           post.comments[commentIndex].replies.push({ userId, comment });
-    //           await post.save();
-    //           res.status(201).json({ message: "Reply added successfully" });
-    //         } else {
-    //           res.status(404).json({ message: "Comment not found" });
-    //         }
-    //       } else {
-    //         res.status(404).json({ message: "Post not found" });
-    //       }
-    //     } catch (error) {
-    //       console.error("Error adding reply:", error);
-    //       res.status(500).json({ message: "Internal server error" });
-    //     }
+    const { postId, commentId } = req.params;
+    const { userId, reply } = req.body;
+
+    try {
+      const post = await Post.findOne({ _id: postId }).populate({
+        path: "creator",
+        model: "User",
+      });
+
+      if (post) {
+        const commentIndex = post.comments.findIndex(
+          (c: any) => c?._id.toString() === commentId
+        );
+        if (commentIndex !== -1) {
+          const newReply = {
+            userId,
+            comment: reply,
+          };
+          post.comments[commentIndex].replies.push(newReply);
+
+          await post.save();
+
+          await post.populate({
+            path: "comments.userId",
+            model: "User",
+          });
+          await post.populate({
+            path: "comments.replies.userId",
+            model: "User",
+          });
+
+          res.status(201).json({ message: "Reply added successfully", post });
+        } else {
+          res.status(404).json({ message: "Comment not found" });
+        }
+      } else {
+        res.status(404).json({ message: "Post not found" });
+      }
+    } catch (error) {
+      console.error("Error adding reply:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+// delete reply
+export const deleteReply = expressAsyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const { postId, commentId, replyId } = req.params;
+
+    try {
+      const post = await Post.findById(postId).populate({
+        path: "creator",
+        model: "User",
+      });
+
+      if (!post) {
+        res.status(404).json({ message: "Post not found" });
+        return;
+      }
+
+      const comment = post.comments.find(
+        (comment: any) => String(comment._id) === commentId
+      );
+
+      if (!comment) {
+        res.status(404).json({ message: "Comment not found" });
+        return;
+      }
+
+      const replyIndex = comment.replies.findIndex(
+        (reply: any) => String(reply._id) === replyId
+      );
+
+      if (replyIndex === -1) {
+        res.status(404).json({ message: "Reply not found" });
+        return;
+      }
+
+      comment.replies.splice(replyIndex, 1);
+
+      await post.save();
+
+      await post.populate({
+        path: "comments.userId",
+        model: "User",
+      });
+      await post.populate({
+        path: "comments.replies.userId",
+        model: "User",
+      });
+
+      res.status(200).json({
+        message: "Reply deleted successfully",
+        post,
+      });
+    } catch (error) {
+      console.error("Error deleting reply:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   }
 );

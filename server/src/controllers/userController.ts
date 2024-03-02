@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
 import Activity from "../models/Activity";
+import { Request, Response } from "express";
 
 // register
 export const registerUser = expressAsyncHandler(
@@ -52,7 +53,19 @@ export const authUser = expressAsyncHandler(
       throw new Error("All fields are required");
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
+      .populate({
+        path: "followers._id",
+        model: "User",
+      })
+      .populate({
+        path: "followings._id",
+        model: "User",
+      })
+      .populate({
+        path: "saves._id",
+        model: "Post",
+      });
 
     if (user && (await user.matchPasswords(password))) {
       if (!user.blocked) {
@@ -60,7 +73,22 @@ export const authUser = expressAsyncHandler(
 
         req.session.user = user;
 
-        res.status(201).json(user);
+        const posts = await Post.find({})
+          .populate({
+            path: "creator",
+            model: "User",
+          })
+          .populate({
+            path: "comments.userId",
+            model: "User",
+          })
+          .populate({
+            path: "comments.replies.userId",
+            model: "User",
+          })
+          .sort({ createdAt: -1 });
+
+        res.status(201).json({ message: "Login successful", user, posts });
       } else {
         // res.status(400).json({ error: "You're blocked by the admin" });
         throw new Error("You're blocked by the admin");
@@ -121,14 +149,26 @@ export const getUsers = expressAsyncHandler(async (req, res) => {
 // get user
 export const getUser = expressAsyncHandler(async (req, res) => {
   try {
-    const userInfo = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id)
+      .populate({
+        path: "followers._id",
+        model: "User",
+      })
+      .populate({
+        path: "followings._id",
+        model: "User",
+      })
+      .populate({
+        path: "saves._id",
+        model: "Post",
+      });
 
-    if (!userInfo) {
+    if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
 
-    res.status(200).json(userInfo);
+    res.status(200).json(user);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Internal server error" });
@@ -262,7 +302,7 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
       by: userId,
       userId: following._id,
     });
-    
+
     await activity.save();
     await user.save();
     await following.save();
@@ -375,3 +415,53 @@ export const getActivities = expressAsyncHandler(async (req: any, res: any) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+// save post
+export const savePost = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const { postId } = req.body;
+    const { userId } = req.params;
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "followers._id",
+        model: "User",
+      })
+      .populate({
+        path: "followings._id",
+        model: "User",
+      });
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    const postExists: any = user.saves.find(
+      (save) => String(save._id) === postId
+    );
+
+    if (postExists) {
+      user.saves = user.saves.filter((save) => String(save._id) !== postId);
+
+      await user.save();
+
+      await user.populate({
+        path: "saves._id",
+        model: "Post",
+      });
+
+      res.status(200).json({ message: "Post unsaved successfully", user });
+    } else {
+      user.saves.push({ _id: postId });
+      await user.save();
+
+      await user.populate({
+        path: "saves._id",
+        model: "Post",
+      });
+
+      res.status(200).json({ message: "Post saved successfully", user });
+    }
+  }
+);

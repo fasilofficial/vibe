@@ -1,31 +1,44 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Post from "./Post";
 import {
   useAddCommentMutation,
+  useAddReplyMutation,
   useDeleteCommentMutation,
+  useDeleteReplyMutation,
   useGetPostsMutation,
   useLikePostMutation,
 } from "../(redux)/slices/post/postApiSlice";
+import { useSavePostMutation } from "../(redux)/slices/user/userApiSlice";
+import { setCredentials } from "../(redux)/slices/auth/authSlice";
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
+  const [user, setUser] = useState({});
 
-  const [getPosts] = useGetPostsMutation();
+  const { userInfo } = useSelector((state) => state.auth);
+  const { posts: Posts } = useSelector((state) => state.data);
+
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
+  const [addReply] = useAddReplyMutation();
   const [deleteComment] = useDeleteCommentMutation();
+  const [deleteReply] = useDeleteReplyMutation();
+  const [savePost] = useSavePostMutation();
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await getPosts().unwrap();
-      setPosts(res);
-    };
-    fetchPosts();
-  }, [getPosts]);
+    setUser(userInfo);
+  }, [userInfo]);
 
-  const handleLike = async (postId, userId, setLiked) => {
+  useEffect(() => {
+    setPosts(Posts);
+  }, [Posts]);
+
+  const handleLike = async (postId, userId) => {
     try {
       const res = await likePost({
         postId,
@@ -54,8 +67,7 @@ const Feed = () => {
           return post;
         });
       });
-
-      setLiked((prev) => !prev); // toggle icon
+      
     } catch (error) {
       console.error("Error handling like:", error);
     }
@@ -63,8 +75,6 @@ const Feed = () => {
 
   const handleAddComment = async (postId, userId, comment, setComment) => {
     if (comment.trim() === "") return;
-
-    setComment("");
 
     try {
       const res = await addComment({
@@ -85,6 +95,8 @@ const Feed = () => {
     } catch (error) {
       console.error("Error adding comment:", error);
     }
+
+    setComment("");
   };
 
   const handleDeleteComment = async (postId, commentId) => {
@@ -108,12 +120,61 @@ const Feed = () => {
     }
   };
 
-  const handleSavePost = async (postId) => {
-    console.log("Save:", postId);
+  const handleAddReply = async (
+    postId,
+    commentId,
+    userId,
+    reply,
+    setReply,
+    setShowReplyInput
+  ) => {
+    try {
+      const res = await addReply({ postId, commentId, userId, reply }).unwrap();
+
+      setPosts((prevPosts) => {
+        return prevPosts.map((post) => {
+          if (post._id === postId) {
+            return { ...res.post };
+          }
+
+          return post;
+        });
+      });
+    } catch (error) {
+      console.error("Error adding reply to comment:", error);
+    }
+
+    setReply("");
+    setShowReplyInput(false);
   };
 
-  const handleReply = async (postId, commentId, reply) => {
-    console.log(postId, commentId, reply);
+  const handleDeleteReply = async (postId, commentId, replyId) => {
+    try {
+      const res = await deleteReply({
+        postId,
+        commentId,
+        replyId,
+      }).unwrap();
+
+      setPosts((prevPosts) => {
+        return prevPosts.map((post) => {
+          if (post._id === postId) {
+            return { ...res.post };
+          }
+
+          return post;
+        });
+      });
+    } catch (error) {
+      console.error("Error deleting reply:", error);
+    }
+  };
+
+  const handleSavePost = async (postId, userId) => {
+    console.log("Save:", postId, userId);
+    const res = await savePost({ postId, userId }).unwrap();
+    setUser(res.user);
+    dispatch(setCredentials(res.user));
   };
 
   return (
@@ -124,11 +185,13 @@ const Feed = () => {
               <Post
                 key={post._id || index}
                 post={post}
+                user={user}
                 handleLike={handleLike}
                 handleAddComment={handleAddComment}
                 handleDeleteComment={handleDeleteComment}
                 handleSavePost={handleSavePost}
-                handleReply={handleReply}
+                handleAddReply={handleAddReply}
+                handleDeleteReply={handleDeleteReply}
               />
             ))
           : "Fetching posts..."}

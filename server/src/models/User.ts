@@ -16,6 +16,9 @@ interface IUser extends Document {
   followers: {
     _id: string;
   }[];
+  saves: {
+    _id: string;
+  }[];
   matchPasswords(enteredPassword: string): Promise<boolean>;
 }
 
@@ -30,6 +33,7 @@ const userSchema = new Schema(
     blocked: { type: Boolean, required: true, default: false },
     followings: { type: [], default: [] },
     followers: { type: [], default: [] },
+    saves: { type: [], default: [] },
   },
   { timestamps: true }
 );

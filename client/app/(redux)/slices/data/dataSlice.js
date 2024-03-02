@@ -25,20 +25,15 @@ const dataSlice = createSlice({
     },
     setPosts: (state, action) => {
       state.posts = action.payload;
+      localStorage.setItem("posts", JSON.stringify(action.payload));
     },
     removePosts: (state, action) => {
       state.posts = [];
+      localStorage.removeItem("posts");
     },
-    setPost: (state, action) => {
-      if (state.posts === null) {
-        state.posts = [action.payload]; 
-      } else {
-        state.posts = [...state.posts, action.payload];
-      }
-    },
-    removePost: (state, action) => {
-      state.posts = state.posts.filter((post) => post._id !== action.payload);
-    },
+    AddLike: (state, action) => {
+      // state.posts = 
+    }
   },
 });
 
