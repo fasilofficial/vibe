@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -59,6 +59,7 @@ const AddPostForm = () => {
 
     if (!caption || !location || !tags || !image) {
       toast.error("Please fill in all fields");
+      setLoading(false);
       return;
     }
 
@@ -104,7 +105,6 @@ const AddPostForm = () => {
       onSubmit={handleSubmit}
       className="max-w-lg mx-auto bg-white dark:bg-gray-800 shadow-md rounded px-8 pt-6 pb-8 mb-4 mt-4"
     >
-      <Toaster />
       <div className="mb-4">
         <label
           htmlFor="caption"

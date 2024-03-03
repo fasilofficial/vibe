@@ -1,26 +1,8 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
-
-import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
+import React from "react";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
-
 import Link from "next/link";
 
 const SavePost = ({ post, user, handleUnsavePost }) => {
-  const [saved, setSaved] = useState(true);
-
-//   useEffect(() => {
-//     const saveIndex = user?.saves?.findIndex((save) => {
-//       const saveId = save?._id?._id;
-//       const postId = post?._id;
-//       return saveId && postId && saveId.toString() === postId.toString();
-//     });
-
-//     console.log(saveIndex);
-//     setSaved(saveIndex !== -1);
-//   }, [user, post]);
-
   return (
     <div key={post?._id?._id} className="bg-white rounded shadow-md">
       <div className="p-4">
@@ -47,9 +29,8 @@ const SavePost = ({ post, user, handleUnsavePost }) => {
             className="cursor-pointer"
             onClick={() => handleUnsavePost(post._id._id, user._id)}
           >
-            {saved ? <TurnedInIcon /> : <TurnedInNotIcon />}
+            <TurnedInIcon />
           </div>
-      
         </div>
       </div>
     </div>

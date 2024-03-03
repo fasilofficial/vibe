@@ -6,7 +6,7 @@ import { useLogoutMutation } from "@/app/(redux)/slices/user/userApiSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 import { useDispatch } from "react-redux";
 
@@ -31,7 +31,6 @@ const AdminSignOut = () => {
 
   return (
     <div className="p-6 border rounded-md flex flex-col shadow-md items-center">
-      <Toaster />
       <h1 className="text-2xl font-bold mb-4">Sign Out</h1>
       <p className="mb-4">Are you sure you want to sign out?</p>
       <button

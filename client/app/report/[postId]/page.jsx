@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { useAddReportMutation } from "@/app/(redux)/slices/report/reportApiSlice";
 import { useGetPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
 import Link from "next/link";
@@ -62,7 +62,6 @@ const page = ({ params: { postId } }) => {
   return (
     <UserLayout>
       <div className="py-4 flex justify-center">
-        <Toaster />
         <div className="max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden md:max-w-2xl report-post">
           <div className="md:flex">
             <div className="md:flex-shrink-0">

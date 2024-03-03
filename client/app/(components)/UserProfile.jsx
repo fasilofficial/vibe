@@ -5,24 +5,114 @@ import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import {
   useFollowUserMutation,
-  useGetFollowersMutation,
-  useGetFollowingsMutation,
   useGetUserPostsMutation,
   useRemoveFollowerMutation,
   useSavePostMutation,
   useUnfollowUserMutation,
 } from "../(redux)/slices/user/userApiSlice";
 
+import { useDeletePostMutation } from "../(redux)/slices/post/postApiSlice";
+import { setUserPosts } from "../(redux)/slices/user/userSlice";
+import SavePost from "./SavePost";
+import {
+  setCredentials,
+  updateFollowers,
+  updateFollowings,
+} from "../(redux)/slices/auth/authSlice";
+
 const UserProfile = () => {
-  const [activeTab, setActiveTab] = useState("followings");
+  const [activeTab, setActiveTab] = useState("posts");
 
   const { userInfo } = useSelector((state) => state.auth);
+  const { posts } = useSelector((state) => state.user);
+
+  const [getPosts] = useGetUserPostsMutation(); // get user posts
+  const [deletePost] = useDeletePostMutation(); // delete post
+  const [unsavePost] = useSavePostMutation(); // Unsave post
+  const [followUser] = useFollowUserMutation(); // follow user
+  const [removeFollower] = useRemoveFollowerMutation(); // remove follower
+  const [UnfollowUser] = useUnfollowUserMutation(); // unfollow user
+
+  const dispatch = useDispatch();
+
+  const handleDeletePost = async (postId) => {
+    const res = await deletePost(postId).unwrap();
+  };
+
+  const handleFollow = async (followingId) => {
+    try {
+      const res = await followUser({
+        followingId,
+        userId: userInfo._id,
+      }).unwrap();
+
+      dispatch(updateFollowings(res.data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleRemoveFollower = async (followerId) => {
+    try {
+      const res = await removeFollower({
+        followerId,
+        userId: userInfo._id,
+      }).unwrap();
+
+      dispatch(updateFollowers(res.data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleUnfollow = async (followingId) => {
+    try {
+      const res = await UnfollowUser({
+        followingId,
+        userId: userInfo._id,
+      }).unwrap();
+
+      dispatch(updateFollowings(res.data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleUnsavePost = async (postId, userId) => {
+    try {
+      const res = await unsavePost({ postId, userId }).unwrap();
+      dispatch(setCredentials(res.user));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const res = await getPosts(userInfo._id).unwrap();
+      dispatch(setUserPosts(res));
+    };
+
+    fetchPosts();
+  }, []);
 
   return (
     <div className="max-w-6xl ml-36 mt-4">
       <Header userInfo={userInfo} />
       <Navigation setActiveTab={setActiveTab} />
-      <MainContent activeTab={activeTab} userInfo={userInfo} />
+      <MainContent
+        activeTab={activeTab}
+        userInfo={userInfo}
+        posts={posts}
+        followers={userInfo.followers}
+        followings={userInfo.followings}
+        saves={userInfo.saves}
+        handleDeletePost={handleDeletePost}
+        handleRemoveFollower={handleRemoveFollower}
+        handleFollow={handleFollow}
+        handleUnfollow={handleUnfollow}
+        handleUnsavePost={handleUnsavePost}
+      />
     </div>
   );
 };
@@ -81,26 +171,70 @@ const Navigation = ({ setActiveTab }) => {
   );
 };
 
-const MainContent = ({ activeTab, userInfo }) => {
+const MainContent = ({
+  activeTab,
+  userInfo,
+  posts,
+  followers,
+  followings,
+  saves,
+  handleDeletePost,
+  handleFollow,
+  handleUnfollow,
+  handleRemoveFollower,
+  handleUnsavePost,
+}) => {
   const renderContent = () => {
     switch (activeTab) {
       case "posts":
-        return <PostsGrid userInfo={userInfo} />;
+        return (
+          <PostsGrid
+            userInfo={userInfo}
+            posts={posts}
+            handleDeletePost={handleDeletePost}
+          />
+        );
       case "followers":
-        return <FollowersList userInfo={userInfo} />;
+        return (
+          <FollowersList
+            handleRemoveFollower={handleRemoveFollower}
+            handleFollow={handleFollow}
+            userInfo={userInfo}
+            followers={followers}
+            followings={followings}
+          />
+        );
       case "followings":
-        return <FollowingsList userInfo={userInfo} />;
+        return (
+          <FollowingsList
+            userInfo={userInfo}
+            followings={followings}
+            handleUnfollow={handleUnfollow}
+          />
+        );
       case "saves":
-        return <SavesList userInfo={userInfo} />;
+        return (
+          <SavesList
+            userInfo={userInfo}
+            saves={saves}
+            handleUnsavePost={handleUnsavePost}
+          />
+        );
       default:
-        return <PostsGrid userInfo={userInfo} />;
+        return (
+          <PostsGrid
+            userInfo={userInfo}
+            posts={posts}
+            handleDeletePost={handleDeletePost}
+          />
+        );
     }
   };
 
   return <div className="w-full p-4">{renderContent()}</div>;
 };
 
-const PostCard = ({ post, onEdit, onDelete }) => {
+const PostCard = ({ post, handleDeletePost }) => {
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white dark:bg-gray-800 dark:text-white">
       <img src={post.imageUrl} alt="Post" className="w-full" />
@@ -117,7 +251,7 @@ const PostCard = ({ post, onEdit, onDelete }) => {
             Edit Post
           </Link>
           <button
-            onClick={() => onDelete(post._id)}
+            onClick={() => handleDeletePost(post._id)}
             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           >
             Delete Post
@@ -158,82 +292,29 @@ const PostCard = ({ post, onEdit, onDelete }) => {
   );
 };
 
-const PostsGrid = ({ userInfo }) => {
-  const [getPosts, { isLoading, error }] = useGetUserPostsMutation();
-  const [deletePost] = useDeletePostMutation();
-
-  const { posts } = useSelector((state) => state.user);
-
-  const handleDeletePost = async (postId) => {
-    const res = await deletePost(postId).unwrap();
-
-  };
-
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await getPosts(userInfo._id).unwrap();
-      dispatch(setUserPosts(res));
-    };
-
-    // if (!posts) {
-    fetchPosts();
-    // }
-  }, []);
-
+const PostsGrid = ({ posts, handleDeletePost }) => {
   return (
     <div className="grid grid-cols-3 gap-4">
       {posts
         ? posts.map((post, index) => (
-            <PostCard key={index} post={post} onDelete={handleDeletePost} />
+            <PostCard
+              key={index}
+              post={post}
+              handleDeletePost={handleDeletePost}
+            />
           ))
         : "No posts"}
     </div>
   );
 };
 
-const FollowersList = ({ userInfo }) => {
-  const [followers, setFollowers] = useState();
-  const [getfollowers] = useGetFollowersMutation();
-
-  const [followings, setFollowings] = useState();
-  const [getFollowings] = useGetFollowingsMutation();
-
-  const [followUser] = useFollowUserMutation();
-  const [removeFollower] = useRemoveFollowerMutation();
-
-  const dispatch = useDispatch();
-
-  const handleFollow = async (followingId) => {
-    try {
-      const res = await followUser({
-        followingId,
-        userId: userInfo._id,
-      }).unwrap();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleRemoveFollower = async (followerId) => {
-    try {
-      const res = await removeFollower({
-        followerId,
-        userId: userInfo._id,
-      }).unwrap();
-
-      dispatch(updateFollowers(res.data));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    setFollowings(userInfo.followings);
-    setFollowers(userInfo.followers);
-  }, [userInfo]);
-
+const FollowersList = ({
+  userInfo,
+  followers,
+  followings,
+  handleFollow,
+  handleRemoveFollower,
+}) => {
   return (
     <div className="w-1/2">
       <h2 className="text-xl font-semibold mb-4">Followers</h2>
@@ -276,45 +357,13 @@ const FollowersList = ({ userInfo }) => {
           ))}
         </ul>
       ) : (
-        "Loading..."
+        "No followers"
       )}
     </div>
   );
 };
 
-import { useDeletePostMutation } from "../(redux)/slices/post/postApiSlice";
-import { setUserPosts } from "../(redux)/slices/user/userSlice";
-import SavePost from "./SavePost";
-import {
-  setCredentials,
-  updateFollowers,
-  updateFollowings,
-} from "../(redux)/slices/auth/authSlice";
-
-const FollowingsList = ({ userInfo }) => {
-  const [followings, setFollowings] = useState();
-  const [getFollowings] = useGetFollowingsMutation();
-
-  const [UnfollowUser] = useUnfollowUserMutation();
-
-  const dispatch = useDispatch();
-
-  const handleUnfollow = async (followingId) => {
-    try {
-      const res = await UnfollowUser({
-        followingId,
-        userId: userInfo._id,
-      }).unwrap();
-      dispatch(updateFollowings(res.data));
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    setFollowings(userInfo.followings);
-  }, [userInfo]);
-
+const FollowingsList = ({ followings, handleUnfollow }) => {
   return (
     <div className="w-1/2">
       <h2 className="text-xl font-semibold mb-4">Followings</h2>
@@ -352,22 +401,7 @@ const FollowingsList = ({ userInfo }) => {
   );
 };
 
-const SavesList = ({ userInfo }) => {
-  const [saves, setSaves] = useState();
-
-  const [savePost] = useSavePostMutation();
-
-  const dispatch = useDispatch();
-
-  const handleUnsavePost = async (postId, userId) => {
-    const res = await savePost({ postId, userId }).unwrap();
-    dispatch(setCredentials(res.user));
-  };
-
-  useEffect(() => {
-    setSaves(userInfo.saves);
-  }, [userInfo]);
-
+const SavesList = ({ userInfo, saves, handleUnsavePost }) => {
   return (
     <div className="container mx-auto py-8">
       <div className="grid grid-cols-3 gap-4">
@@ -380,7 +414,7 @@ const SavesList = ({ userInfo }) => {
                 handleUnsavePost={handleUnsavePost}
               />
             ))
-          : "Loading..."}
+          : "No saved posts"}
       </div>
     </div>
   );

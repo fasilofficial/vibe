@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import validateForm from "@/app/(utils)/validate-form";
 import {
   useSendOtpMutation,
@@ -184,152 +184,147 @@ const SignupForm = () => {
   };
 
   return (
-    <>
-      <Toaster />
-      <div className="p-6 rounded-md shadow-md">
-        <h2 className="text-2xl font-bold mb-6 text-blue-500">Signup</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="mb-4">
-            <label
-              htmlFor="image"
-              className="block text-gray-700 dark:text-white text-sm font-bold mb-2"
-            >
-              Image:
-            </label>
-            <input
-              type="file"
-              id="image"
-              onChange={handleImageChange}
-              className="appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
-            />
-
-            <img
-              src={
-                image
-                  ? URL.createObjectURL(image)
-                  : "https://t3.ftcdn.net/jpg/02/48/42/64/360_F_248426448_NVKLywWqArG2ADUxDq6QprtIzsF82dMF.jpg"
-              }
-              alt="Selected"
-              className="mt-2"
-              style={{ maxWidth: "200px", maxHeight: "200px" }}
-            />
-          </div>
-
-          <input
-            type="text"
-            name="name"
-            value={formData?.name}
-            onChange={handleChange}
-            placeholder="Full Name"
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
-          />
-
-          <input
-            type="text"
-            name="username"
-            value={formData?.username}
-            onChange={handleChange}
-            placeholder="Username"
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
-          />
-          <div className="w-full p-2 border border-gray-300 bg-white rounded-md flex justify-between">
-            <input
-              type="text"
-              name="email"
-              value={formData?.email}
-              onChange={handleChange}
-              placeholder="Email"
-              ref={emailRef}
-              className="focus:outline-none focus:border-gray-500 w-5/6"
-            />
-            <button
-              type="button"
-              onClick={handleSendOtp}
-              className="text-blue-500"
-              disabled={sentOtpDisabled ? true : false}
-            >
-              {otpSending ? "Sending..." : "Send OTP"}
-            </button>
-          </div>
-          <div className="w-full p-2 border border-gray-300 bg-white rounded-md flex justify-between">
-            <input
-              type="text"
-              name="email"
-              value={enteredOtp}
-              onChange={(e) => setEnteredOtp(e.target.value)}
-              placeholder="OTP"
-              className="focus:outline-none focus:border-gray-500 w-5/6"
-            />
-            <button
-              type="button"
-              onClick={handleVerifyOtp}
-              className="text-blue-500"
-            >
-              {otpVerifying ? "Verifying..." : "Verify OTP"}
-            </button>
-          </div>
-          {timer && <h1 className=" text-right ">{timer}</h1>}
-          <input
-            type="date"
-            name="dob"
-            value={formData?.dob}
-            onChange={handleChange}
-            placeholder="Date of Birth"
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
-          />
-          <div className="flex space-x-4">
-            <div className="flex-1 flex justify-between px-4 py-2 bg-white border border-gray-300 rounded-md focus:border-gray-500">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData?.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className="outline-none"
-              />
-              <button
-                type="button"
-                className="p-1"
-                onClick={() => setShowPassword((prevState) => !prevState)}
-              >
-                {showPassword ? <IoEyeOff /> : <IoEye />}
-              </button>
-            </div>
-            <div className="flex-1 flex justify-between px-4 py-2 bg-white border border-gray-300 rounded-md focus:border-gray-500">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                value={formData?.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm Password"
-                className="outline-none"
-              />
-              <button
-                type="button"
-                className="p-1"
-                onClick={() =>
-                  setShowConfirmPassword((prevState) => !prevState)
-                }
-              >
-                {showConfirmPassword ? <IoEyeOff /> : <IoEye />}
-              </button>
-            </div>
-          </div>
-          <div>
-            Already have an account?{" "}
-            <Link href="/auth/signin" className="text-blue-500">
-              Signin
-            </Link>
-          </div>
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300"
-            type="submit"
+    <div className="p-6 rounded-md shadow-md">
+      <h2 className="text-2xl font-bold mb-6 text-blue-500">Signup</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="mb-4">
+          <label
+            htmlFor="image"
+            className="block text-gray-700 dark:text-white text-sm font-bold mb-2"
           >
-            {isLoading ? "Loading..." : "Submit"}
+            Image:
+          </label>
+          <input
+            type="file"
+            id="image"
+            onChange={handleImageChange}
+            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-white leading-tight focus:outline-none focus:shadow-outline"
+          />
+
+          <img
+            src={
+              image
+                ? URL.createObjectURL(image)
+                : "https://t3.ftcdn.net/jpg/02/48/42/64/360_F_248426448_NVKLywWqArG2ADUxDq6QprtIzsF82dMF.jpg"
+            }
+            alt="Selected"
+            className="mt-2"
+            style={{ maxWidth: "200px", maxHeight: "200px" }}
+          />
+        </div>
+
+        <input
+          type="text"
+          name="name"
+          value={formData?.name}
+          onChange={handleChange}
+          placeholder="Full Name"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+        />
+
+        <input
+          type="text"
+          name="username"
+          value={formData?.username}
+          onChange={handleChange}
+          placeholder="Username"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+        />
+        <div className="w-full p-2 border border-gray-300 bg-white rounded-md flex justify-between">
+          <input
+            type="text"
+            name="email"
+            value={formData?.email}
+            onChange={handleChange}
+            placeholder="Email"
+            ref={emailRef}
+            className="focus:outline-none focus:border-gray-500 w-5/6"
+          />
+          <button
+            type="button"
+            onClick={handleSendOtp}
+            className="text-blue-500"
+            disabled={sentOtpDisabled ? true : false}
+          >
+            {otpSending ? "Sending..." : "Send OTP"}
           </button>
-        </form>
-      </div>
-    </>
+        </div>
+        <div className="w-full p-2 border border-gray-300 bg-white rounded-md flex justify-between">
+          <input
+            type="text"
+            name="email"
+            value={enteredOtp}
+            onChange={(e) => setEnteredOtp(e.target.value)}
+            placeholder="OTP"
+            className="focus:outline-none focus:border-gray-500 w-5/6"
+          />
+          <button
+            type="button"
+            onClick={handleVerifyOtp}
+            className="text-blue-500"
+          >
+            {otpVerifying ? "Verifying..." : "Verify OTP"}
+          </button>
+        </div>
+        {timer && <h1 className=" text-right ">{timer}</h1>}
+        <input
+          type="date"
+          name="dob"
+          value={formData?.dob}
+          onChange={handleChange}
+          placeholder="Date of Birth"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-gray-500"
+        />
+        <div className="flex space-x-4">
+          <div className="flex-1 flex justify-between px-4 py-2 bg-white border border-gray-300 rounded-md focus:border-gray-500">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData?.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="outline-none"
+            />
+            <button
+              type="button"
+              className="p-1"
+              onClick={() => setShowPassword((prevState) => !prevState)}
+            >
+              {showPassword ? <IoEyeOff /> : <IoEye />}
+            </button>
+          </div>
+          <div className="flex-1 flex justify-between px-4 py-2 bg-white border border-gray-300 rounded-md focus:border-gray-500">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              value={formData?.confirmPassword}
+              onChange={handleChange}
+              placeholder="Confirm Password"
+              className="outline-none"
+            />
+            <button
+              type="button"
+              className="p-1"
+              onClick={() => setShowConfirmPassword((prevState) => !prevState)}
+            >
+              {showConfirmPassword ? <IoEyeOff /> : <IoEye />}
+            </button>
+          </div>
+        </div>
+        <div>
+          Already have an account?{" "}
+          <Link href="/auth/signin" className="text-blue-500">
+            Signin
+          </Link>
+        </div>
+        <button
+          className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-300"
+          type="submit"
+        >
+          {isLoading ? "Loading..." : "Submit"}
+        </button>
+      </form>
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 import { getProviders, signIn } from "next-auth/react";
 import validateForm from "@/app/(utils)/validate-form";
@@ -80,7 +80,6 @@ const AdminSigninForm = () => {
 
   return (
     <>
-      <Toaster />
       <div className="p-4 rounded-md shadow-md">
         <h2 className="text-2xl font-bold mb-6 text-blue-500">Signin</h2>
         <form className="space-y-4">
