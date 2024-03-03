@@ -3,19 +3,25 @@
 import React, { useEffect, useState } from "react";
 import ExplorePost from "./ExplorePost";
 import { useGetPostsMutation } from "../(redux)/slices/post/postApiSlice";
+import { useSelector, useDispatch } from "react-redux";
+import { setPosts } from "../(redux)/slices/data/dataSlice";
 
 const PostsGrid = () => {
-  const [posts, setPosts] = useState();
+  const { posts } = useSelector((state) => state.data);
+
+  const dispatch = useDispatch();
 
   const [getPosts] = useGetPostsMutation();
 
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await getPosts().unwrap();
-      setPosts(res);
+      dispatch(setPosts(res));
     };
 
-    fetchPosts();
+    if (!posts) {
+      fetchPosts();
+    }
   }, []);
 
   return (

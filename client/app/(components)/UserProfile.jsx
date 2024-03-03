@@ -4,9 +4,13 @@ import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import {
+  useFollowUserMutation,
   useGetFollowersMutation,
   useGetFollowingsMutation,
   useGetUserPostsMutation,
+  useRemoveFollowerMutation,
+  useSavePostMutation,
+  useUnfollowUserMutation,
 } from "../(redux)/slices/user/userApiSlice";
 
 const UserProfile = () => {
@@ -15,7 +19,7 @@ const UserProfile = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
   return (
-    <div className=" max-w-5xl mx-auto mt-4">
+    <div className="max-w-6xl ml-36 mt-4">
       <Header userInfo={userInfo} />
       <Navigation setActiveTab={setActiveTab} />
       <MainContent activeTab={activeTab} userInfo={userInfo} />
@@ -158,19 +162,24 @@ const PostsGrid = ({ userInfo }) => {
   const [getPosts, { isLoading, error }] = useGetUserPostsMutation();
   const [deletePost] = useDeletePostMutation();
 
-  const [posts, setPosts] = useState();
+  const { posts } = useSelector((state) => state.user);
 
   const handleDeletePost = async (postId) => {
     const res = await deletePost(postId).unwrap();
+
   };
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await getPosts(userInfo._id).unwrap();
-      console.log("res:", res);
-      setPosts(res);
+      dispatch(setUserPosts(res));
     };
+
+    // if (!posts) {
     fetchPosts();
+    // }
   }, []);
 
   return (
@@ -191,46 +200,33 @@ const FollowersList = ({ userInfo }) => {
   const [followings, setFollowings] = useState();
   const [getFollowings] = useGetFollowingsMutation();
 
+  const [followUser] = useFollowUserMutation();
+  const [removeFollower] = useRemoveFollowerMutation();
+
+  const dispatch = useDispatch();
+
   const handleFollow = async (followingId) => {
-    console.log("Follow:", followingId);
-    console.log(userInfo._id);
-
-    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
-
-    const res = await fetch(
-      `http://localhost:3300/api/v1/users/${userInfo._id}/followings`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ followingId }),
-      }
-    );
-
-    const data = await res.json();
-    console.log(data);
+    try {
+      const res = await followUser({
+        followingId,
+        userId: userInfo._id,
+      }).unwrap();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleRemove = async (followingId) => {
-    console.log("Remove:", followingId);
-    console.log(userInfo._id);
+  const handleRemoveFollower = async (followerId) => {
+    try {
+      const res = await removeFollower({
+        followerId,
+        userId: userInfo._id,
+      }).unwrap();
 
-    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
-
-    const res = await fetch(
-      `http://localhost:3300/api/v1/users/${followingId}/followings`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ followingId: userInfo._id }),
-      }
-    );
-
-    const data = await res.json();
-    console.log(data);
+      dispatch(updateFollowers(res.data));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -260,7 +256,7 @@ const FollowersList = ({ userInfo }) => {
                 </Link>
                 <button
                   className="text-red-500 hover:text-red-400 transition-colors"
-                  onClick={() => handleRemove(follower._id._id)}
+                  onClick={() => handleRemoveFollower(follower._id._id)}
                 >
                   Remove
                 </button>
@@ -287,30 +283,32 @@ const FollowersList = ({ userInfo }) => {
 };
 
 import { useDeletePostMutation } from "../(redux)/slices/post/postApiSlice";
+import { setUserPosts } from "../(redux)/slices/user/userSlice";
+import SavePost from "./SavePost";
+import {
+  setCredentials,
+  updateFollowers,
+  updateFollowings,
+} from "../(redux)/slices/auth/authSlice";
 
 const FollowingsList = ({ userInfo }) => {
   const [followings, setFollowings] = useState();
   const [getFollowings] = useGetFollowingsMutation();
 
+  const [UnfollowUser] = useUnfollowUserMutation();
+
+  const dispatch = useDispatch();
+
   const handleUnfollow = async (followingId) => {
-    console.log("Unfollow:", followingId);
-    console.log(userInfo._id);
-
-    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
-
-    const res = await fetch(
-      `http://localhost:3300/api/v1/users/${userInfo._id}/followings`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ followingId }),
-      }
-    );
-
-    const data = await res.json();
-    console.log(data);
+    try {
+      const res = await UnfollowUser({
+        followingId,
+        userId: userInfo._id,
+      }).unwrap();
+      dispatch(updateFollowings(res.data));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -335,7 +333,7 @@ const FollowingsList = ({ userInfo }) => {
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <Link href={`/profile/${following._id._id}`}>
-                  {following._id.name}
+                  {following._id.username}
                 </Link>
               </div>
               <button
@@ -357,17 +355,33 @@ const FollowingsList = ({ userInfo }) => {
 const SavesList = ({ userInfo }) => {
   const [saves, setSaves] = useState();
 
+  const [savePost] = useSavePostMutation();
+
+  const dispatch = useDispatch();
+
+  const handleUnsavePost = async (postId, userId) => {
+    const res = await savePost({ postId, userId }).unwrap();
+    dispatch(setCredentials(res.user));
+  };
+
   useEffect(() => {
     setSaves(userInfo.saves);
   }, [userInfo]);
 
   return (
-    <div>
-      {saves
-        ? saves.map((save) => {
-            return <p>{save._id._id}</p>;
-          })
-        : ""}
+    <div className="container mx-auto py-8">
+      <div className="grid grid-cols-3 gap-4">
+        {saves
+          ? saves.map((post) => (
+              <SavePost
+                key={post._id._id}
+                post={post}
+                user={userInfo}
+                handleUnsavePost={handleUnsavePost}
+              />
+            ))
+          : "Loading..."}
+      </div>
     </div>
   );
 };

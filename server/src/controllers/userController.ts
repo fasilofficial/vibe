@@ -65,6 +65,10 @@ export const authUser = expressAsyncHandler(
       .populate({
         path: "saves._id",
         model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
       });
 
     if (user && (await user.matchPasswords(password))) {
@@ -133,7 +137,24 @@ export const getUsers = expressAsyncHandler(async (req, res) => {
     let users;
 
     if (email) users = await User.findOne({ email });
-    else users = await User.find({});
+    else
+      users = await User.find({})
+        .populate({
+          path: "followers._id",
+          model: "User",
+        })
+        .populate({
+          path: "followings._id",
+          model: "User",
+        })
+        .populate({
+          path: "saves._id",
+          model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
+        });
 
     if (users) {
       res.status(200).json(users);
@@ -161,6 +182,10 @@ export const getUser = expressAsyncHandler(async (req, res) => {
       .populate({
         path: "saves._id",
         model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
       });
 
     if (!user) {
@@ -203,8 +228,6 @@ export const sendOtp = expressAsyncHandler(async (req: any, res: any) => {
   const { email, forgotPassword } = req.body;
 
   const user = await User.findOne({ email });
-
-  console.log(forgotPassword);
 
   if (forgotPassword && !user) {
     res.status(404);
@@ -277,8 +300,6 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
   const { followingId } = req.body;
   const { userId } = req.params;
 
-  console.log(followingId, userId);
-
   const user = await User.findById(userId);
   const following = await User.findById(followingId);
 
@@ -307,7 +328,11 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
     await user.save();
     await following.save();
 
-    return res.status(200).send({ message: "User followed successfully" });
+    await user.populate({ path: "followings._id", model: "User" });
+
+    return res
+      .status(200)
+      .send({ message: "User followed successfully", data: user.followings });
   }
 
   return res.status(400).send({ message: "User is already being followed" });
@@ -317,8 +342,6 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
 export const unfollowUser = expressAsyncHandler(async (req: any, res: any) => {
   const { followingId } = req.body;
   const { userId } = req.params;
-
-  console.log(followingId, userId);
 
   const user = await User.findById(userId);
   const following = await User.findById(followingId);
@@ -344,11 +367,57 @@ export const unfollowUser = expressAsyncHandler(async (req: any, res: any) => {
     await user.save();
     await following.save();
 
-    return res.status(200).send({ message: "User unfollowed successfully" });
+    await user.populate({ path: "followings._id", model: "User" });
+
+    return res
+      .status(200)
+      .send({ message: "User unfollowed successfully", data: user.followings });
   }
 
   return res.status(400).send({ message: "User is not being followed" });
 });
+
+export const removeFollower = expressAsyncHandler(
+  async (req: any, res: any) => {
+    const { followerId } = req.body;
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+    const follower = await User.findById(followerId);
+
+    if (!user || !follower) {
+      return res.status(401).send({ message: "Bad request" });
+    }
+
+    // Check if the user is following the target user
+    const isFollowing = follower.followings.some(
+      (following) => following._id === userId
+    );
+
+    if (isFollowing) {
+      // remove the follower
+      user.followers = user.followers.filter(
+        (follower) => follower._id !== followerId
+      );
+
+      follower.followings = follower.followings.filter(
+        (following) => following._id !== userId
+      );
+
+      await user.save();
+      await follower.save();
+
+      await user.populate({ path: "followers._id", model: "User" });
+
+      return res.status(200).send({
+        message: "Followers removed successfully",
+        data: user.followers,
+      });
+    }
+
+    return res.status(400).send({ message: "User is not being followed" });
+  }
+);
 
 // get followings
 export const getFollowings = expressAsyncHandler(async (req: any, res: any) => {
@@ -449,6 +518,10 @@ export const savePost = expressAsyncHandler(
       await user.populate({
         path: "saves._id",
         model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
       });
 
       res.status(200).json({ message: "Post unsaved successfully", user });
@@ -459,6 +532,10 @@ export const savePost = expressAsyncHandler(
       await user.populate({
         path: "saves._id",
         model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
       });
 
       res.status(200).json({ message: "Post saved successfully", user });

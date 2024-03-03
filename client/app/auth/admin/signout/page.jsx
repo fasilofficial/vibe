@@ -2,6 +2,11 @@
 
 import { useAdminLogoutMutation } from "@/app/(redux)/slices/admin/adminApiSlice";
 import { adminLogout } from "@/app/(redux)/slices/auth/authSlice";
+import {
+  removePosts,
+  removeReports,
+  removeUsers,
+} from "@/app/(redux)/slices/data/dataSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -19,6 +24,9 @@ const AdminSignOut = () => {
     const res = await logoutMutation().unwrap();
 
     dispatch(adminLogout());
+    dispatch(removeUsers());
+    dispatch(removePosts());
+    dispatch(removeReports());
 
     toast("Redirecting to sign in page");
 

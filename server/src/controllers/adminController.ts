@@ -50,6 +50,38 @@ export const authAdmin = expressAsyncHandler(
     if (admin && (await admin.matchPasswords(password))) {
       generateToken(res, admin._id, true);
 
+      const posts = await Post.find({})
+        .populate({
+          path: "creator",
+          model: "User",
+        })
+        .populate({
+          path: "comments.userId",
+          model: "User",
+        })
+        .populate({
+          path: "comments.replies.userId",
+          model: "User",
+        })
+        .sort({ createdAt: -1 });
+
+      const users = await User.find({})
+        .populate({
+          path: "followers._id",
+          model: "User",
+        })
+        .populate({
+          path: "followings._id",
+          model: "User",
+        })
+        .populate({
+          path: "saves._id",
+          model: "Post",
+        })
+        .sort({ createdAt: -1 });
+
+      const reports = await User.find({}).sort({ createdAt: -1 });
+
       res.status(201).json(admin);
     } else {
       res.status(401);

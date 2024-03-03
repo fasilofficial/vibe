@@ -24,7 +24,12 @@ export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
 
     const createdPost = await newPost.save();
 
-    res.status(201).json(createdPost);
+    await createdPost.populate({
+      path: "creator",
+      model: "User",
+    });
+
+    res.status(201).json({ message: "Post created", data: createdPost });
   } catch (error) {
     console.error("Error occurred while adding post:", error);
     res.status(500).json({ message: "Failed to add post" });
@@ -99,7 +104,9 @@ export const addComment = expressAsyncHandler(
         model: "User",
       });
 
-      res.status(201).json({ message: "Comment added successfully", post });
+      res
+        .status(201)
+        .json({ message: "Comment added successfully", data: post.comments });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -135,7 +142,7 @@ export const likePost = expressAsyncHandler(
 
       await post.save();
 
-      res.status(200).send("Post like toggled!"); // Send a success response
+      res.status(200).json({ message: "Post like toggled!", data: post.likes }); // Send a success response
     } else {
       res.status(404).send("Post not found");
     }
@@ -181,7 +188,7 @@ export const deleteComment = expressAsyncHandler(
 
       res.status(200).json({
         message: "Comment deleted successfully",
-        post,
+        data: post.comments,
       });
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -200,7 +207,9 @@ export const deletePost = expressAsyncHandler(async (req: any, res: any) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    return res.status(200).json({ message: "Post deleted successfully" });
+    return res
+      .status(200)
+      .json({ message: "Post deleted successfully", data: deletedPost });
   } catch (error) {
     console.error("Error deleting post:", error);
     return res.status(500).json({ message: "Internal server error" });
@@ -224,8 +233,6 @@ export const getPost = expressAsyncHandler(async (req: any, res: any) => {
 // edit post
 export const editPost = expressAsyncHandler(async (req: any, res: any) => {
   const { id: postId } = req.params;
-
-  console.log(req.body);
 
   try {
     const updatedPost = await Post.findByIdAndUpdate(postId, req.body.newPost, {
@@ -279,7 +286,9 @@ export const addReply = expressAsyncHandler(
             model: "User",
           });
 
-          res.status(201).json({ message: "Reply added successfully", post });
+          res
+            .status(201)
+            .json({ message: "Reply added successfully", data: post.comments });
         } else {
           res.status(404).json({ message: "Comment not found" });
         }
@@ -342,7 +351,7 @@ export const deleteReply = expressAsyncHandler(
 
       res.status(200).json({
         message: "Reply deleted successfully",
-        post,
+        data: post.comments,
       });
     } catch (error) {
       console.error("Error deleting reply:", error);

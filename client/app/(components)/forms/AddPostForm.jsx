@@ -10,6 +10,7 @@ import {
   useAddCommentMutation,
   useAddPostMutation,
 } from "@/app/(redux)/slices/post/postApiSlice";
+// import { updateAddPost } from "@/app/(redux)/slices/data/dataSlice";
 // import { setPost } from "@/app/(redux)/slices/data/dataSlice";
 
 const AddPostForm = () => {
@@ -26,7 +27,7 @@ const AddPostForm = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
 
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -87,14 +88,11 @@ const AddPostForm = () => {
       };
 
       const res = await addPost(newPost).unwrap();
-
-      console.log(res);
-
-      // dispatch(setPost(res));
+      // dispatch(updateAddPost(res.data));
 
       setLoading(false);
 
-      router.push("/");
+      // router.push("/");
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error uploading image. Please try again.");

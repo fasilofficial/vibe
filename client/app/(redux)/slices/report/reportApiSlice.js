@@ -25,8 +25,9 @@ export const reportApiSlice = apiSlice.injectEndpoints({
     }),
     resolveReport: builder.mutation({
       query: (data) => ({
-        url: `${BASE_URL}/${data}`,
+        url: `${BASE_URL}/${data.reportId}`,
         method: "PUT",
+        body: data,
       }),
     }),
   }),

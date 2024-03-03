@@ -1,18 +1,26 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 interface IReport extends Document {
-  description: string;
   postId: string;
-  userId: string;
   resolved: boolean;
+  reports: [
+    {
+      description: string;
+      userId: string;
+    }
+  ];
 }
 
 const reportSchema = new Schema(
   {
-    description: { type: String },
     postId: { type: String },
-    userId: { type: String },
     resolved: { type: Boolean, default: false },
+    reports: [
+      {
+        description: { type: String },
+        userId: { type: String },
+      },
+    ],
   },
   { timestamps: true }
 );

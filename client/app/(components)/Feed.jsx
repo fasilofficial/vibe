@@ -13,14 +13,21 @@ import {
 } from "../(redux)/slices/post/postApiSlice";
 import { useSavePostMutation } from "../(redux)/slices/user/userApiSlice";
 import { setCredentials } from "../(redux)/slices/auth/authSlice";
+import {
+  setPosts,
+  updateComments,
+  updateLikes,
+} from "../(redux)/slices/data/dataSlice";
 
 const Feed = () => {
-  const [posts, setPosts] = useState([]);
+  // const [posts, setPosts] = useState();
+
   const [user, setUser] = useState({});
 
   const { userInfo } = useSelector((state) => state.auth);
-  const { posts: Posts } = useSelector((state) => state.data);
+  const { posts } = useSelector((state) => state.data);
 
+  const [getPosts] = useGetPostsMutation();
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
   const [addReply] = useAddReplyMutation();
@@ -31,43 +38,27 @@ const Feed = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    setUser(userInfo);
-  }, [userInfo]);
+    const fetchPosts = async () => {
+      const res = await getPosts().unwrap();
+      dispatch(setPosts(res));
+    };
+    // if (!posts) {
+    fetchPosts();
+    // }
+  }, []);
 
   useEffect(() => {
-    setPosts(Posts);
-  }, [Posts]);
+    setUser(userInfo);
+  }, [userInfo]);
 
   const handleLike = async (postId, userId) => {
     try {
       const res = await likePost({
         postId,
         userId,
-      });
+      }).unwrap();
 
-      setPosts((prevPosts) => {
-        return prevPosts.map((post) => {
-          if (post._id === postId) {
-            if (!post.likes.includes(userId)) {
-              return {
-                ...post,
-                likes: [...post.likes, userId],
-              };
-            } else {
-              const updatedLikes = post.likes.filter(
-                (likeUserId) => likeUserId !== userId
-              );
-              return {
-                ...post,
-                likes: updatedLikes,
-              };
-            }
-          }
-
-          return post;
-        });
-      });
-      
+      dispatch(updateLikes({ postId, likes: res.data }));
     } catch (error) {
       console.error("Error handling like:", error);
     }
@@ -83,15 +74,7 @@ const Feed = () => {
         userId,
       }).unwrap();
 
-      setPosts((prevPosts) => {
-        return prevPosts.map((post) => {
-          if (post._id === postId) {
-            return { ...res.post };
-          }
-
-          return post;
-        });
-      });
+      dispatch(updateComments({ postId, comments: res.data }));
     } catch (error) {
       console.error("Error adding comment:", error);
     }
@@ -106,15 +89,7 @@ const Feed = () => {
         commentId,
       }).unwrap();
 
-      setPosts((prevPosts) => {
-        return prevPosts.map((post) => {
-          if (post._id === postId) {
-            return { ...res.post };
-          }
-
-          return post;
-        });
-      });
+      dispatch(updateComments({ postId, comments: res.data }));
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -131,15 +106,7 @@ const Feed = () => {
     try {
       const res = await addReply({ postId, commentId, userId, reply }).unwrap();
 
-      setPosts((prevPosts) => {
-        return prevPosts.map((post) => {
-          if (post._id === postId) {
-            return { ...res.post };
-          }
-
-          return post;
-        });
-      });
+      dispatch(updateComments({ postId, comments: res.data }));
     } catch (error) {
       console.error("Error adding reply to comment:", error);
     }
@@ -156,22 +123,13 @@ const Feed = () => {
         replyId,
       }).unwrap();
 
-      setPosts((prevPosts) => {
-        return prevPosts.map((post) => {
-          if (post._id === postId) {
-            return { ...res.post };
-          }
-
-          return post;
-        });
-      });
+      dispatch(updateComments({ postId, comments: res.data }));
     } catch (error) {
       console.error("Error deleting reply:", error);
     }
   };
 
   const handleSavePost = async (postId, userId) => {
-    console.log("Save:", postId, userId);
     const res = await savePost({ postId, userId }).unwrap();
     setUser(res.user);
     dispatch(setCredentials(res.user));

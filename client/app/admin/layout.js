@@ -9,6 +9,7 @@ import ToggleTheme from "../(components)/ToggleTheme";
 import { useSelector } from "react-redux";
 import Loader from "../(components)/Loader";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 
 function AdminLayout({ children }) {
   const { adminInfo } = useSelector((state) => state.auth);
@@ -22,6 +23,7 @@ function AdminLayout({ children }) {
   if (adminInfo) {
     return (
       <section className="flex justify-between w-full dark:bg-gray-900 dark:text-white bg-gray-100 text-gray-900">
+        <Toaster />
         <AdminSidebar adminInfo={adminInfo} />
         <div className="w-full flex flex-col">
           <AdminHeader adminInfo={adminInfo} />

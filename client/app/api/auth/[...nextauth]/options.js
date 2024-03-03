@@ -134,7 +134,6 @@ export const options = {
             throw new Error();
           }
 
-          console.log(data);
           data.role = userRole;
 
           return {
@@ -145,7 +144,6 @@ export const options = {
             dob: data.dob,
           };
         } catch (error) {
-          console.log("Error:", error);
           throw new Error("Invalid email or password");
         }
         return null;

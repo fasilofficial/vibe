@@ -7,6 +7,7 @@ import {
   useFollowUserMutation,
   useGetUsersMutation,
 } from "../(redux)/slices/user/userApiSlice";
+import { updateFollowings } from "../(redux)/slices/auth/authSlice";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -17,24 +18,20 @@ const Suggestions = () => {
 
   const [followUser] = useFollowUserMutation();
 
+  const dispatch = useDispatch();
+
   const handleFollowUser = async (followingId) => {
-    console.log(followingId);
-    console.log(userInfo._id);
-    // const res = await followUser({ followingId, userId: userInfo._id }).unwrap()
 
-    const res = await fetch(
-      `http://localhost:3300/api/v1/users/${userInfo._id}/followings`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ followingId }),
-      }
-    );
+    try {
+      const res = await followUser({
+        followingId,
+        userId: userInfo._id,
+      }).unwrap();
 
-    const data = await res.json();
-    console.log(data);
+      dispatch(updateFollowings(res.data));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {

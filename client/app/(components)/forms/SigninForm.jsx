@@ -56,8 +56,6 @@ const SigninForm = () => {
       if (validateForm(formData)) {
         const res = await signinMutation(formData).unwrap();
 
-        console.log(res);
-
         dispatch(setCredentials(res.user));
         dispatch(setPosts(res.posts));
         router.push("/");

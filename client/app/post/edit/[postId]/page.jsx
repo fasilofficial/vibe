@@ -79,8 +79,6 @@ const page = ({ params: { postId } }) => {
     try {
       const res = await editPost({ newPost, postId }).unwrap();
 
-      console.log(res);
-
       // router.push("/profile");
     } catch (error) {
       console.error("Error editing post:", error);

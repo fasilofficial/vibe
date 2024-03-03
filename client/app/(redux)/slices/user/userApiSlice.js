@@ -64,13 +64,6 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
-    followUser: builder.mutation({
-      query: (data) => ({
-        url: `${BASE_URL}/${data.userId}/following`,
-        method: "POST",
-        body: data.followingId,
-      }),
-    }),
     getFollowings: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}/followings`,
@@ -96,6 +89,27 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    unfollowUser: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}/followings`,
+        method: "DELETE",
+        body: data,
+      }),
+    }),
+    removeFollower: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}/followers`,
+        method: "DELETE",
+        body: data,
+      }),
+    }),
+    followUser: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}/followings`,
+        method: "POST",
+        body: data,
+      }),
+    }),
     getUser: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}`,
@@ -115,10 +129,12 @@ export const {
   useSendOtpMutation,
   useForgotPasswordMutation,
   useGetUserByEmailMutation,
-  useFollowUserMutation,
   useGetUserMutation,
   useGetFollowingsMutation,
   useGetFollowersMutation,
   useGetActivitiesMutation,
   useSavePostMutation,
+  useUnfollowUserMutation,
+  useFollowUserMutation,
+  useRemoveFollowerMutation
 } = usersApiSlice;

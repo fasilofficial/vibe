@@ -59,7 +59,6 @@ const ForgotPassword = () => {
       setOtpSending(false);
     } catch (error) {
       setOtpSending(false)
-      console.log("error:", error);
       toast.error(error?.data?.message);
     }
   };

@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
 import { useAddReportMutation } from "@/app/(redux)/slices/report/reportApiSlice";
 import { useGetPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
+import Link from "next/link";
 
 const page = ({ params: { postId } }) => {
   const [post, setPosts] = useState();
@@ -30,17 +31,20 @@ const page = ({ params: { postId } }) => {
     async (e) => {
       e.preventDefault();
 
-      const res = await addReport({
-        reportDescription: formData.reportDescription,
-        postId,
-        userId: userInfo._id,
-      }).unwrap();
+      try {
+        const res = await addReport({
+          description: formData.reportDescription,
+          postId,
+          userId: userInfo._id,
+        }).unwrap();
 
-      toast.success(res?.message);
-
-      formData.setReportDescription = "";
-
-      setTimeout(() => router.push("/"), 500);
+        toast.success(res?.message);
+        formData.setReportDescription = "";
+        setTimeout(() => router.push("/"), 500);
+      } catch (error) {
+        console.log(error);
+        toast.error(error?.data?.message);
+      }
     },
     [formData.reportDescription, post]
   );
@@ -81,12 +85,20 @@ const page = ({ params: { postId } }) => {
                   onChange={handleChange}
                   placeholder="Enter report description"
                 />
-                <button
-                  type="submit"
-                  className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  Report
-                </button>
+                <div className="flex gap-4 items-center">
+                  <button
+                    type="submit"
+                    className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Report
+                  </button>
+                  <Link
+                    href="/"
+                    className="mt-2 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Cancel
+                  </Link>
+                </div>
               </form>
             </div>
           </div>

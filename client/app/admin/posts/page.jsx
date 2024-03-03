@@ -22,19 +22,18 @@ const Posts = () => {
 
   const dispatch = useDispatch();
 
-  const fetchPosts = async () => {
-    if (!posts) {
+  useEffect(() => {
+    const fetchPosts = async () => {
       const res = await getPosts().unwrap();
       dispatch(setPosts(res));
-    }
-  };
+    };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [posts]);
+    if (!posts) {
+      fetchPosts();
+    }
+  }, []);
 
   const handleDeletePost = async (postId) => {
-    console.log(postId);
     try {
       await deletePost(postId).unwrap();
       dispatch(removePost(postId));

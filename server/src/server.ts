@@ -1,10 +1,13 @@
 import http from "http";
-import socketio from "socket.io";
+import { Server } from "socket.io";
 import app from "./app";
 import { connectDatabase } from "./config/database";
 
 const server = http.createServer(app);
-const io = new socketio.Server(server);
+
+const io = new Server(server, {
+  cors: { origin: "http://localhost:3000", methods: ["GET", "POST"] },
+});
 
 io.on("connection", (socket) => {
   console.log("A user connected");

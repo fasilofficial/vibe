@@ -3,18 +3,14 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
-import { FaGithub, FaGoogle } from "react-icons/fa";
+
 import { getProviders, signIn } from "next-auth/react";
 import validateForm from "@/app/(utils)/validate-form";
 import { MutatingDots } from "react-loader-spinner";
 import { usePathname, useRouter } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import { useSigninMutation } from "@/app/(redux)/slices/user/userApiSlice";
 import { useDispatch } from "react-redux";
-import {
-  setAdminCredentials,
-  setCredentials,
-} from "@/app/(redux)/slices/auth/authSlice";
+import { setAdminCredentials } from "@/app/(redux)/slices/auth/authSlice";
 import { useAdminSigninMutation } from "@/app/(redux)/slices/admin/adminApiSlice";
 
 const AdminSigninForm = () => {
@@ -58,7 +54,6 @@ const AdminSigninForm = () => {
     try {
       if (validateForm(formData)) {
         const res = await signinMutation(formData).unwrap();
-
 
         dispatch(setAdminCredentials(res));
         router.push("/admin");

@@ -1,33 +1,50 @@
 "use client";
 
+import { setReports } from "@/app/(redux)/slices/data/dataSlice";
 import {
   useGetReportsMutation,
   useResolveReportMutation,
 } from "@/app/(redux)/slices/report/reportApiSlice";
 import React, { useEffect, useState } from "react";
 
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+
 const Reports = () => {
-  const [reports, setReports] = useState();
+  const { reports } = useSelector((state) => state.data);
+
+  const dispatch = useDispatch();
 
   const [getReports] = useGetReportsMutation();
   const [resolveReport] = useResolveReportMutation();
 
-  const handleResolve = async (reportId) => {
-    const res = await resolveReport(reportId).unwrap();
-    setReports((prevReports) =>
-      prevReports.map((report) =>
-        report._id === res.report._id ? res.report : report
-      )
-    );
+  const handleResolve = async (reportId, postId) => {
+    if (!reportId || !postId) return;
+
+    try {
+      const res = await resolveReport({ reportId, postId }).unwrap();
+      res.data ? toast.success(res.message) : toast(res.message);
+
+      // setReports((prevReports) =>
+      //   prevReports.map((report) =>
+      //     report._id === res.report._id ? res.report : report
+      //   )
+      // );
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.data?.message);
+    }
   };
 
   useEffect(() => {
     const fetchReports = async () => {
       const res = await getReports().unwrap();
-      setReports(res);
+      dispatch(setReports(res.reports));
     };
 
-    fetchReports();
+    if (!reports) {
+      fetchReports();
+    }
   }, []);
 
   return (
@@ -48,6 +65,9 @@ const Reports = () => {
                   Description
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  No. of Reports
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Action
                 </th>
               </tr>
@@ -55,17 +75,36 @@ const Reports = () => {
             <tbody className="divide-y divide-gray-200">
               {reports.map((report, index) => (
                 <tr
-                  key={index}
+                  key={report._id}
                   className={report.resolved ? "bg-gray-100" : "bg-white"}
                 >
                   <td className="px-4 py-2 whitespace-nowrap">
                     {report.postId._id}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {report.userId}
+                    {report.reports ? (
+                      <ul>
+                        {report.reports.map((r) => (
+                          <p>{r.userId._id}</p>
+                        ))}
+                      </ul>
+                    ) : (
+                      ""
+                    )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {report.description}
+                    {report.reports ? (
+                      <ul>
+                        {report.reports.map((r) => (
+                          <p>{r.description}</p>
+                        ))}
+                      </ul>
+                    ) : (
+                      ""
+                    )}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    {report.reports.length}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {report.resolved ? (
@@ -74,7 +113,7 @@ const Reports = () => {
                       <button
                         type="button"
                         className="text-blue-500"
-                        onClick={() => handleResolve(report._id)}
+                        onClick={() => handleResolve(report._id, report.postId)}
                       >
                         Resolve
                       </button>

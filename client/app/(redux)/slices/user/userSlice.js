@@ -1,29 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  info: null,
-  posts: null,
+  posts:
+    typeof window !== "undefined"
+      ? JSON.parse(window.localStorage.getItem("userPosts"))
+      : [],
 };
 
 const dataSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    setInfo: (state, action) => {
-      state.info = action.payload;
-    },
-    removeInfo: (state, action) => {
-      state.info = null;
-    },
     setUserPosts: (state, action) => {
       state.posts = action.payload;
+      localStorage.setItem("userPosts", JSON.stringify(action.payload));
     },
     removeUserPosts: (state, action) => {
-      state.posts = null;
+      state.posts = [];
+      localStorage.removeItem("userPosts");
     },
   },
 });
 
-export const { setInfo, setUserPosts, removeInfo, removeUserPosts } = dataSlice.actions;
+export const { setUserPosts, removeUserPosts } = dataSlice.actions;
 
 export default dataSlice.reducer;

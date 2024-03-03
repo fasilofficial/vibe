@@ -30,8 +30,8 @@ const Post = ({
   const [reply, setReply] = useState("");
 
   useEffect(() => {
-    const saveIndex = user?.saves.findIndex(
-      (save) => String(save._id._id) === post._id
+    const saveIndex = user?.saves?.findIndex(
+      (save) => String(save?._id?._id) === post._id
     );
     setSaved(saveIndex != -1 ? true : false);
   }, [user]);
@@ -74,7 +74,7 @@ const Post = ({
                 {liked ? <FaHeart color="#F00" /> : <FaRegHeart />}
               </button>
               <span className="ml-2 text-gray-600 dark:text-gray-200">
-                {post.likes.length} likes
+                {post?.likes?.length} likes
               </span>
             </div>
             <div className="flex items-center">
@@ -89,7 +89,7 @@ const Post = ({
                 {showComments ? <FaComment /> : <FaRegComment />}
               </button>
               <span className="ml-2 text-gray-600 dark:text-gray-200">
-                {post.comments.length} comments
+                {post?.comments?.length} comments
               </span>
             </div>
           </div>

@@ -16,7 +16,7 @@ import {
   unfollowUser,
   getSuggestions,
   getActivities,
-  savePost
+  savePost,removeFollower
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -60,6 +60,9 @@ router.post("/:userId/followings", followUser);
 
 // unfollow a user
 router.delete("/:userId/followings", unfollowUser);
+
+// remove follower
+router.delete("/:userId/followers", removeFollower);
 
 // get suggestions
 router.get("/:userId/suggestions", getSuggestions);
