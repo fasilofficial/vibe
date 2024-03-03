@@ -7,7 +7,10 @@ import {
   useFollowUserMutation,
   useGetUsersMutation,
 } from "../(redux)/slices/user/userApiSlice";
-import { updateFollowings } from "../(redux)/slices/auth/authSlice";
+import {
+  updateFollowers,
+  updateFollowings,
+} from "../(redux)/slices/data/dataSlice";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -20,15 +23,27 @@ const Suggestions = () => {
 
   const dispatch = useDispatch();
 
-  const handleFollowUser = async (followingId) => {
-
+  const handleFollow = async (followingId) => {
     try {
       const res = await followUser({
         followingId,
         userId: userInfo._id,
       }).unwrap();
 
-      dispatch(updateFollowings(res.data));
+      if (res.data) {
+        dispatch(
+          updateFollowings({
+            userId: userInfo._id,
+            followings: res.data.followings,
+          })
+        );
+        dispatch(
+          updateFollowers({
+            userId: followingId,
+            followers: res.data.followers,
+          })
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -77,7 +92,7 @@ const Suggestions = () => {
                     <div className="flex flex-col">
                       <h1>{user.username}</h1>
                       <h3
-                        onClick={() => handleFollowUser(user._id)}
+                        onClick={() => handleFollow(user._id)}
                         className="text-blue-700 cursor-pointer hover:text-blue-600 "
                       >
                         Follow

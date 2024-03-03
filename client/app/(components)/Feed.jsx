@@ -12,22 +12,24 @@ import {
   useLikePostMutation,
 } from "../(redux)/slices/post/postApiSlice";
 import { useSavePostMutation } from "../(redux)/slices/user/userApiSlice";
-import { setCredentials } from "../(redux)/slices/auth/authSlice";
+
 import {
   setPosts,
   updateComments,
   updateLikes,
+  updateSaves,
 } from "../(redux)/slices/data/dataSlice";
+import { selectUser } from "../(redux)/selectors";
 
 const Feed = () => {
   // const [posts, setPosts] = useState();
 
-  const [user, setUser] = useState({});
-
   const { userInfo } = useSelector((state) => state.auth);
+  const { user } = useSelector(selectUser(userInfo._id));
   const { posts } = useSelector((state) => state.data);
 
   const [getPosts] = useGetPostsMutation();
+
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
   const [addReply] = useAddReplyMutation();
@@ -40,16 +42,12 @@ const Feed = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await getPosts().unwrap();
-      dispatch(setPosts(res));
+      dispatch(setPosts(res.data));
     };
     // if (!posts) {
     fetchPosts();
     // }
   }, []);
-
-  useEffect(() => {
-    setUser(userInfo);
-  }, [userInfo]);
 
   const handleLike = async (postId, userId) => {
     try {
@@ -131,8 +129,7 @@ const Feed = () => {
 
   const handleSavePost = async (postId, userId) => {
     const res = await savePost({ postId, userId }).unwrap();
-    setUser(res.user);
-    dispatch(setCredentials(res.user));
+    dispatch(updateSaves({ userId: userId, saves: res.data }));
   };
 
   return (

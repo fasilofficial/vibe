@@ -16,7 +16,9 @@ import {
   unfollowUser,
   getSuggestions,
   getActivities,
-  savePost,removeFollower
+  savePost,
+  removeFollower,
+  editUser,
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -35,6 +37,7 @@ router.post("/logout", logoutUser);
 // sendOtp
 router.post("/sendOtp", sendOtp);
 
+// forgotPassword
 router.post("/forgotPassword", handleForgotPassword);
 
 // get users
@@ -55,10 +58,10 @@ router.get("/:userId/followers", getFollowers);
 // get activities
 router.get("/:userId/activities", getActivities);
 
-// follow a user
+// follow user
 router.post("/:userId/followings", followUser);
 
-// unfollow a user
+// unfollow user
 router.delete("/:userId/followings", unfollowUser);
 
 // remove follower
@@ -73,7 +76,7 @@ router.post("/:userId/saves", savePost);
 // get user
 router.get("/:id", getUser);
 
-// unFollow user
-// router.delete("/:userId/following/:followingId", unFollowUser);
+// edit user
+router.patch("/:userId", editUser);
 
 export default router;

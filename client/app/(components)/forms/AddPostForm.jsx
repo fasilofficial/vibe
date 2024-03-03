@@ -3,15 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
 
 import { useSelector, useDispatch } from "react-redux";
 import {
-  useAddCommentMutation,
   useAddPostMutation,
 } from "@/app/(redux)/slices/post/postApiSlice";
-// import { updateAddPost } from "@/app/(redux)/slices/data/dataSlice";
-// import { setPost } from "@/app/(redux)/slices/data/dataSlice";
 
 const AddPostForm = () => {
   const router = useRouter();

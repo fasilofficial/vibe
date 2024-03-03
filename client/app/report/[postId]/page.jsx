@@ -11,7 +11,7 @@ import { useGetPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
 import Link from "next/link";
 
 const page = ({ params: { postId } }) => {
-  const [post, setPosts] = useState();
+  const [post, setPost] = useState();
   const [formData, setFormData] = useState({});
 
   const router = useRouter();
@@ -50,13 +50,13 @@ const page = ({ params: { postId } }) => {
   );
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchPost = async () => {
       const res = await getPost(postId).unwrap();
 
-      setPosts(res);
+      setPost(res.data);
     };
 
-    fetchPosts();
+    fetchPost();
   }, []);
 
   return (

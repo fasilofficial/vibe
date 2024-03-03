@@ -2,7 +2,7 @@ import React from "react";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
 import Link from "next/link";
 
-const SavePost = ({ post, user, handleUnsavePost }) => {
+const SavePost = ({ post, user, handleSavePost }) => {
   return (
     <div key={post?._id?._id} className="bg-white rounded shadow-md">
       <div className="p-4">
@@ -27,7 +27,7 @@ const SavePost = ({ post, user, handleUnsavePost }) => {
           <p className="text-gray-700 mt-4">{post?._id?.caption}</p>
           <div
             className="cursor-pointer"
-            onClick={() => handleUnsavePost(post._id._id, user._id)}
+            onClick={() => handleSavePost(post._id._id, user._id)}
           >
             <TurnedInIcon />
           </div>

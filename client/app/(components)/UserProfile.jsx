@@ -5,48 +5,68 @@ import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import {
   useFollowUserMutation,
-  useGetUserPostsMutation,
   useRemoveFollowerMutation,
   useSavePostMutation,
   useUnfollowUserMutation,
 } from "../(redux)/slices/user/userApiSlice";
 
-import { useDeletePostMutation } from "../(redux)/slices/post/postApiSlice";
-import { setUserPosts } from "../(redux)/slices/user/userSlice";
-import SavePost from "./SavePost";
 import {
-  setCredentials,
+  useAddCommentMutation,
+  useAddReplyMutation,
+  useDeleteCommentMutation,
+  useDeletePostMutation,
+  useDeleteReplyMutation,
+  useGetPostsMutation,
+  useLikePostMutation,
+} from "../(redux)/slices/post/postApiSlice";
+import SavePost from "./SavePost";
+import { setCredentials } from "../(redux)/slices/auth/authSlice";
+import {
+  removePost,
+  setPosts,
+  updateComments,
   updateFollowers,
   updateFollowings,
-} from "../(redux)/slices/auth/authSlice";
+  updateLikes,
+  updateSaves,
+} from "../(redux)/slices/data/dataSlice";
+import { selectPosts, selectUser } from "../(redux)/selectors";
+
+import moment from "moment";
+import { IoSend } from "react-icons/io5";
+import { FaComment, FaHeart, FaRegComment, FaRegHeart } from "react-icons/fa";
+import { MdDelete, MdReport } from "react-icons/md";
+import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
+import TurnedInIcon from "@mui/icons-material/TurnedIn";
 
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("posts");
 
   const { userInfo } = useSelector((state) => state.auth);
-  const { posts } = useSelector((state) => state.user);
+  const { user } = useSelector(selectUser(userInfo._id));
+  const { posts } = useSelector(selectPosts(userInfo._id));
 
-  const [getPosts] = useGetUserPostsMutation(); // get user posts
+  const [getPosts] = useGetPostsMutation(); // get posts
   const [deletePost] = useDeletePostMutation(); // delete post
-  const [unsavePost] = useSavePostMutation(); // Unsave post
+  const [savePost] = useSavePostMutation(); // Unsave post
   const [followUser] = useFollowUserMutation(); // follow user
   const [removeFollower] = useRemoveFollowerMutation(); // remove follower
   const [UnfollowUser] = useUnfollowUserMutation(); // unfollow user
+  const [likePost] = useLikePostMutation();
+  const [addComment] = useAddCommentMutation();
+  const [addReply] = useAddReplyMutation();
+  const [deleteComment] = useDeleteCommentMutation();
+  const [deleteReply] = useDeleteReplyMutation();
 
   const dispatch = useDispatch();
 
   const handleDeletePost = async (postId) => {
-    const res = await deletePost(postId).unwrap();
-  };
-
-  const handleFollow = async (followingId) => {
     try {
-      const res = await followUser({
-        followingId,
-        userId: userInfo._id,
-      }).unwrap();
+      const res = await deletePost(postId).unwrap();
 
-      dispatch(updateFollowings(res.data));
+      if (res.data) {
+        dispatch(removePost(res.data._id || postId));
+      }
     } catch (error) {
       console.log(error);
     }
@@ -56,10 +76,20 @@ const UserProfile = () => {
     try {
       const res = await removeFollower({
         followerId,
-        userId: userInfo._id,
+        userId: user._id,
       }).unwrap();
 
-      dispatch(updateFollowers(res.data));
+      if (res.data) {
+        dispatch(
+          updateFollowings({
+            userId: followerId,
+            followings: res.data.followings,
+          })
+        );
+        dispatch(
+          updateFollowers({ userId: user._id, followers: res.data.followers })
+        );
+      }
     } catch (error) {
       console.log(error);
     }
@@ -69,64 +99,220 @@ const UserProfile = () => {
     try {
       const res = await UnfollowUser({
         followingId,
-        userId: userInfo._id,
+        userId: user._id,
       }).unwrap();
 
-      dispatch(updateFollowings(res.data));
+      console.log(res);
+
+      if (res.data) {
+        dispatch(
+          updateFollowings({
+            userId: user._id,
+            followings: res.data.followings,
+          })
+        );
+        dispatch(
+          updateFollowers({ userId: user._id, followers: res.data.followers })
+        );
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleUnsavePost = async (postId, userId) => {
+  const handleFollow = async (followingId) => {
     try {
-      const res = await unsavePost({ postId, userId }).unwrap();
-      dispatch(setCredentials(res.user));
+      const res = await followUser({
+        followingId,
+        userId: userInfo._id,
+      }).unwrap();
+
+      console.log(res);
+
+      if (res.data) {
+        dispatch(
+          updateFollowings({
+            userId: userInfo._id,
+            followings: res.data.followings,
+          })
+        );
+        dispatch(
+          updateFollowers({
+            userId: followingId,
+            followers: res.data.followers,
+          })
+        );
+      }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  const handleLike = async (postId, userId) => {
+    try {
+      const res = await likePost({
+        postId,
+        userId,
+      }).unwrap();
+
+      if (res.data) {
+        dispatch(updateLikes({ postId, likes: res.data }));
+      }
+    } catch (error) {
+      console.error("Error handling like:", error);
+    }
+  };
+
+  const handleAddComment = async (postId, userId, comment, setComment) => {
+    if (comment.trim() === "") return;
+
+    try {
+      const res = await addComment({
+        comment,
+        postId,
+        userId,
+      }).unwrap();
+
+      if (res.data) {
+        dispatch(updateComments({ postId, comments: res.data }));
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+
+    setComment("");
+  };
+
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      const res = await deleteComment({
+        postId,
+        commentId,
+      }).unwrap();
+
+      if (res.data) {
+        dispatch(updateComments({ postId, comments: res.data }));
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
+
+  const handleAddReply = async (
+    postId,
+    commentId,
+    userId,
+    reply,
+    setReply,
+    setShowReplyInput
+  ) => {
+    try {
+      const res = await addReply({ postId, commentId, userId, reply }).unwrap();
+
+      if (res.data) {
+        dispatch(updateComments({ postId, comments: res.data }));
+      }
+    } catch (error) {
+      console.error("Error adding reply to comment:", error);
+    }
+
+    setReply("");
+    setShowReplyInput(false);
+  };
+
+  const handleDeleteReply = async (postId, commentId, replyId) => {
+    try {
+      const res = await deleteReply({
+        postId,
+        commentId,
+        replyId,
+      }).unwrap();
+
+      if (res.data) {
+        dispatch(updateComments({ postId, comments: res.data }));
+      }
+    } catch (error) {
+      console.error("Error deleting reply:", error);
+    }
+  };
+
+  const handleSavePost = async (postId, userId) => {
+    const res = await savePost({ postId, userId }).unwrap();
+
+    console.log(res);
+
+    if (res.data) {
+      dispatch(updateSaves({ userId, saves: res.data }));
     }
   };
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const res = await getPosts(userInfo._id).unwrap();
-      dispatch(setUserPosts(res));
+      const res = await getPosts().unwrap();
+      dispatch(setPosts(res.data));
     };
-
-    fetchPosts();
+    if (!posts) {
+      fetchPosts();
+    }
   }, []);
 
   return (
     <div className="max-w-6xl ml-36 mt-4">
-      <Header userInfo={userInfo} />
+      <Header
+        user={user}
+        followers={user?.followers}
+        followings={user?.followings}
+        posts={posts}
+      />
       <Navigation setActiveTab={setActiveTab} />
       <MainContent
         activeTab={activeTab}
-        userInfo={userInfo}
+        user={user}
         posts={posts}
-        followers={userInfo.followers}
-        followings={userInfo.followings}
-        saves={userInfo.saves}
+        followers={user?.followers}
+        followings={user?.followings}
+        saves={user?.saves}
         handleDeletePost={handleDeletePost}
         handleRemoveFollower={handleRemoveFollower}
         handleFollow={handleFollow}
         handleUnfollow={handleUnfollow}
-        handleUnsavePost={handleUnsavePost}
+        handleLike={handleLike}
+        handleAddComment={handleAddComment}
+        handleAddReply={handleAddReply}
+        handleDeleteComment={handleDeleteComment}
+        handleDeleteReply={handleDeleteReply}
+        handleSavePost={handleSavePost}
       />
     </div>
   );
 };
 
-const Header = ({ userInfo }) => {
+const Header = ({ user, followers, followings, posts }) => {
   return (
     <div className="flex items-center justify-between p-4 ">
-      <div>
+      <div className="flex items-center">
         <img
-          src={userInfo?.profileUrl}
+          src={user?.profileUrl}
           alt="Profile Picture"
-          className="w-24 h-24 rounded-full object-cover"
+          className="w-24 h-24 rounded-full object-cover mr-4"
         />
-        <span className="text-lg font-semibold">{userInfo?.name}</span>
+        <div>
+          <h1 className="text-2xl font-semibold">{user?.name}</h1>
+          <h1 className="text-xl">@{user?.username}</h1>
+          <div className="flex items-center space-x-4 mt-4">
+            <p className="text-gray-600">
+              {posts?.length} {posts?.length === 1 ? "post" : "posts"}
+            </p>
+            <p className="text-gray-600">
+              {followers?.length}{" "}
+              {followers?.length === 1 ? "follower" : "followers"}
+            </p>
+            <p className="text-gray-600">
+              {followings?.length}{" "}
+              {followings?.length === 1 ? "following" : "followings"}
+            </p>
+          </div>
+        </div>
       </div>
       <div>
         <Link
@@ -145,25 +331,25 @@ const Navigation = ({ setActiveTab }) => {
     <div className="flex justify-center p-4 space-x-4 border-b border-gray-300">
       <button
         onClick={() => setActiveTab("posts")}
-        className="px-4 py-2 bg-transparent border border-gray-500 rounded-md"
+        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
       >
         Posts
       </button>
       <button
         onClick={() => setActiveTab("followers")}
-        className="px-4 py-2 bg-transparent border border-gray-500 rounded-md"
+        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
       >
         Followers
       </button>
       <button
         onClick={() => setActiveTab("followings")}
-        className="px-4 py-2 bg-transparent border border-gray-500 rounded-md"
+        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
       >
         Followings
       </button>
       <button
         onClick={() => setActiveTab("saves")}
-        className="px-4 py-2 bg-transparent border border-gray-500 rounded-md"
+        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
       >
         Saves
       </button>
@@ -173,7 +359,7 @@ const Navigation = ({ setActiveTab }) => {
 
 const MainContent = ({
   activeTab,
-  userInfo,
+  user,
   posts,
   followers,
   followings,
@@ -182,16 +368,27 @@ const MainContent = ({
   handleFollow,
   handleUnfollow,
   handleRemoveFollower,
-  handleUnsavePost,
+  handleSavePost,
+  handleLike,
+  handleAddComment,
+  handleAddReply,
+  handleDeleteComment,
+  handleDeleteReply,
 }) => {
   const renderContent = () => {
     switch (activeTab) {
       case "posts":
         return (
           <PostsGrid
-            userInfo={userInfo}
+            user={user}
             posts={posts}
             handleDeletePost={handleDeletePost}
+            handleLike={handleLike}
+            handleAddComment={handleAddComment}
+            handleAddReply={handleAddReply}
+            handleDeleteComment={handleDeleteComment}
+            handleDeleteReply={handleDeleteReply}
+            handleSavePost={handleSavePost}
           />
         );
       case "followers":
@@ -199,7 +396,7 @@ const MainContent = ({
           <FollowersList
             handleRemoveFollower={handleRemoveFollower}
             handleFollow={handleFollow}
-            userInfo={userInfo}
+            user={user}
             followers={followers}
             followings={followings}
           />
@@ -207,7 +404,7 @@ const MainContent = ({
       case "followings":
         return (
           <FollowingsList
-            userInfo={userInfo}
+            user={user}
             followings={followings}
             handleUnfollow={handleUnfollow}
           />
@@ -215,17 +412,23 @@ const MainContent = ({
       case "saves":
         return (
           <SavesList
-            userInfo={userInfo}
+            user={user}
             saves={saves}
-            handleUnsavePost={handleUnsavePost}
+            handleSavePost={handleSavePost}
           />
         );
       default:
         return (
           <PostsGrid
-            userInfo={userInfo}
+            user={user}
             posts={posts}
             handleDeletePost={handleDeletePost}
+            handleLike={handleLike}
+            handleAddComment={handleAddComment}
+            handleAddReply={handleAddReply}
+            handleDeleteComment={handleDeleteComment}
+            handleDeleteReply={handleDeleteReply}
+            handleSavePost={handleSavePost}
           />
         );
     }
@@ -234,82 +437,389 @@ const MainContent = ({
   return <div className="w-full p-4">{renderContent()}</div>;
 };
 
-const PostCard = ({ post, handleDeletePost }) => {
+const PostCard = ({
+  post,
+  user,
+  handleLike,
+  handleSavePost,
+  handleAddReply,
+  handleAddComment,
+  handleDeleteComment,
+  handleDeleteReply,
+  handleDeletePost,
+}) => {
+  const [liked, setLiked] = useState();
+  const [saved, setSaved] = useState();
+  const [comment, setComment] = useState("");
+  const [showComments, setShowComments] = useState(false);
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [reply, setReply] = useState("");
+
+  useEffect(() => {
+    const saveIndex = user?.saves?.findIndex(
+      (save) =>
+        String(save?._id?._id) === post._id || String(save?._id) === post._id
+    );
+    setSaved(saveIndex != -1 ? true : false);
+  }, [user]);
+
+  useEffect(() => {
+    setLiked(post.likes?.includes(user?._id));
+  }, [post]);
+
   return (
-    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white dark:bg-gray-800 dark:text-white">
-      <img src={post.imageUrl} alt="Post" className="w-full" />
-      <div className="px-6 py-4">
-        <div className="font-bold text-xl mb-2">{post.caption}</div>
-        <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
-          Location: {post.location}
-        </p>
-        <div className="flex justify-between items-center mb-2">
-          <Link
-            href={`/post/edit/${post._id}`}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Edit Post
+    <div className=" bg-white dark:bg-gray-800 shadow-md rounded ">
+      <div className="p-2 flex gap-2 items-center dark:text-white relative">
+        <img
+          className="w-14 h-14 rounded-full object-cover "
+          src={post?.creator?.profileUrl}
+        />
+        <Link href={`/profile/${post?.creator?._id}`}>
+          {post?.creator?.username}
+        </Link>
+        {post?.creator?._id !== user._id ? (
+          <Link className="absolute right-2" href={`/report/${post._id}`}>
+            <MdReport color="#f00" size={18} />
           </Link>
-          <button
-            onClick={() => handleDeletePost(post._id)}
-            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        ) : (
+          ""
+        )}
+      </div>
+      <img
+        className="w-full h-64 object-cover"
+        src={post.imageUrl}
+        alt="Post"
+      />
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center">
+              <button
+                onClick={() => {
+                  handleLike(post._id, user._id);
+                  setLiked((prev) => !prev);
+                }}
+                data-postid={post._id}
+                className="text-gray-800 focus:outline-none"
+                type="button"
+              >
+                {liked ? <FaHeart color="#F00" /> : <FaRegHeart />}
+              </button>
+              <span className="ml-2 text-gray-600 dark:text-gray-200">
+                {post?.likes?.length} likes
+              </span>
+            </div>
+            <div className="flex items-center">
+              <button
+                onClick={() => {
+                  setShowComments((prev) => !prev);
+                }}
+                data-postid={post._id}
+                className="text-gray-800 focus:outline-none ml-2"
+                type="button"
+              >
+                {showComments ? <FaComment /> : <FaRegComment />}
+              </button>
+              <span className="ml-2 text-gray-600 dark:text-gray-200">
+                {post?.comments?.length} comments
+              </span>
+            </div>
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={() => {
+              handleSavePost(post._id, user._id);
+              setSaved((prev) => !prev);
+            }}
           >
-            Delete Post
-          </button>
+            {saved ? <TurnedInIcon /> : <TurnedInNotIcon />}
+          </div>
         </div>
-        <div className="flex items-center mb-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 10h16M4 14h16M4 18h16"
-            />
-          </svg>
-          <span className="text-gray-700 dark:text-gray-200">
-            {post.likes.length}
-          </span>
-        </div>
-        <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
-          Created At: {new Date(post.createdAt).toLocaleDateString()}
+        <p className=" text-gray-800 dark:text-gray-400 mt-4">{post.caption}</p>
+        <p className=" text-gray-800 dark:text-gray-400 mb-1">
+          {post.location}
         </p>
-        <div className="text-gray-700 dark:text-gray-200 text-base mb-2">
-          Comments:
-        </div>
-        <div>
-          {post.comments.map((comment, index) => (
-            <p key={index}>{comment.comment}</p>
-          ))}
-        </div>
+        <p className=" text-gray-400 dark:text-gray-400 mb-4">
+          {moment(post.createdAt).startOf("minute").fromNow()}
+        </p>
+        {showComments ? (
+          <>
+            <div className="mt-2">
+              <div className="mt-1 max-h-44 overflow-y-scroll ">
+                {post.comments.map((comment, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between p-1 border rounded mb-2"
+                  >
+                    <div className="flex gap-2 ">
+                      <img
+                        src={comment?.userId?.profileUrl}
+                        className="w-8 h-8 rounded-full object-cover "
+                      />
+                      <div className="flex flex-col">
+                        <Link
+                          href={`/profile/${comment?.userId?._id}`}
+                          className="text-gray-500 dark:text-gray-200 text-sm"
+                        >
+                          @{comment.userId?.username}
+                        </Link>
+                        <p className="text-gray-700 dark:text-gray-200">
+                          {comment.comment}
+                        </p>
+                        <p className="text-gray-300 dark:text-gray-200">
+                          {moment(comment.createdAt)
+                            .startOf("minute")
+                            .fromNow()}
+                        </p>
+                        {comment.userId?._id !== user._id ? (
+                          <>
+                            <p
+                              type="button"
+                              className="text-gray-400 hover:text-gray-500 cursor-pointer"
+                              onClick={() => setShowReplyInput((prev) => !prev)}
+                            >
+                              replay
+                            </p>
+                            {comment.replies
+                              ? comment.replies.map((reply) => {
+                                  return (
+                                    <div className="flex justify-between  p-1 border rounded mb-2 min-w-64 ">
+                                      <div className="flex gap-2 ">
+                                        <img
+                                          src={reply?.userId?.profileUrl}
+                                          className="w-8 h-8 rounded-full object-cover "
+                                        />
+                                        <div className="flex flex-col">
+                                          <Link
+                                            href={`/profile/${reply?.userId?._id}`}
+                                            className="text-gray-500 dark:text-gray-200 text-sm"
+                                          >
+                                            @{reply.userId?.username}
+                                          </Link>
+                                          <p className="text-gray-700 dark:text-gray-200">
+                                            {reply.comment}
+                                          </p>
+                                          <p className="text-gray-300 dark:text-gray-200">
+                                            {moment(reply.createdAt)
+                                              .startOf("minute")
+                                              .fromNow()}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        {reply.userId?._id === user._id ? (
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleDeleteReply(
+                                                post._id,
+                                                comment._id,
+                                                reply._id
+                                              )
+                                            }
+                                          >
+                                            <MdDelete />
+                                          </button>
+                                        ) : (
+                                          ""
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              : ""}
+
+                            {showReplyInput ? (
+                              <form className="mt-2">
+                                <div className="flex justify-between items-center w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
+                                  <input
+                                    type="text"
+                                    placeholder="Reply for comment..."
+                                    value={reply}
+                                    onChange={(e) => setReply(e.target.value)}
+                                    className="focus:outline-none"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleAddReply(
+                                        post._id,
+                                        comment._id,
+                                        user._id,
+                                        reply,
+                                        setReply,
+                                        setShowReplyInput
+                                      )
+                                    }
+                                  >
+                                    <IoSend />
+                                  </button>
+                                </div>
+                              </form>
+                            ) : (
+                              ""
+                            )}
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      {comment.userId?._id === user._id ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDeleteComment(post._id, comment._id)
+                          }
+                        >
+                          <MdDelete />
+                        </button>
+                      ) : (
+                        ""
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <form className="mt-2">
+              <div className="flex justify-between gap-1 items-center w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  className="focus:outline-none flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleAddComment(post._id, user._id, comment, setComment)
+                  }
+                >
+                  <IoSend />
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          ""
+        )}
+      </div>
+      <div className="flex justify-between items-center mb-2 px-4">
+        <Link
+          href={`/post/edit/${post._id}`}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Edit Post
+        </Link>
+        <button
+          onClick={() => handleDeletePost(post._id)}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Delete Post
+        </button>
       </div>
     </div>
   );
 };
 
-const PostsGrid = ({ posts, handleDeletePost }) => {
+// const PostCard = ({ post, handleDeletePost }) => {
+//   return (
+//     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white dark:bg-gray-800 dark:text-white">
+//       <img src={post.imageUrl} alt="Post" className="w-full" />
+//       <div className="px-6 py-4">
+//         <div className="font-bold text-xl mb-2">{post.caption}</div>
+//         <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
+//           Location: {post.location}
+//         </p>
+//         <div className="flex justify-between items-center mb-2">
+//           <Link
+//             href={`/post/edit/${post._id}`}
+//             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+//           >
+//             Edit Post
+//           </Link>
+//           <button
+//             onClick={() => handleDeletePost(post._id)}
+//             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+//           >
+//             Delete Post
+//           </button>
+//         </div>
+//         <div className="flex items-center mb-2">
+//           <svg
+//             xmlns="http://www.w3.org/2000/svg"
+//             className="h-6 w-6 mr-2"
+//             fill="none"
+//             viewBox="0 0 24 24"
+//             stroke="currentColor"
+//           >
+//             <path
+//               strokeLinecap="round"
+//               strokeLinejoin="round"
+//               strokeWidth={2}
+//               d="M4 6h16M4 10h16M4 14h16M4 18h16"
+//             />
+//           </svg>
+//           <span className="text-gray-700 dark:text-gray-200">
+//             {post.likes.length}
+//           </span>
+//         </div>
+//         <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
+//           Created At: {new Date(post.createdAt).toLocaleDateString()}
+//         </p>
+//         <div className="text-gray-700 dark:text-gray-200 text-base mb-2">
+//           Comments:
+//         </div>
+//         <div>
+//           {post.comments.map((comment, index) => (
+//             <p key={index}>{comment.comment}</p>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+const PostsGrid = ({
+  posts,
+  handleDeletePost,
+  user,
+  handleDeleteComment,
+  handleDeleteReply,
+  handleAddReply,
+  handleAddComment,
+  handleLike,
+  handleSavePost,
+}) => {
   return (
     <div className="grid grid-cols-3 gap-4">
-      {posts
-        ? posts.map((post, index) => (
-            <PostCard
-              key={index}
-              post={post}
-              handleDeletePost={handleDeletePost}
-            />
-          ))
-        : "No posts"}
+      {posts && posts?.length > 0 ? (
+        posts.map((post, index) => (
+          <PostCard
+            key={index}
+            user={user}
+            post={post}
+            handleDeletePost={handleDeletePost}
+            handleLike={handleLike}
+            handleAddComment={handleAddComment}
+            handleAddReply={handleAddReply}
+            handleDeleteComment={handleDeleteComment}
+            handleDeleteReply={handleDeleteReply}
+            handleSavePost={handleSavePost}
+          />
+        ))
+      ) : (
+        <p>No posts</p>
+      )}
     </div>
   );
 };
 
 const FollowersList = ({
-  userInfo,
+  user,
   followers,
   followings,
   handleFollow,
@@ -317,9 +827,9 @@ const FollowersList = ({
 }) => {
   return (
     <div className="w-1/2">
-      <h2 className="text-xl font-semibold mb-4">Followers</h2>
+      <h3 className="text-xl font-semibold mb-4">Followers</h3>
 
-      {followers && followings ? (
+      {followers && followers.length > 0 ? (
         <ul>
           {followers.map((follower) => (
             <li
@@ -341,23 +851,21 @@ const FollowersList = ({
                 >
                   Remove
                 </button>
-
-                {/* {!followings.includes(follower._id._id) ? (
-                  <button
-                    className="text-blue-500 hover:text-blue-400 transition-colors"
-                    onClick={() => handleFollow(follower._id._id)}
-                  >
-                    Follow Back
-                  </button>
-                ) : (
-                  ""
-                )} */}
+                {/* Include "Follow Back" button if needed */}
+                {/* {!followings.includes(follower._id._id) && (
+              <button
+                className="text-blue-500 hover:text-blue-400 transition-colors"
+                onClick={() => handleFollow(follower._id._id)}
+              >
+                Follow Back
+              </button>
+            )} */}
               </div>
             </li>
           ))}
         </ul>
       ) : (
-        "No followers"
+        <p>No followers</p>
       )}
     </div>
   );
@@ -401,7 +909,7 @@ const FollowingsList = ({ followings, handleUnfollow }) => {
   );
 };
 
-const SavesList = ({ userInfo, saves, handleUnsavePost }) => {
+const SavesList = ({ user, saves, handleSavePost }) => {
   return (
     <div className="container mx-auto py-8">
       <div className="grid grid-cols-3 gap-4">
@@ -410,8 +918,8 @@ const SavesList = ({ userInfo, saves, handleUnsavePost }) => {
               <SavePost
                 key={post._id._id}
                 post={post}
-                user={userInfo}
-                handleUnsavePost={handleUnsavePost}
+                user={user}
+                handleSavePost={handleSavePost}
               />
             ))
           : "No saved posts"}

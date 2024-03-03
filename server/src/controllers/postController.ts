@@ -55,7 +55,7 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
       .sort({ createdAt: -1 });
 
     if (posts.length > 0) {
-      res.status(200).json(posts);
+      res.status(200).json({ data: posts });
     } else {
       throw new Error("Posts not found");
     }
@@ -220,10 +220,22 @@ export const deletePost = expressAsyncHandler(async (req: any, res: any) => {
 export const getPost = expressAsyncHandler(async (req: any, res: any) => {
   const { id: postId } = req.params;
 
-  const post = await Post.findById(postId);
+  const post = await Post.findById(postId)
+    .populate({
+      path: "creator",
+      model: "User",
+    })
+    .populate({
+      path: "comments.userId",
+      model: "User",
+    })
+    .populate({
+      path: "comments.replies.userId",
+      model: "User",
+    });
 
   if (post) {
-    res.status(200).json(post);
+    res.status(200).json({ data: post });
   } else {
     res.status(404);
     throw new Error("Post not found");
@@ -240,9 +252,21 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
     });
 
     if (updatedPost) {
+      await updatedPost.populate({
+        path: "creator",
+        model: "User",
+      });
+      await updatedPost.populate({
+        path: "comments.userId",
+        model: "User",
+      });
+      await updatedPost.populate({
+        path: "comments.replies.userId",
+        model: "User",
+      });
       return res
         .status(200)
-        .json({ message: "Post updated successfully", post: updatedPost });
+        .json({ message: "Post updated successfully", data: updatedPost });
     } else {
       return res.status(404).json({ message: "Post not found" });
     }

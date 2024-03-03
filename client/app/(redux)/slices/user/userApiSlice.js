@@ -30,14 +30,19 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
-
+    editUser: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}`,
+        method: "PATCH",
+        body: data,
+      }),
+    }),
     getUserByEmail: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}?email=${data}`,
         method: "GET",
       }),
     }),
-
     blockUser: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}`,
@@ -136,5 +141,6 @@ export const {
   useSavePostMutation,
   useUnfollowUserMutation,
   useFollowUserMutation,
-  useRemoveFollowerMutation
+  useRemoveFollowerMutation,
+  useEditUserMutation,
 } = usersApiSlice;

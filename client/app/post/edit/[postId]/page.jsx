@@ -6,11 +6,12 @@ import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import {
   useEditPostMutation,
   useGetPostMutation,
 } from "@/app/(redux)/slices/post/postApiSlice";
+import { updatePost } from "@/app/(redux)/slices/data/dataSlice";
 
 const page = ({ params: { postId } }) => {
   const router = useRouter();
@@ -27,13 +28,15 @@ const page = ({ params: { postId } }) => {
   const [editPost] = useEditPostMutation();
   const [getPost] = useGetPostMutation();
 
+  const dispatch = useDispatch();
+
   useEffect(() => {
     const fetchEditPost = async () => {
       const res = await getPost(postId).unwrap();
 
-      setCaption(res.caption);
-      setLocation(res.location);
-      setTags(res.tags.toString());
+      setCaption(res.data.caption);
+      setLocation(res.data.location);
+      setTags(res.data.tags.toString());
 
       //   setImageUrl(data.imageUrl);
     };
@@ -78,13 +81,16 @@ const page = ({ params: { postId } }) => {
 
     try {
       const res = await editPost({ newPost, postId }).unwrap();
-
-      // router.push("/profile");
+      if (res.data) {
+        dispatch(updatePost({ postId, updatedPost: res.data }));
+        toast.success(res?.message);
+      }
     } catch (error) {
       console.error("Error editing post:", error);
       toast.error(error.message);
     } finally {
       setLoading(false);
+      router.push("/profile");
     }
   };
 

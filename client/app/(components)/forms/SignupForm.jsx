@@ -165,6 +165,7 @@ const SignupForm = () => {
             body: imageData,
           }
         );
+        
         const data = await response.json();
 
         const profileUrl = data.secure_url;

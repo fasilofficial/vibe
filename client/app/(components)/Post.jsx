@@ -2,13 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaComment, FaHeart, FaRegComment, FaRegHeart } from "react-icons/fa";
-import { MdDelete, MdReport } from "react-icons/md";
+
 import Link from "next/link";
 
 import moment from "moment";
 import { IoSend } from "react-icons/io5";
-
+import { FaComment, FaHeart, FaRegComment, FaRegHeart } from "react-icons/fa";
+import { MdDelete, MdReport } from "react-icons/md";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
 
@@ -41,8 +41,8 @@ const Post = ({
   }, [post]);
 
   return (
-    <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden mb-8">
-      <div className=" p-2 flex gap-2 items-center dark:text-white relative">
+    <div className="mx-auto w-4/6 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden mb-8">
+      <div className="p-2 flex gap-2 items-center dark:text-white relative">
         <img
           className="w-14 h-14 rounded-full object-cover "
           src={post?.creator?.profileUrl}
@@ -58,7 +58,11 @@ const Post = ({
           ""
         )}
       </div>
-      <img className="w-full" src={post.imageUrl} alt="Post" />
+      <img
+        className="w-full h-96 object-cover"
+        src={post.imageUrl}
+        alt="Post"
+      />
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

@@ -31,18 +31,7 @@ const authSlice = createSlice({
       state.adminInfo = null;
       localStorage.removeItem("adminInfo");
     },
-    updateFollowings: (state, action) => {
-      return {
-        ...state,
-        userInfo: { ...state.userInfo, followings: action.payload },
-      };
-    },
-    updateFollowers: (state, action) => {
-      return {
-        ...state,
-        userInfo: { ...state.userInfo, followers: action.payload },
-      };
-    },
+
   },
 });
 
@@ -51,8 +40,6 @@ export const {
   logout,
   setAdminCredentials,
   adminLogout,
-  updateFollowings,
-  updateFollowers
 } = authSlice.actions;
 
 export default authSlice.reducer;

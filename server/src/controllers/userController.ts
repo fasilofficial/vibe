@@ -92,7 +92,27 @@ export const authUser = expressAsyncHandler(
           })
           .sort({ createdAt: -1 });
 
-        res.status(201).json({ message: "Login successful", user, posts });
+        const users = await User.find({})
+          .populate({
+            path: "followers._id",
+            model: "User",
+          })
+          .populate({
+            path: "followings._id",
+            model: "User",
+          })
+          .populate({
+            path: "saves._id",
+            model: "Post",
+            populate: {
+              path: "creator",
+              model: "User",
+            },
+          });
+
+        res
+          .status(201)
+          .json({ message: "Login successful", user, posts, users });
       } else {
         // res.status(400).json({ error: "You're blocked by the admin" });
         throw new Error("You're blocked by the admin");
@@ -116,10 +136,22 @@ export const logoutUser = expressAsyncHandler(
 export const getUserPosts = expressAsyncHandler(async (req, res) => {
   try {
     const { userId } = req.params;
-    const posts = await Post.find({ creator: userId });
+    const posts = await Post.find({ creator: userId })
+      .populate({
+        path: "creator",
+        model: "User",
+      })
+      .populate({
+        path: "comments.userId",
+        model: "User",
+      })
+      .populate({
+        path: "comments.replies.userId",
+        model: "User",
+      });
 
     if (posts.length > 0) {
-      res.status(200).json(posts);
+      res.status(200).json({ data: posts });
     } else {
       res.status(404).json({ message: "No posts found for the user" });
     }
@@ -315,7 +347,6 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
   if (!isFollowing) {
     // Follow the user
     user.followings.push({ _id: followingId });
-
     following.followers.push({ _id: userId });
 
     const activity = new Activity({
@@ -329,10 +360,12 @@ export const followUser = expressAsyncHandler(async (req: any, res: any) => {
     await following.save();
 
     await user.populate({ path: "followings._id", model: "User" });
+    await following.populate({ path: "followers._id", model: "User" });
 
-    return res
-      .status(200)
-      .send({ message: "User followed successfully", data: user.followings });
+    return res.status(200).send({
+      message: "User followed successfully",
+      data: { followings: user.followings, followers: following.followers },
+    });
   }
 
   return res.status(400).send({ message: "User is already being followed" });
@@ -368,15 +401,18 @@ export const unfollowUser = expressAsyncHandler(async (req: any, res: any) => {
     await following.save();
 
     await user.populate({ path: "followings._id", model: "User" });
+    await following.populate({ path: "followers._id", model: "User" });
 
-    return res
-      .status(200)
-      .send({ message: "User unfollowed successfully", data: user.followings });
+    return res.status(200).send({
+      message: "User unfollowed successfully",
+      data: { followings: user.followings, followers: following.followers },
+    });
   }
 
   return res.status(400).send({ message: "User is not being followed" });
 });
 
+// remove follower
 export const removeFollower = expressAsyncHandler(
   async (req: any, res: any) => {
     const { followerId } = req.body;
@@ -408,10 +444,11 @@ export const removeFollower = expressAsyncHandler(
       await follower.save();
 
       await user.populate({ path: "followers._id", model: "User" });
+      await follower.populate({ path: "followings._id", model: "User" });
 
       return res.status(200).send({
         message: "Followers removed successfully",
-        data: user.followers,
+        data: { followers: user.followers, followings: follower.followings },
       });
     }
 
@@ -491,15 +528,7 @@ export const savePost = expressAsyncHandler(
     const { postId } = req.body;
     const { userId } = req.params;
 
-    const user = await User.findById(userId)
-      .populate({
-        path: "followers._id",
-        model: "User",
-      })
-      .populate({
-        path: "followings._id",
-        model: "User",
-      });
+    const user = await User.findById(userId);
 
     if (!user) {
       res.status(404);
@@ -524,7 +553,9 @@ export const savePost = expressAsyncHandler(
         },
       });
 
-      res.status(200).json({ message: "Post unsaved successfully", user });
+      res
+        .status(200)
+        .json({ message: "Post unsaved successfully", data: user.saves });
     } else {
       user.saves.push({ _id: postId });
       await user.save();
@@ -538,7 +569,59 @@ export const savePost = expressAsyncHandler(
         },
       });
 
-      res.status(200).json({ message: "Post saved successfully", user });
+      res
+        .status(200)
+        .json({ message: "Post saved successfully", data: user.saves });
     }
   }
 );
+
+// edit user
+export const editUser = expressAsyncHandler(async (req: any, res: any) => {
+  const { userId } = req.params;
+
+  console.log("userId", userId);
+  const { name, username, profileUrl } = req.body;
+
+  try {
+    if (!name || !username || !profileUrl) {
+      res.status(400).json({ message: "Bad request" });
+      return;
+    }
+
+    const user = await User.findById(userId)
+      .populate({
+        path: "followers._id",
+        model: "User",
+      })
+      .populate({
+        path: "followings._id",
+        model: "User",
+      })
+      .populate({
+        path: "saves._id",
+        model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
+      });
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    user.name = name;
+    user.username = username;
+    user.profileUrl = profileUrl;
+
+    await user.save();
+
+    // Send a success response
+    res.status(200).json({ message: "User updated successfully", data: user });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
