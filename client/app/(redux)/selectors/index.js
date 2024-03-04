@@ -9,3 +9,14 @@ export const selectPosts = (userId) => (state) => {
     ),
   };
 };
+
+export const selectChats = (senderId, receiverId) => (state) => {
+  return {
+    chats: state?.data?.chats?.filter(
+      (chat) =>
+        (chat?.sender?._id === senderId &&
+          chat?.receiver?._id === receiverId) ||
+        (chat?.sender?._id === receiverId && chat?.receiver?._id === senderId)
+    ),
+  };
+};

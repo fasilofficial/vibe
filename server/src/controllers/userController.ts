@@ -189,7 +189,7 @@ export const getUsers = expressAsyncHandler(async (req, res) => {
         });
 
     if (users) {
-      res.status(200).json(users);
+      res.status(200).json({ data: users });
     } else {
       throw new Error("Users not found");
     }

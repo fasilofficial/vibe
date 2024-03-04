@@ -53,7 +53,9 @@ const Suggestions = () => {
     const fetchSuggestions = async () => {
       const res = await getUsers().unwrap();
 
-      setSuggestions(res.filter((user) => user._id !== userInfo._id));
+      if (res.data) {
+        setSuggestions(res?.data?.filter((user) => user._id !== userInfo._id));
+      }
     };
     fetchSuggestions();
   }, []);

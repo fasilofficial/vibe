@@ -9,9 +9,13 @@ const initialState = {
     typeof window !== "undefined"
       ? JSON.parse(window.localStorage.getItem("posts"))
       : [],
-  posts:
+  reports:
     typeof window !== "undefined"
       ? JSON.parse(window.localStorage.getItem("reports"))
+      : [],
+  chats:
+    typeof window !== "undefined"
+      ? JSON.parse(window.localStorage.getItem("chats"))
       : [],
 };
 
@@ -23,26 +27,36 @@ const dataSlice = createSlice({
       state.users = action.payload;
       localStorage.setItem("users", JSON.stringify(action.payload));
     },
-    removeUsers: (state, action) => {
-      state.users = [];
-      localStorage.removeItem("users");
-    },
     setPosts: (state, action) => {
       state.posts = action.payload;
       localStorage.setItem("posts", JSON.stringify(action.payload));
-    },
-    removePosts: (state, action) => {
-      state.posts = [];
-      localStorage.removeItem("posts");
     },
     setReports: (state, action) => {
       state.reports = action.payload;
       localStorage.setItem("reports", JSON.stringify(action.payload));
     },
+    setChats: (state, action) => {
+      state.chats = action.payload;
+      localStorage.setItem("chats", JSON.stringify(action.payload));
+    },
+
+    removeUsers: (state, action) => {
+      state.users = [];
+      localStorage.removeItem("users");
+    },
+    removePosts: (state, action) => {
+      state.posts = [];
+      localStorage.removeItem("posts");
+    },
     removeReports: (state, action) => {
       state.reports = [];
       localStorage.removeItem("reports");
     },
+    removeChats: (state, action) => {
+      state.chats = [];
+      localStorage.removeItem("chats");
+    },
+
     updatePost: (state, action) => {
       const { postId, updatedPost } = action.payload;
       state.posts = state.posts.map((post) => {
@@ -105,15 +119,16 @@ const dataSlice = createSlice({
 
 export const {
   setUsers,
-  removeUsers,
-
   setPosts,
+  setReports,
+  setChats,
+
+  removeUsers,
   removePosts,
+  removeReports,
+  removeChats,
 
   updatePost,
-
-  setReports,
-  removeReports,
 
   updateLikes,
   updateComments,

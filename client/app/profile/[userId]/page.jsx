@@ -7,6 +7,7 @@ import UserLayout from "@/app/(components)/UserLayout";
 import {
   useGetUserMutation,
   useGetUserPostsMutation,
+  useGetUsersMutation,
   useSavePostMutation,
 } from "@/app/(redux)/slices/user/userApiSlice";
 
@@ -21,10 +22,12 @@ import {
   useAddReplyMutation,
   useDeleteCommentMutation,
   useDeleteReplyMutation,
+  useGetPostsMutation,
   useLikePostMutation,
 } from "@/app/(redux)/slices/post/postApiSlice";
 import {
   setPosts,
+  setUsers,
   updateComments,
   updateLikes,
   updateSaves,
@@ -60,19 +63,20 @@ const UserProfile = ({ params: { userId } }) => {
 
   const { user } = useSelector(selectUser(userId));
   const { posts } = useSelector(selectPosts(userId));
-
   const { userInfo } = useSelector((state) => state.auth);
+  const { user: loggedUser } = useSelector(selectUser(userInfo?._id));
 
   const dispatch = useDispatch();
   const router = useRouter();
 
   useEffect(() => {
-    if (userId === userInfo._id) {
+    if (userId === loggedUser?._id) {
       router.push("/profile");
     }
   }, [userId]);
 
-  const [getPosts] = useGetUserPostsMutation(); // get user posts
+  const [getPosts] = useGetPostsMutation(); // get posts
+  const [getUsers] = useGetUsersMutation(); // get users
   // const [followUser] = useFollowUserMutation(); // follow user
   // const [UnfollowUser] = useUnfollowUserMutation(); // unfollow user
   const [likePost] = useLikePostMutation();
@@ -120,15 +124,6 @@ const UserProfile = ({ params: { userId } }) => {
   //     }).unwrap();
 
   //     dispatch(updateFollowings(res.data));
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const handleUnsavePost = async (postId, userId) => {
-  //   try {
-  //     const res = await unsavePost({ postId, userId }).unwrap();
-  //     dispatch(setCredentials(res.user));
   //   } catch (error) {
   //     console.log(error);
   //   }
@@ -235,10 +230,19 @@ const UserProfile = ({ params: { userId } }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await getPosts().unwrap();
-      dispatch(setPosts(res.data));
+      if (res.data) {
+        dispatch(setPosts(res.data));
+      }
+    };
+    const fetchUsers = async () => {
+      const res = await getUsers().unwrap();
+      if (res.data) {
+        dispatch(setUsers(res.data));
+      }
     };
 
     fetchPosts();
+    fetchUsers();
   }, []);
 
   return (
@@ -249,6 +253,7 @@ const UserProfile = ({ params: { userId } }) => {
           followers={user?.followers}
           followings={user?.followings}
           posts={posts}
+          loggedUser={loggedUser}
         />
         <Navigation setActiveTab={setActiveTab} />
         <MainContent
@@ -257,7 +262,7 @@ const UserProfile = ({ params: { userId } }) => {
           posts={posts}
           followers={user?.followers}
           followings={user?.followings}
-          userInfo={userInfo}
+          loggedUser={loggedUser}
           handleLike={handleLike}
           handleAddComment={handleAddComment}
           handleAddReply={handleAddReply}
@@ -270,7 +275,20 @@ const UserProfile = ({ params: { userId } }) => {
   );
 };
 
-const Header = ({ user, followers, followings, posts }) => {
+const Header = ({ user, followers, followings, posts, loggedUser }) => {
+  const [isFollowing, setIsFollowing] = useState();
+
+  useEffect(() => {
+    console.log(user?.followers);
+    console.log(loggedUser);
+    const index = loggedUser?.followings.findIndex((following) => {
+      console.log(following);
+      return following?._id?._id === user?._id || following?._id === user?._id;
+    });
+    setIsFollowing(index != -1);
+    console.log(index);
+  }, [user]);
+
   return (
     <div className="flex items-center justify-between p-4 ">
       <div className="flex items-center">
@@ -297,6 +315,7 @@ const Header = ({ user, followers, followings, posts }) => {
           </div>
         </div>
       </div>
+      <div>{!isFollowing ? "Follow" : ""}</div>
     </div>
   );
 };
@@ -332,7 +351,7 @@ const MainContent = ({
   posts,
   followers,
   followings,
-  userInfo,
+  loggedUser,
   handleLike,
   handleSavePost,
   handleAddReply,
@@ -347,7 +366,7 @@ const MainContent = ({
           <PostsGrid
             user={user}
             posts={posts}
-            userInfo={userInfo}
+            loggedUser={loggedUser}
             handleLike={handleLike}
             handleAddComment={handleAddComment}
             handleAddReply={handleAddReply}
@@ -371,7 +390,7 @@ const MainContent = ({
           <PostsGrid
             user={user}
             posts={posts}
-            userInfo={userInfo}
+            loggedUser={loggedUser}
             handleLike={handleLike}
             handleAddComment={handleAddComment}
             handleAddReply={handleAddReply}
@@ -388,7 +407,7 @@ const MainContent = ({
 
 const PostCard = ({
   post,
-  userInfo,
+  loggedUser,
   user,
   handleLike,
   handleSavePost,
@@ -505,14 +524,14 @@ const PostCard = ({
   // };
 
   useEffect(() => {
-    const saveIndex = userInfo?.saves?.findIndex(
+    const saveIndex = loggedUser?.saves?.findIndex(
       (save) => String(save?._id?._id) === post._id
     );
     setSaved(saveIndex != -1 ? true : false);
   }, [user]);
 
   useEffect(() => {
-    setLiked(post.likes?.includes(userInfo._id));
+    setLiked(post.likes?.includes(loggedUser._id));
   }, [post]);
 
   return (
@@ -525,7 +544,7 @@ const PostCard = ({
         <Link href={`/profile/${post?.creator?._id}`}>
           {post?.creator?.username}
         </Link>
-        {post?.creator?._id !== userInfo._id ? (
+        {post?.creator?._id !== loggedUser._id ? (
           <Link className="absolute right-2" href={`/report/${post._id}`}>
             <MdReport color="#f00" size={18} />
           </Link>
@@ -544,7 +563,7 @@ const PostCard = ({
             <div className="flex items-center">
               <button
                 onClick={() => {
-                  handleLike(post._id, userInfo._id);
+                  handleLike(post._id, loggedUser._id);
                   setLiked((prev) => !prev);
                 }}
                 data-postid={post._id}
@@ -576,7 +595,7 @@ const PostCard = ({
           <div
             className="cursor-pointer"
             onClick={() => {
-              handleSavePost(post._id, userInfo._id);
+              handleSavePost(post._id, loggedUser._id);
               setSaved((prev) => !prev);
             }}
           >
@@ -619,7 +638,7 @@ const PostCard = ({
                             .startOf("minute")
                             .fromNow()}
                         </p>
-                        {comment.userId?._id !== userInfo._id ? (
+                        {comment.userId?._id !== loggedUser._id ? (
                           <>
                             <p
                               type="button"
@@ -655,7 +674,8 @@ const PostCard = ({
                                         </div>
                                       </div>
                                       <div>
-                                        {reply.userId?._id === userInfo._id ? (
+                                        {reply.userId?._id ===
+                                        loggedUser._id ? (
                                           <button
                                             type="button"
                                             onClick={() =>
@@ -693,7 +713,7 @@ const PostCard = ({
                                       handleAddReply(
                                         post._id,
                                         comment._id,
-                                        userInfo._id,
+                                        loggedUser._id,
                                         reply,
                                         setReply,
                                         setShowReplyInput
@@ -714,7 +734,7 @@ const PostCard = ({
                       </div>
                     </div>
                     <div>
-                      {comment.userId?._id === userInfo._id ? (
+                      {comment.userId?._id === loggedUser._id ? (
                         <button
                           type="button"
                           onClick={() =>
@@ -745,7 +765,7 @@ const PostCard = ({
                   onClick={() =>
                     handleAddComment(
                       post._id,
-                      userInfo._id,
+                      loggedUser._id,
                       comment,
                       setComment
                     )
@@ -810,7 +830,7 @@ const PostCard = ({
 
 const PostsGrid = ({
   posts,
-  userInfo,
+  loggedUser,
   user,
   handleLike,
   handleSavePost,
@@ -826,7 +846,7 @@ const PostsGrid = ({
           <PostCard
             key={index}
             post={post}
-            userInfo={userInfo}
+            loggedUser={loggedUser}
             user={user}
             handleLike={handleLike}
             handleAddComment={handleAddComment}

@@ -21,11 +21,11 @@ const UserLayout = ({ children }) => {
 
   if (userInfo) {
     return (
-      <div className="flex w-full justify-between">
+      <div className="flex w-full justify-between h-screen">
         <div className="relative">
           <UserSidebar />
         </div>
-        <div className="w-full">{children}</div>
+        <div className="w-full ">{children}</div>
         <div className="relative">
           <Suggestions />
           <ToggleTheme />

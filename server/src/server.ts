@@ -10,22 +10,26 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log("A user connected");
-
-  socket.on("message", (message, roomName) => {
+  socket.on("message", ({ message, roomName, sender, receiver }) => {
+    // receives message from sender
+    console.log(message, roomName, sender, receiver);
+    console.log("Message received");
     if (roomName.length) {
-      io.to(roomName).emit("message", message); // send message to specific room (if any)
+      io.to(roomName).emit("message", { message, roomName, sender, receiver }); // send message to specific room (if any)
+      console.log("Message sent");
     } else {
-      io.emit("message", message); // send message to everyone
+      io.emit("message", { message, roomName, sender, receiver }); // send message to everyone
+      console.log("Message sent");
     }
   });
 
   socket.on("joinRoom", (roomName) => {
+    // console.log(roomName);
     socket.join(roomName);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    // console.log("User disconnected");
   });
 });
 

@@ -5,6 +5,8 @@ import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import {
   useFollowUserMutation,
+  useGetUserMutation,
+  useGetUsersMutation,
   useRemoveFollowerMutation,
   useSavePostMutation,
   useUnfollowUserMutation,
@@ -24,6 +26,7 @@ import { setCredentials } from "../(redux)/slices/auth/authSlice";
 import {
   removePost,
   setPosts,
+  setUsers,
   updateComments,
   updateFollowers,
   updateFollowings,
@@ -47,6 +50,7 @@ const UserProfile = () => {
   const { posts } = useSelector(selectPosts(userInfo._id));
 
   const [getPosts] = useGetPostsMutation(); // get posts
+  const [getUsers] = useGetUsersMutation(); // get users
   const [deletePost] = useDeletePostMutation(); // delete post
   const [savePost] = useSavePostMutation(); // Unsave post
   const [followUser] = useFollowUserMutation(); // follow user
@@ -249,11 +253,19 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       const res = await getPosts().unwrap();
-      dispatch(setPosts(res.data));
+      if (res.data) {
+        dispatch(setPosts(res.data));
+      }
     };
-    if (!posts) {
-      fetchPosts();
-    }
+    const fetchUsers = async () => {
+      const res = await getUsers().unwrap();
+      if (res.data) {
+        dispatch(setUsers(res.data));
+      }
+    };
+
+    fetchPosts();
+    fetchUsers();
   }, []);
 
   return (
