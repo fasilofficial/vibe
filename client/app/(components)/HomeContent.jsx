@@ -37,7 +37,7 @@ const HomeContent = () => {
           <div className=" absolute inset-0 flex items-center flex-col justify-center ">
             <h1 className=" text-8xl font-extrabold mb-4">VIBE.</h1>
             <Link
-              href="/api/auth/signin"
+              href="/auth/signin"
               className="bg-white bg-opacity-50 hover:bg-opacity-40 hover:scale-105 transition-all hover:shadow-sm duration-300 px-6 py-2 rounded text-xl"
             >
               Get Started!

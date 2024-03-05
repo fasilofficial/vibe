@@ -1,22 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  users:
-    typeof window !== "undefined"
-      ? JSON.parse(window.localStorage.getItem("users"))
-      : [],
-  posts:
-    typeof window !== "undefined"
-      ? JSON.parse(window.localStorage.getItem("posts"))
-      : [],
-  reports:
-    typeof window !== "undefined"
-      ? JSON.parse(window.localStorage.getItem("reports"))
-      : [],
-  chats:
-    typeof window !== "undefined"
-      ? JSON.parse(window.localStorage.getItem("chats"))
-      : [],
+  users: [],
+  posts: [],
+  reports: [],
+  chats: [],
 };
 
 const dataSlice = createSlice({
@@ -25,36 +13,32 @@ const dataSlice = createSlice({
   reducers: {
     setUsers: (state, action) => {
       state.users = action.payload;
-      localStorage.setItem("users", JSON.stringify(action.payload));
     },
     setPosts: (state, action) => {
       state.posts = action.payload;
-      localStorage.setItem("posts", JSON.stringify(action.payload));
     },
     setReports: (state, action) => {
       state.reports = action.payload;
-      localStorage.setItem("reports", JSON.stringify(action.payload));
     },
     setChats: (state, action) => {
       state.chats = action.payload;
-      localStorage.setItem("chats", JSON.stringify(action.payload));
     },
 
     removeUsers: (state, action) => {
       state.users = [];
-      localStorage.removeItem("users");
     },
     removePosts: (state, action) => {
       state.posts = [];
-      localStorage.removeItem("posts");
     },
     removeReports: (state, action) => {
       state.reports = [];
-      localStorage.removeItem("reports");
     },
     removeChats: (state, action) => {
       state.chats = [];
-      localStorage.removeItem("chats");
+    },
+
+    addReport: (state, action) => {
+      state.reports = [...state.reports, action.payload];
     },
 
     updatePost: (state, action) => {
@@ -82,6 +66,16 @@ const dataSlice = createSlice({
           return { ...post, comments };
         }
         return post;
+      });
+    },
+
+    updateUser: (state, action) => {
+      const { userId, updatedUser } = action.payload;
+      state.users = state.users.map((user) => {
+        if (user._id === userId) {
+          return updatedUser;
+        }
+        return user;
       });
     },
     updateFollowings: (state, action) => {
@@ -114,6 +108,16 @@ const dataSlice = createSlice({
     removePost: (state, action) => {
       state.posts = state.posts.filter((post) => post._id !== action.payload);
     },
+
+    updateReport: (state, action) => {
+      const { postId, updatedReport } = action.payload;
+      state.reports = state.reports.map((report) => {
+        if (report.postId === postId || report.postId?._id === postId) {
+          return updatedReport;
+        }
+        return report;
+      });
+    },
   },
 });
 
@@ -133,12 +137,17 @@ export const {
   updateLikes,
   updateComments,
 
+  updateUser,
   updateFollowers,
   updateFollowings,
 
   updateSaves,
 
   removePost,
+
+  updateReport,
+
+  addReport,
 } = dataSlice.actions;
 
 export default dataSlice.reducer;

@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import {
   useFollowUserMutation,
-  useGetUserMutation,
   useGetUsersMutation,
   useRemoveFollowerMutation,
   useSavePostMutation,
@@ -22,7 +21,6 @@ import {
   useLikePostMutation,
 } from "../(redux)/slices/post/postApiSlice";
 import SavePost from "./SavePost";
-import { setCredentials } from "../(redux)/slices/auth/authSlice";
 import {
   removePost,
   setPosts,
@@ -52,15 +50,15 @@ const UserProfile = () => {
   const [getPosts] = useGetPostsMutation(); // get posts
   const [getUsers] = useGetUsersMutation(); // get users
   const [deletePost] = useDeletePostMutation(); // delete post
-  const [savePost] = useSavePostMutation(); // Unsave post
+  const [savePost] = useSavePostMutation(); // save post
   const [followUser] = useFollowUserMutation(); // follow user
   const [removeFollower] = useRemoveFollowerMutation(); // remove follower
   const [UnfollowUser] = useUnfollowUserMutation(); // unfollow user
-  const [likePost] = useLikePostMutation();
-  const [addComment] = useAddCommentMutation();
-  const [addReply] = useAddReplyMutation();
-  const [deleteComment] = useDeleteCommentMutation();
-  const [deleteReply] = useDeleteReplyMutation();
+  const [likePost] = useLikePostMutation(); // like post
+  const [addComment] = useAddCommentMutation(); // add comment
+  const [addReply] = useAddReplyMutation(); // add reply
+  const [deleteComment] = useDeleteCommentMutation(); // delete comment
+  const [deleteReply] = useDeleteReplyMutation(); // delete reply
 
   const dispatch = useDispatch();
 
@@ -72,7 +70,7 @@ const UserProfile = () => {
         dispatch(removePost(res.data._id || postId));
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error deleting post", error);
     }
   };
 
@@ -93,7 +91,7 @@ const UserProfile = () => {
         dispatch(updateFollowers({ userId, followers: res.data.followers }));
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error removing follower", error);
     }
   };
 
@@ -119,7 +117,7 @@ const UserProfile = () => {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error following user", error);
     }
   };
 
@@ -146,7 +144,7 @@ const UserProfile = () => {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error unfollowing user", error);
     }
   };
 
@@ -239,26 +237,36 @@ const UserProfile = () => {
   };
 
   const handleSavePost = async (postId, userId) => {
-    const res = await savePost({ postId, userId }).unwrap();
+    try {
+      const res = await savePost({ postId, userId }).unwrap();
 
-    console.log(res);
-
-    if (res.data) {
-      dispatch(updateSaves({ userId, saves: res.data }));
+      if (res.data) {
+        dispatch(updateSaves({ userId, saves: res.data }));
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
     }
   };
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const res = await getPosts().unwrap();
-      if (res.data) {
-        dispatch(setPosts(res.data));
+      try {
+        const res = await getPosts().unwrap();
+        if (res.data) {
+          dispatch(setPosts(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
       }
     };
     const fetchUsers = async () => {
-      const res = await getUsers().unwrap();
-      if (res.data) {
-        dispatch(setUsers(res.data));
+      try {
+        const res = await getUsers().unwrap();
+        if (res.data) {
+          dispatch(setUsers(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
       }
     };
 
@@ -274,7 +282,7 @@ const UserProfile = () => {
         followings={user?.followings}
         posts={posts}
       />
-      <Navigation setActiveTab={setActiveTab} />
+      <Navigation setActiveTab={setActiveTab} activeTab={activeTab} />
       <MainContent
         activeTab={activeTab}
         user={user}
@@ -336,30 +344,46 @@ const Header = ({ user, followers, followings, posts }) => {
   );
 };
 
-const Navigation = ({ setActiveTab }) => {
+const Navigation = ({ setActiveTab, activeTab }) => {
   return (
     <div className="flex justify-center p-4 space-x-4 border-b border-gray-300">
       <button
         onClick={() => setActiveTab("posts")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "posts"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Posts
       </button>
       <button
         onClick={() => setActiveTab("followers")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "followers"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Followers
       </button>
       <button
         onClick={() => setActiveTab("followings")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "followings"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Followings
       </button>
       <button
         onClick={() => setActiveTab("saves")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "saves"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Saves
       </button>
@@ -735,64 +759,6 @@ const PostCard = ({
   );
 };
 
-// const PostCard = ({ post, handleDeletePost }) => {
-//   return (
-//     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white dark:bg-gray-800 dark:text-white">
-//       <img src={post.imageUrl} alt="Post" className="w-full" />
-//       <div className="px-6 py-4">
-//         <div className="font-bold text-xl mb-2">{post.caption}</div>
-//         <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
-//           Location: {post.location}
-//         </p>
-//         <div className="flex justify-between items-center mb-2">
-//           <Link
-//             href={`/post/edit/${post._id}`}
-//             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-//           >
-//             Edit Post
-//           </Link>
-//           <button
-//             onClick={() => handleDeletePost(post._id)}
-//             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-//           >
-//             Delete Post
-//           </button>
-//         </div>
-//         <div className="flex items-center mb-2">
-//           <svg
-//             xmlns="http://www.w3.org/2000/svg"
-//             className="h-6 w-6 mr-2"
-//             fill="none"
-//             viewBox="0 0 24 24"
-//             stroke="currentColor"
-//           >
-//             <path
-//               strokeLinecap="round"
-//               strokeLinejoin="round"
-//               strokeWidth={2}
-//               d="M4 6h16M4 10h16M4 14h16M4 18h16"
-//             />
-//           </svg>
-//           <span className="text-gray-700 dark:text-gray-200">
-//             {post.likes.length}
-//           </span>
-//         </div>
-//         <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
-//           Created At: {new Date(post.createdAt).toLocaleDateString()}
-//         </p>
-//         <div className="text-gray-700 dark:text-gray-200 text-base mb-2">
-//           Comments:
-//         </div>
-//         <div>
-//           {post.comments.map((comment, index) => (
-//             <p key={index}>{comment.comment}</p>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
 const PostsGrid = ({
   posts,
   handleDeletePost,
@@ -828,13 +794,7 @@ const PostsGrid = ({
   );
 };
 
-const FollowersList = ({
-  user,
-  followers,
-  followings,
-  handleFollow,
-  handleRemoveFollower,
-}) => {
+const FollowersList = ({ user, followers, handleRemoveFollower }) => {
   return (
     <div className="w-1/2">
       <h3 className="text-xl font-semibold mb-4">Followers</h3>

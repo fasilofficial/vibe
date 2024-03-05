@@ -160,13 +160,4 @@ export const options = {
       return session;
     },
   },
-  pages: {
-    signIn: "/auth/signin",
-  },
-  theme: {
-    colorScheme: "light",
-    brandColor: "#3B82F6",
-    logo: "https://i.ibb.co/Mg03MWv/vibe-logo.png",
-    buttonText: "#FFF",
-  },
 };

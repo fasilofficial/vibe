@@ -37,7 +37,7 @@ const Post = ({
   }, [user]);
 
   useEffect(() => {
-    setLiked(post.likes?.includes(user._id));
+    setLiked(post.likes?.includes(user?._id));
   }, [post]);
 
   return (
@@ -50,7 +50,7 @@ const Post = ({
         <Link href={`/profile/${post?.creator?._id}`}>
           {post?.creator?.username}
         </Link>
-        {post?.creator?._id !== user._id ? (
+        {post?.creator?._id !== user?._id ? (
           <Link className="absolute right-2" href={`/report/${post._id}`}>
             <MdReport color="#f00" size={18} />
           </Link>
@@ -69,7 +69,7 @@ const Post = ({
             <div className="flex items-center">
               <button
                 onClick={() => {
-                  handleLike(post._id, user._id);
+                  handleLike(post._id, user?._id);
                 }}
                 data-postid={post._id}
                 className="text-gray-800 focus:outline-none"

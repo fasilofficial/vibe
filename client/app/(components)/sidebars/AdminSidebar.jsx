@@ -62,14 +62,14 @@ const AdminSidebar = ({ adminInfo }) => {
       <div>
         {[
           {
-            title: "settings",
-            route: "/admin/settings",
-            icon: <IoSettings />,
-          },
-          {
             title: "profile",
             route: "/admin/profile",
             icon: <IoIosPeople />,
+          },
+          {
+            title: "settings",
+            route: "/admin/settings",
+            icon: <IoSettings />,
           },
           {
             title: "logout",

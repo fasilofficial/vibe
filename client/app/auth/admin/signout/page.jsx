@@ -9,9 +9,7 @@ import {
 } from "@/app/(redux)/slices/data/dataSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
-
 import toast from "react-hot-toast";
-
 import { useDispatch } from "react-redux";
 
 const AdminSignOut = () => {
@@ -21,18 +19,19 @@ const AdminSignOut = () => {
   const [logoutMutation] = useAdminLogoutMutation();
 
   const handleSignout = async () => {
-    const res = await logoutMutation().unwrap();
+    try {
+      await logoutMutation().unwrap();
 
-    dispatch(adminLogout());
-    dispatch(removeUsers());
-    dispatch(removePosts());
-    dispatch(removeReports());
+      dispatch(adminLogout());
+      dispatch(removeUsers());
+      dispatch(removePosts());
+      dispatch(removeReports());
 
-    toast("Redirecting to sign in page");
-
-    setTimeout(() => {
+      toast("Redirecting to sign in page");
       router.push("/auth/admin/signin");
-    }, 500);
+    } catch (error) {
+      console.error("Error logging out", error);
+    }
   };
 
   return (

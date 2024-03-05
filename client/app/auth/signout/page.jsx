@@ -1,13 +1,15 @@
 "use client";
 
 import { logout } from "@/app/(redux)/slices/auth/authSlice";
-import { removePosts } from "@/app/(redux)/slices/data/dataSlice";
+import {
+  removeChats,
+  removePosts,
+  removeUsers,
+} from "@/app/(redux)/slices/data/dataSlice";
 import { useLogoutMutation } from "@/app/(redux)/slices/user/userApiSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
-
 import toast from "react-hot-toast";
-
 import { useDispatch } from "react-redux";
 
 const AdminSignOut = () => {
@@ -17,16 +19,19 @@ const AdminSignOut = () => {
   const [logoutMutation] = useLogoutMutation();
 
   const handleSignout = async () => {
-    const res = await logoutMutation().unwrap();
+    try {
+      await logoutMutation().unwrap();
 
-    dispatch(logout());
-    dispatch(removePosts())
+      dispatch(logout());
+      dispatch(removePosts());
+      dispatch(removeUsers());
+      dispatch(removeChats());
 
-    toast("Redirecting to sign in page");
-
-    setTimeout(() => {
+      toast("Redirecting to sign in page");
       router.push("/auth/signin");
-    }, 500);
+    } catch (error) {
+      console.error("Error logging out: ", error);
+    }
   };
 
   return (

@@ -34,34 +34,11 @@ import {
   updateLikes,
   updateSaves,
 } from "@/app/(redux)/slices/data/dataSlice";
-import { setCredentials } from "@/app/(redux)/slices/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { selectPosts, selectUser } from "@/app/(redux)/selectors";
-// import {
-//   useFollowUserMutation,
-//   useGetUserPostsMutation,
-//   useRemoveFollowerMutation,
-//   useSavePostMutation,
-//   useUnfollowUserMutation,
-// } from "../(redux)/slices/user/userApiSlice";
-
-// import { useDeletePostMutation } from "../(redux)/slices/post/postApiSlice";
-// import SavePost from "./SavePost";
-// import {
-//   setCredentials,
-//   updateFollowers,
-//   updateFollowings,
-// } from "../(redux)/slices/auth/authSlice";
 
 const UserProfile = ({ params: { userId } }) => {
   const [activeTab, setActiveTab] = useState("posts");
-
-  // const [getUser] = useGetUserMutation();
-
-  // console.log(userId);
-
-  // const { user } = useSelector((state) => state.auth);
-  // const { posts } = useSelector((state) => state.user);
 
   const { user } = useSelector(selectUser(userId));
   const { posts } = useSelector(selectPosts(userId));
@@ -110,7 +87,7 @@ const UserProfile = ({ params: { userId } }) => {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error following user:", error);
     }
   };
 
@@ -137,7 +114,7 @@ const UserProfile = ({ params: { userId } }) => {
         );
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error unfollowing user:", error);
     }
   };
 
@@ -230,12 +207,14 @@ const UserProfile = ({ params: { userId } }) => {
   };
 
   const handleSavePost = async (postId, userId) => {
-    const res = await savePost({ postId, userId }).unwrap();
+    try {
+      const res = await savePost({ postId, userId }).unwrap();
 
-    console.log(res);
-
-    if (res.data) {
-      dispatch(updateSaves({ userId, saves: res.data }));
+      if (res.data) {
+        dispatch(updateSaves({ userId, saves: res.data }));
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
     }
   };
 
@@ -269,7 +248,7 @@ const UserProfile = ({ params: { userId } }) => {
           handleFollow={handleFollow}
           handleUnfollow={handleUnfollow}
         />
-        <Navigation setActiveTab={setActiveTab} />
+        <Navigation setActiveTab={setActiveTab} activeTab={activeTab} />
         <MainContent
           activeTab={activeTab}
           user={user}
@@ -354,24 +333,36 @@ const Header = ({
   );
 };
 
-const Navigation = ({ setActiveTab }) => {
+const Navigation = ({ setActiveTab, activeTab }) => {
   return (
     <div className="flex justify-center p-4 space-x-4 border-b border-gray-300">
       <button
         onClick={() => setActiveTab("posts")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "posts"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Posts
       </button>
       <button
         onClick={() => setActiveTab("followers")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "followers"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Followers
       </button>
       <button
         onClick={() => setActiveTab("followings")}
-        className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+        className={`px-4 py-2  rounded-md  transition-colors ${
+          activeTab == "followings"
+            ? "bg-blue-400 hover:bg-blue-500"
+            : "bg-gray-100 hover:bg-gray-200"
+        }`}
       >
         Followings
       </button>
@@ -456,106 +447,6 @@ const PostCard = ({
   const [showComments, setShowComments] = useState(false);
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [reply, setReply] = useState("");
-
-  // const handleLike = async (postId, userId) => {
-  //   try {
-  //     const res = await likePost({
-  //       postId,
-  //       userId,
-  //     }).unwrap();
-
-  //     if (res.data) {
-  //       dispatch(updateLikes({ postId, likes: res.data }));
-  //       setLiked((prev) => !prev);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error handling like:", error);
-  //   }
-  // };
-
-  // const handleAddComment = async (postId, userId, comment, setComment) => {
-  //   if (comment.trim() === "") return;
-
-  //   try {
-  //     const res = await addComment({
-  //       comment,
-  //       postId,
-  //       userId,
-  //     }).unwrap();
-
-  //     if (res.data) {
-  //       dispatch(updateComments({ postId, comments: res.data }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error adding comment:", error);
-  //   }
-
-  //   setComment("");
-  // };
-
-  // const handleDeleteComment = async (postId, commentId) => {
-  //   try {
-  //     const res = await deleteComment({
-  //       postId,
-  //       commentId,
-  //     }).unwrap();
-
-  //     if (res.data) {
-  //       dispatch(updateComments({ postId, comments: res.data }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error deleting comment:", error);
-  //   }
-  // };
-
-  // const handleAddReply = async (
-  //   postId,
-  //   commentId,
-  //   userId,
-  //   reply,
-  //   setReply,
-  //   setShowReplyInput
-  // ) => {
-  //   try {
-  //     const res = await addReply({ postId, commentId, userId, reply }).unwrap();
-
-  //     if (res.data) {
-  //       dispatch(updateComments({ postId, comments: res.data }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error adding reply to comment:", error);
-  //   }
-
-  //   setReply("");
-  //   setShowReplyInput(false);
-  // };
-
-  // const handleDeleteReply = async (postId, commentId, replyId) => {
-  //   try {
-  //     const res = await deleteReply({
-  //       postId,
-  //       commentId,
-  //       replyId,
-  //     }).unwrap();
-
-  //     if (res.data) {
-  //       dispatch(updateComments({ postId, comments: res.data }));
-  //     }
-  //   } catch (error) {
-  //     console.error("Error deleting reply:", error);
-  //   }
-  // };
-
-  // const handleSavePost = async (postId, userId) => {
-  //   const res = await savePost({ postId, userId }).unwrap();
-
-  //   console.log(res);
-
-  //   if (res.data) {
-  //     dispatch(updateSaves({ userId, saves: res.data }));
-  //     setSaved((prev) => !prev);
-  //   }
-  // };
 
   useEffect(() => {
     const saveIndex = loggedUser?.saves?.findIndex(
@@ -817,50 +708,6 @@ const PostCard = ({
     </div>
   );
 };
-// const PostCard = ({ post }) => {
-//   return (
-//     <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white dark:bg-gray-800 dark:text-white">
-//       <img src={post.imageUrl} alt="Post" className="w-full" />
-//       <div className="px-6 py-4">
-//         <div className="font-bold text-xl mb-2">{post.caption}</div>
-//         <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
-//           Location: {post.location}
-//         </p>
-
-//         <div className="flex items-center mb-2">
-//           <svg
-//             xmlns="http://www.w3.org/2000/svg"
-//             className="h-6 w-6 mr-2"
-//             fill="none"
-//             viewBox="0 0 24 24"
-//             stroke="currentColor"
-//           >
-//             <path
-//               strokeLinecap="round"
-//               strokeLinejoin="round"
-//               strokeWidth={2}
-//               d="M4 6h16M4 10h16M4 14h16M4 18h16"
-//             />
-//           </svg>
-//           <span className="text-gray-700 dark:text-gray-200">
-//             {post.likes.length}
-//           </span>
-//         </div>
-//         <p className="text-gray-700 dark:text-gray-200 text-base mb-2">
-//           Created At: {new Date(post.createdAt).toLocaleDateString()}
-//         </p>
-//         <div className="text-gray-700 dark:text-gray-200 text-base mb-2">
-//           Comments:
-//         </div>
-//         <div>
-//           {post.comments.map((comment, index) => (
-//             <p key={index}>{comment.comment}</p>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
 
 const PostsGrid = ({
   posts,

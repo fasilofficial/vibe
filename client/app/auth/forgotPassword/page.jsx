@@ -95,7 +95,6 @@ const ForgotPassword = () => {
         setTimeout(() => router.push("/auth/signin"), 500);
       }
     } catch (error) {
-      console.log(error?.message || error?.data?.message);
       toast.error(error?.message || error?.data?.message);
     }
   };

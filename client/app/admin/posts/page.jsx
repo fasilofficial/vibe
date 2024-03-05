@@ -15,32 +15,36 @@ const Posts = () => {
   const [getPosts, { isLoading: isLoadingGetPosts, error: errorGetPosts }] =
     useGetPostsMutation();
 
-  const [
-    deletePost,
-    { isLoading: isLoadingDeletePost, error: errorDeletePost },
-  ] = useDeletePostMutation();
+  const [deletePost] = useDeletePostMutation();
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const res = await getPosts().unwrap();
-      dispatch(setPosts(res));
-    };
-
-    if (!posts) {
-      fetchPosts();
-    }
-  }, []);
-
   const handleDeletePost = async (postId) => {
     try {
-      await deletePost(postId).unwrap();
-      dispatch(removePost(postId));
+      const res = await deletePost(postId).unwrap();
+
+      if (res.data) {
+        dispatch(removePost(postId));
+      }
     } catch (error) {
-      console.error("Error deleting post:", error);
+      console.error("Error deleting post", error);
     }
   };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await getPosts().unwrap();
+        if (res.data) {
+          dispatch(setPosts(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   return (
     <div>

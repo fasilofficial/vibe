@@ -3,22 +3,23 @@
 import UserLayout from "@/app/(components)/UserLayout";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 import toast from "react-hot-toast";
 import { useAddReportMutation } from "@/app/(redux)/slices/report/reportApiSlice";
 import { useGetPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
 import Link from "next/link";
+import { addReport, updateReport } from "@/app/(redux)/slices/data/dataSlice";
 
 const page = ({ params: { postId } }) => {
   const [post, setPost] = useState();
   const [formData, setFormData] = useState({});
 
   const router = useRouter();
-
+  const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [addReport] = useAddReportMutation();
+  const [addNewReport] = useAddReportMutation();
   const [getPost] = useGetPostMutation();
 
   const handleChange = (e) => {
@@ -31,16 +32,28 @@ const page = ({ params: { postId } }) => {
     async (e) => {
       e.preventDefault();
 
+      if (!formData.reportDescription) return;
+
       try {
-        const res = await addReport({
+        const res = await addNewReport({
           description: formData.reportDescription,
           postId,
           userId: userInfo._id,
         }).unwrap();
 
-        toast.success(res?.message);
-        formData.setReportDescription = "";
-        setTimeout(() => router.push("/"), 500);
+        if (res.data) {
+          const { updatedReport, newReport } = res.data;
+
+          if (updatedReport) {
+            dispatch(updateReport({ postId, updatedReport }));
+          }
+          if (newReport) {
+            dispatch(addReport(newReport));
+          }
+          toast.success(res?.message);
+          formData.setReportDescription = "";
+          setTimeout(() => router.push("/"), 500);
+        }
       } catch (error) {
         console.log(error);
         toast.error(error?.data?.message);

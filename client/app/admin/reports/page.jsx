@@ -1,6 +1,6 @@
 "use client";
 
-import { setReports } from "@/app/(redux)/slices/data/dataSlice";
+import { setReports, updateReport } from "@/app/(redux)/slices/data/dataSlice";
 import {
   useGetReportsMutation,
   useResolveReportMutation,
@@ -23,28 +23,32 @@ const Reports = () => {
 
     try {
       const res = await resolveReport({ reportId, postId }).unwrap();
-      res.data ? toast.success(res.message) : toast(res.message);
-
-      // setReports((prevReports) =>
-      //   prevReports.map((report) =>
-      //     report._id === res.report._id ? res.report : report
-      //   )
-      // );
+      console.log(res);
+      if (res.data) {
+        dispatch(updateReport({ postId, updatedReport: res.data }));
+        res.data ? toast.success(res.message) : toast(res.message);
+      } else {
+        toast(res.message);
+      }
     } catch (error) {
-      console.log(error);
-      toast.error(error?.data?.message);
+      console.error("Error resolving post:", error);
+      toast.error(error?.data?.message || error?.message);
     }
   };
 
   useEffect(() => {
     const fetchReports = async () => {
-      const res = await getReports().unwrap();
-      dispatch(setReports(res.reports));
+      try {
+        const res = await getReports().unwrap();
+        if (res.data) {
+          dispatch(setReports(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching reports:", error);
+      }
     };
 
-    if (!reports) {
-      fetchReports();
-    }
+    fetchReports();
   }, []);
 
   return (
@@ -79,13 +83,13 @@ const Reports = () => {
                   className={report.resolved ? "bg-gray-100" : "bg-white"}
                 >
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {report.postId._id}
+                    {report.postId?._id}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {report.reports ? (
                       <ul>
                         {report.reports.map((r) => (
-                          <p>{r.userId._id}</p>
+                          <p>{r.userId?._id}</p>
                         ))}
                       </ul>
                     ) : (
@@ -113,7 +117,9 @@ const Reports = () => {
                       <button
                         type="button"
                         className="text-blue-500"
-                        onClick={() => handleResolve(report._id, report.postId)}
+                        onClick={() =>
+                          handleResolve(report._id, report.postId?._id)
+                        }
                       >
                         Resolve
                       </button>

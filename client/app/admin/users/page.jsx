@@ -1,34 +1,48 @@
 "use client";
 
-import { setUsers } from "@/app/(redux)/slices/data/dataSlice";
+import {
+  setUsers,
+  updateUser,
+} from "@/app/(redux)/slices/data/dataSlice";
 import {
   useBlockUserMutation,
   useGetUsersMutation,
 } from "@/app/(redux)/slices/user/userApiSlice";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 const Users = () => {
-  const { users } = useSelector((state) => state.data);
-
   const dispatch = useDispatch();
+
+  const { users } = useSelector((state) => state.data);
 
   const [getUsers] = useGetUsersMutation();
   const [blockUser] = useBlockUserMutation();
 
   const handleBlock = async (userId) => {
-    const res = await blockUser(userId).unwrap();
+    try {
+      const res = await blockUser(userId).unwrap();
+      if (res.data) {
+        dispatch(updateUser({ userId, updatedUser: res.data }));
+      }
+    } catch (error) {
+      console.error("Error blocking user:", error);
+    }
   };
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const res = await getUsers().unwrap();
-      dispatch(setUsers(res));
+      try {
+        const res = await getUsers().unwrap();
+        if (res.data) {
+          dispatch(setUsers(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
     };
 
-    if (!users) {
-      fetchUsers();
-    }
+    if (!users) fetchUsers();
   }, []);
 
   return (
@@ -66,7 +80,7 @@ const Users = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user, index) => (
+              {users?.map((user, index) => (
                 <tr key={index} className="bg-white">
                   <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>

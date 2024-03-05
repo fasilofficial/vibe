@@ -17,11 +17,10 @@ import Link from "next/link";
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
-  const [receiver, setReceiver] = useState();
-  const [sender, setSender] = useState(user);
   const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
 
-  const [inbox, setInbox] = useState([]);
+  const [receiver, setReceiver] = useState();
+  const [sender, setSender] = useState(user);
   const [socket, setSocket] = useState();
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
@@ -38,14 +37,9 @@ const ChatPage = () => {
 
   const dispatch = useDispatch();
 
-  const handleJoinRoom = () => {
-    socket.emit("joinRoom", roomName);
-  };
-
   const handleSendMessage = async () => {
-    if (!message || !roomName || !sender || !receiver) return;
-
-    if (message.trim() === "") return;
+    if (message.trim() === "" || !message || !roomName || !sender || !receiver)
+      return;
 
     const data = {
       message,
@@ -56,14 +50,13 @@ const ChatPage = () => {
 
     try {
       socket.emit("message", data);
-
       const res = await addChat(data).unwrap();
-      console.log(res);
+
       if (res.data) {
         dispatch(setChats([...chats, res.data]));
       }
     } catch (error) {
-      console.log(error);
+      console.error("Erorr sending message:", error);
     } finally {
       setMessage("");
     }
@@ -93,22 +86,16 @@ const ChatPage = () => {
     const fetchChats = async () => {
       try {
         const res = await getChats().unwrap();
-        console.log(res);
         if (res.data) {
           dispatch(setChats(res.data));
         }
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching chats:", error);
       }
     };
 
     fetchChats();
   }, []);
-
-  // useEffect(() => {
-  //   console.log(chats);
-  //   chats.map((chat) => setInbox((prev) => [...prev, chat?.message]));
-  // }, [receiver]);
 
   return (
     <div className="w-4/6 ml-36 mt-4 h-screen">
@@ -355,6 +342,7 @@ const FollowersList = ({ followers, receiver, handleSelectReceiver }) => {
     </>
   );
 };
+
 const FollowingsList = ({ followings, receiver, handleSelectReceiver }) => {
   return (
     <>
@@ -385,6 +373,7 @@ const FollowingsList = ({ followings, receiver, handleSelectReceiver }) => {
     </>
   );
 };
+
 const AllUsersList = ({ users, receiver, handleSelectReceiver }) => {
   return (
     <>

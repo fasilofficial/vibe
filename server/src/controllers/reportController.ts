@@ -18,7 +18,7 @@ export const getReports = expressAsyncHandler(
         });
 
       if (reports.length > 0) {
-        res.status(200).json({ reports });
+        res.status(200).json({ message: "reports", data: reports });
       } else {
         res.status(404).json({ message: "No reports found" });
       }
@@ -44,7 +44,7 @@ export const getReport = expressAsyncHandler(
       });
 
     if (report) {
-      res.status(200).json(report);
+      res.status(200).json({ message: "report", data: report });
     } else {
       throw new Error("Report not found");
     }
@@ -65,31 +65,31 @@ export const resolveReport = expressAsyncHandler(
         throw new Error("Post not found");
       }
 
-      const reports = await Report.findOne({ postId });
+      const report = await Report.findOne({ postId });
 
-      if (!reports) {
+      if (!report) {
         res.status(404);
-        throw new Error("No reports found for this post");
+        throw new Error("No report found for this post");
       }
 
-      if (reports.reports.length >= 5) {
+      if (report.reports.length >= 5) {
         await post.deleteOne();
 
-        reports.resolved = true;
+        report.resolved = true;
 
-        await reports.save();
-        await reports.populate({
+        await report.save();
+        await report.populate({
           path: "postId",
           model: "Post",
         });
-        await reports.populate({
+        await report.populate({
           path: "reports.userId",
           model: "User",
         });
 
         res.status(200).json({
           message: "Post deleted due to excessive reports",
-          data: reports,
+          data: report,
         });
       } else {
         res
@@ -124,10 +124,18 @@ export const addReport = expressAsyncHandler(
 
         existingReport.reports.push({ description, userId });
         await existingReport.save();
+        await existingReport.populate({
+          path: "postId",
+          model: "Post",
+        });
+        await existingReport.populate({
+          path: "reports.userId",
+          model: "User",
+        });
 
         res.status(200).json({
           message: "New report added",
-          report: existingReport,
+          data: { updatedReport: existingReport },
         });
       } else {
         const newReport = new Report({
@@ -135,11 +143,19 @@ export const addReport = expressAsyncHandler(
           reports: [{ description, userId }],
         });
 
-        const savedReport = await newReport.save();
+        await newReport.save();
+        await newReport.populate({
+          path: "postId",
+          model: "Post",
+        });
+        await newReport.populate({
+          path: "reports.userId",
+          model: "User",
+        });
 
         res
           .status(201)
-          .json({ message: "New report created", report: savedReport });
+          .json({ message: "New report created", data: { newReport } });
       }
     } catch (error) {
       console.error("Error adding report:", error);

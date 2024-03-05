@@ -236,7 +236,23 @@ export const getUser = expressAsyncHandler(async (req, res) => {
 export const blockUser = expressAsyncHandler(async (req: any, res: any) => {
   try {
     const { userId } = req.params;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
+      .populate({
+        path: "followers._id",
+        model: "User",
+      })
+      .populate({
+        path: "followings._id",
+        model: "User",
+      })
+      .populate({
+        path: "saves._id",
+        model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
+      });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -247,7 +263,7 @@ export const blockUser = expressAsyncHandler(async (req: any, res: any) => {
 
     res.status(200).json({
       message: "User block toggled successfully",
-      user,
+      data: user,
     });
   } catch (error) {
     console.log(error);
@@ -580,7 +596,6 @@ export const savePost = expressAsyncHandler(
 export const editUser = expressAsyncHandler(async (req: any, res: any) => {
   const { userId } = req.params;
 
-  console.log("userId", userId);
   const { name, username, profileUrl } = req.body;
 
   try {
