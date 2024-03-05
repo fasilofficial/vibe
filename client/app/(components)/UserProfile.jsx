@@ -76,11 +76,11 @@ const UserProfile = () => {
     }
   };
 
-  const handleRemoveFollower = async (followerId) => {
+  const handleRemoveFollower = async (userId, followerId) => {
     try {
       const res = await removeFollower({
         followerId,
-        userId: user._id,
+        userId,
       }).unwrap();
 
       if (res.data) {
@@ -90,33 +90,32 @@ const UserProfile = () => {
             followings: res.data.followings,
           })
         );
-        dispatch(
-          updateFollowers({ userId: user._id, followers: res.data.followers })
-        );
+        dispatch(updateFollowers({ userId, followers: res.data.followers }));
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleUnfollow = async (followingId) => {
+  const handleFollow = async (userId, followingId) => {
     try {
-      const res = await UnfollowUser({
+      const res = await followUser({
         followingId,
-        userId: user._id,
+        userId,
       }).unwrap();
-
-      console.log(res);
 
       if (res.data) {
         dispatch(
           updateFollowings({
-            userId: user._id,
+            userId,
             followings: res.data.followings,
           })
         );
         dispatch(
-          updateFollowers({ userId: user._id, followers: res.data.followers })
+          updateFollowers({
+            userId: followingId,
+            followers: res.data.followers,
+          })
         );
       }
     } catch (error) {
@@ -124,19 +123,18 @@ const UserProfile = () => {
     }
   };
 
-  const handleFollow = async (followingId) => {
+  const handleUnfollow = async (userId, followingId) => {
     try {
-      const res = await followUser({
+      const res = await UnfollowUser({
         followingId,
-        userId: userInfo._id,
+        userId,
       }).unwrap();
 
-      console.log(res);
-
       if (res.data) {
+        userId;
         dispatch(
           updateFollowings({
-            userId: userInfo._id,
+            userId,
             followings: res.data.followings,
           })
         );
@@ -846,33 +844,26 @@ const FollowersList = ({
           {followers.map((follower) => (
             <li
               key={follower._id._id}
-              className="flex items-center justify-between space-x-4 py-2"
+              className="flex items-center justify-between py-2"
             >
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center gap-2">
                 <img
                   src={follower._id.profileUrl}
                   alt={follower._id.name}
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <Link href={`/profile/${follower._id._id}`}>
-                  {follower._id.name}
+                  {follower._id.username}
                 </Link>
-                <button
-                  className="text-red-500 hover:text-red-400 transition-colors"
-                  onClick={() => handleRemoveFollower(follower._id._id)}
-                >
-                  Remove
-                </button>
-                {/* Include "Follow Back" button if needed */}
-                {/* {!followings.includes(follower._id._id) && (
-              <button
-                className="text-blue-500 hover:text-blue-400 transition-colors"
-                onClick={() => handleFollow(follower._id._id)}
-              >
-                Follow Back
-              </button>
-            )} */}
               </div>
+              <button
+                className="text-red-500 hover:text-red-400 transition-colors"
+                onClick={() =>
+                  handleRemoveFollower(user?._id, follower._id._id)
+                }
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>
@@ -883,7 +874,7 @@ const FollowersList = ({
   );
 };
 
-const FollowingsList = ({ followings, handleUnfollow }) => {
+const FollowingsList = ({ user, followings, handleUnfollow }) => {
   return (
     <div className="w-1/2">
       <h2 className="text-xl font-semibold mb-4">Followings</h2>
@@ -907,7 +898,7 @@ const FollowingsList = ({ followings, handleUnfollow }) => {
               </div>
               <button
                 className="text-blue-500 hover:text-blue-400 transition-colors"
-                onClick={() => handleUnfollow(following._id._id)}
+                onClick={() => handleUnfollow(user?._id, following._id._id)}
               >
                 Unfollow
               </button>

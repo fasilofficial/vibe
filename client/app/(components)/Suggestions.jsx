@@ -23,17 +23,17 @@ const Suggestions = () => {
 
   const dispatch = useDispatch();
 
-  const handleFollow = async (followingId) => {
+  const handleFollow = async (userId, followingId) => {
     try {
       const res = await followUser({
         followingId,
-        userId: userInfo._id,
+        userId,
       }).unwrap();
 
       if (res.data) {
         dispatch(
           updateFollowings({
-            userId: userInfo._id,
+            userId,
             followings: res.data.followings,
           })
         );
@@ -92,9 +92,11 @@ const Suggestions = () => {
                     />
 
                     <div className="flex flex-col">
-                      <h1>{user.username}</h1>
+                      <Link href={`/profile/${user?._id}`}>
+                        {user.username}
+                      </Link>
                       <h3
-                        onClick={() => handleFollow(user._id)}
+                        onClick={() => handleFollow(userInfo._id, user._id)}
                         className="text-blue-700 cursor-pointer hover:text-blue-600 "
                       >
                         Follow

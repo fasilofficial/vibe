@@ -5,10 +5,10 @@ import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import UserLayout from "@/app/(components)/UserLayout";
 import {
-  useGetUserMutation,
-  useGetUserPostsMutation,
+  useFollowUserMutation,
   useGetUsersMutation,
   useSavePostMutation,
+  useUnfollowUserMutation,
 } from "@/app/(redux)/slices/user/userApiSlice";
 
 import moment from "moment";
@@ -29,6 +29,8 @@ import {
   setPosts,
   setUsers,
   updateComments,
+  updateFollowers,
+  updateFollowings,
   updateLikes,
   updateSaves,
 } from "@/app/(redux)/slices/data/dataSlice";
@@ -77,57 +79,67 @@ const UserProfile = ({ params: { userId } }) => {
 
   const [getPosts] = useGetPostsMutation(); // get posts
   const [getUsers] = useGetUsersMutation(); // get users
-  // const [followUser] = useFollowUserMutation(); // follow user
-  // const [UnfollowUser] = useUnfollowUserMutation(); // unfollow user
-  const [likePost] = useLikePostMutation();
-  const [addComment] = useAddCommentMutation();
-  const [addReply] = useAddReplyMutation();
-  const [deleteComment] = useDeleteCommentMutation();
-  const [deleteReply] = useDeleteReplyMutation();
-  const [savePost] = useSavePostMutation();
+  const [followUser] = useFollowUserMutation(); // follow user
+  const [UnfollowUser] = useUnfollowUserMutation(); // unfollow user
+  const [likePost] = useLikePostMutation(); // like post
+  const [addComment] = useAddCommentMutation(); // add comment
+  const [addReply] = useAddReplyMutation(); // add reply
+  const [deleteComment] = useDeleteCommentMutation(); // delete comment
+  const [deleteReply] = useDeleteReplyMutation(); // delete reply
+  const [savePost] = useSavePostMutation(); // save post
 
-  // const handleDeletePost = async (postId) => {
-  //   const res = await deletePost(postId).unwrap();
-  // };
+  const handleFollow = async (userId, followingId) => {
+    try {
+      const res = await followUser({
+        followingId,
+        userId,
+      }).unwrap();
 
-  // const handleFollow = async (followingId) => {
-  //   try {
-  //     const res = await followUser({
-  //       followingId,
-  //       userId: user._id,
-  //     }).unwrap();
+      if (res.data) {
+        dispatch(
+          updateFollowings({
+            userId,
+            followings: res.data.followings,
+          })
+        );
+        dispatch(
+          updateFollowers({
+            userId: followingId,
+            followers: res.data.followers,
+          })
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  //     dispatch(updateFollowings(res.data));
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const handleUnfollow = async (userId, followingId) => {
+    try {
+      const res = await UnfollowUser({
+        followingId,
+        userId,
+      }).unwrap();
 
-  // const handleRemoveFollower = async (followerId) => {
-  //   try {
-  //     const res = await removeFollower({
-  //       followerId,
-  //       userId: user._id,
-  //     }).unwrap();
-
-  //     dispatch(updateFollowers(res.data));
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const handleUnfollow = async (followingId) => {
-  //   try {
-  //     const res = await UnfollowUser({
-  //       followingId,
-  //       userId: user._id,
-  //     }).unwrap();
-
-  //     dispatch(updateFollowings(res.data));
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+      if (res.data) {
+        userId;
+        dispatch(
+          updateFollowings({
+            userId,
+            followings: res.data.followings,
+          })
+        );
+        dispatch(
+          updateFollowers({
+            userId: followingId,
+            followers: res.data.followers,
+          })
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleLike = async (postId, userId) => {
     try {
@@ -254,6 +266,8 @@ const UserProfile = ({ params: { userId } }) => {
           followings={user?.followings}
           posts={posts}
           loggedUser={loggedUser}
+          handleFollow={handleFollow}
+          handleUnfollow={handleUnfollow}
         />
         <Navigation setActiveTab={setActiveTab} />
         <MainContent
@@ -275,18 +289,22 @@ const UserProfile = ({ params: { userId } }) => {
   );
 };
 
-const Header = ({ user, followers, followings, posts, loggedUser }) => {
+const Header = ({
+  user,
+  followers,
+  followings,
+  posts,
+  loggedUser,
+  handleFollow,
+  handleUnfollow,
+}) => {
   const [isFollowing, setIsFollowing] = useState();
 
   useEffect(() => {
-    console.log(user?.followers);
-    console.log(loggedUser);
     const index = loggedUser?.followings.findIndex((following) => {
-      console.log(following);
       return following?._id?._id === user?._id || following?._id === user?._id;
     });
     setIsFollowing(index != -1);
-    console.log(index);
   }, [user]);
 
   return (
@@ -315,7 +333,23 @@ const Header = ({ user, followers, followings, posts, loggedUser }) => {
           </div>
         </div>
       </div>
-      <div>{!isFollowing ? "Follow" : ""}</div>
+      <div>
+        {!isFollowing ? (
+          <button
+            className="p-2 px-3 rounded-sm bg-blue-700 hover:bg-blue-600 text-white"
+            onClick={() => handleFollow(loggedUser?._id, user?._id)}
+          >
+            Follow
+          </button>
+        ) : (
+          <button
+            className="p-2 px-3 rounded-sm bg-blue-700 hover:bg-blue-600 text-white"
+            onClick={() => handleUnfollow(loggedUser?._id, user?._id)}
+          >
+            Unfollow
+          </button>
+        )}
+      </div>
     </div>
   );
 };

@@ -12,11 +12,12 @@ import {
 import { setChats } from "../(redux)/slices/data/dataSlice";
 import { IoSend } from "react-icons/io5";
 import moment from "moment";
+import Link from "next/link";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
-  const [receiver, setReceiver] = useState(user?.followings[0]?._id);
+  const [receiver, setReceiver] = useState();
   const [sender, setSender] = useState(user);
   const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
 
@@ -114,12 +115,12 @@ const ChatPage = () => {
       <div className="flex gap-4 h-[96%]">
         <div className="flex flex-col gap-2 min-w-64 p-2 dark:bg-gray-800 shadow-md rounded-sm">
           <div className="flex justify-between items-center w-full border-b py-2">
-            <button
+            {/* <button
               onClick={() => setActiveTab("all")}
               className={`${activeTab === "all" ? "font-bold" : ""}`}
             >
               All
-            </button>
+            </button> */}
             <button
               onClick={() => setActiveTab("followers")}
               className={`${activeTab === "followers" ? "font-bold" : ""}`}
@@ -154,14 +155,17 @@ const ChatPage = () => {
                   alt={receiver?.username}
                 />
                 <div>
-                  <p
-                    className={`${
-                      receiver?._id === receiver?._id ? "font-bold" : ""
-                    }`}
+                  <Link
+                    href={`/profile/${receiver?._id}`}
+                    className="font-bold"
                   >
                     {receiver?.username}
+                  </Link>
+                  <p className="text-gray-400 text-sm ">
+                    {moment(chats[chats?.length - 1]?.createdAt)
+                      .startOf("second")
+                      .fromNow()}
                   </p>
-                  <p className="text-gray-400 text-sm ">12 minutes ago</p>
                 </div>
               </div>
 
@@ -178,7 +182,6 @@ const ChatPage = () => {
                       className={` min-w-80  max-w-fit flex gap-2`}
                       key={chat._id || index}
                     >
-                      {" "}
                       {chat?.sender?._id === user?._id ? (
                         <>
                           <div className="w-full p-2 border border-b rounded shadow">
@@ -284,14 +287,14 @@ const ChatList = ({
 }) => {
   const renderList = () => {
     switch (activeTab) {
-      case "all":
-        return (
-          <AllUsersList
-            users={all}
-            receiver={receiver}
-            handleSelectReceiver={handleSelectReceiver}
-          />
-        );
+      // case "all":
+      //   return (
+      //     <AllUsersList
+      //       users={all}
+      //       receiver={receiver}
+      //       handleSelectReceiver={handleSelectReceiver}
+      //     />
+      //   );
       case "followers":
         return (
           <FollowersList
@@ -310,8 +313,8 @@ const ChatList = ({
         );
       default:
         return (
-          <AllUsersList
-            users={all}
+          <FollowingsList
+            followings={followings}
             receiver={receiver}
             handleSelectReceiver={handleSelectReceiver}
           />
@@ -345,7 +348,6 @@ const FollowersList = ({ followers, receiver, handleSelectReceiver }) => {
                 >
                   {follower?._id?.username}
                 </p>
-                <p className="text-gray-400 text-sm ">12 minutes ago</p>
               </div>
             </div>
           ))
@@ -376,7 +378,6 @@ const FollowingsList = ({ followings, receiver, handleSelectReceiver }) => {
                 >
                   {following?._id?.username}
                 </p>
-                <p className="text-gray-400 text-sm ">12 minutes ago</p>
               </div>
             </div>
           ))
@@ -407,7 +408,6 @@ const AllUsersList = ({ users, receiver, handleSelectReceiver }) => {
                 >
                   {user?._id?.username}
                 </p>
-                <p className="text-gray-400 text-sm ">12 minutes ago</p>
               </div>
             </div>
           ))
