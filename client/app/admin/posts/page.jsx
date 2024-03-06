@@ -47,7 +47,7 @@ const Posts = () => {
   }, []);
 
   return (
-    <div>
+    <div className="w-full flex items-center flex-col gap-4">
       <h1 className="text-2xl font-bold mb-2">Post Management</h1>
       {isLoadingGetPosts ? (
         "Loading..."
@@ -59,7 +59,7 @@ const Posts = () => {
             posts.map((post) => (
               <div
                 key={post.id}
-                className="bg-white shadow-md rounded-lg overflow-hidden"
+                className="bg-white dark:bg-gray-800 shadow-md rounded-md overflow-hidden"
               >
                 <img
                   src={post.imageUrl}
@@ -78,7 +78,7 @@ const Posts = () => {
                     {post.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="bg-gray-200 text-gray-800 text-sm rounded-full px-2 py-1 mr-1 mb-1"
+                        className="bg-gray-200 dark:bg-gray-400 text-gray-800 text-sm rounded-full px-2 py-1 mr-1 mb-1"
                       >
                         {tag}
                       </span>
@@ -87,7 +87,7 @@ const Posts = () => {
                   <div className="flex justify-end">
                     <button
                       onClick={() => handleDeletePost(post._id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
+                      className="bg-red-500 text-white px-3 py-1 rounded-md shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75"
                     >
                       Delete
                     </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -8,22 +8,21 @@ import {
   useGetUsersMutation,
 } from "../(redux)/slices/user/userApiSlice";
 import {
+  setUsers,
   updateFollowers,
   updateFollowings,
 } from "../(redux)/slices/data/dataSlice";
+import { selectSuggestions, selectUser } from "../(redux)/selectors";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
-
-  
-
-  const [suggestions, setSuggestions] = useState();
-
-  const [getUsers] = useGetUsersMutation();
-
-  const [followUser] = useFollowUserMutation();
+  const { user } = useSelector(selectUser(userInfo?._id));
+  const { suggestions } = useSelector(selectSuggestions(user));
 
   const dispatch = useDispatch();
+
+  const [getUsers] = useGetUsersMutation();
+  const [followUser] = useFollowUserMutation();
 
   const handleFollow = async (userId, followingId) => {
     try {
@@ -52,14 +51,18 @@ const Suggestions = () => {
   };
 
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      const res = await getUsers().unwrap();
-
-      if (res.data) {
-        setSuggestions(res?.data?.filter((user) => user._id !== userInfo._id));
+    const fetchUsers = async () => {
+      try {
+        const res = await getUsers().unwrap();
+        if (res.data) {
+          dispatch(setUsers(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
       }
     };
-    fetchSuggestions();
+
+    if (!user) fetchUsers();
   }, []);
 
   return (

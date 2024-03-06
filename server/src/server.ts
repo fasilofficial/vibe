@@ -2,6 +2,7 @@ import http from "http";
 import { Server } from "socket.io";
 import app from "./app";
 import { connectDatabase } from "./config/database";
+import Chat from "./models/Chat";
 
 const server = http.createServer(app);
 
@@ -10,15 +11,21 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  socket.on("message", ({ message, roomName, sender, receiver }) => {
+  socket.on("message", async ({ message, roomName, sender, receiver }) => {
     // receives message from sender
-    console.log(message, roomName, sender, receiver);
     console.log("Message received");
+
+    const chat = new Chat({ message, sender, receiver });
+
+    await chat.save();
+    await chat.populate({ path: "sender", model: "User" });
+    await chat.populate({ path: "receiver", model: "User" });
+
     if (roomName.length) {
-      io.to(roomName).emit("message", { message, roomName, sender, receiver }); // send message to specific room (if any)
+      io.to(roomName).emit("message", chat); // send message to specific room (if any)
       console.log("Message sent");
     } else {
-      io.emit("message", { message, roomName, sender, receiver }); // send message to everyone
+      io.emit("message", chat); // send message to everyone
       console.log("Message sent");
     }
   });

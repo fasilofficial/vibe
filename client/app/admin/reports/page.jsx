@@ -53,11 +53,11 @@ const Reports = () => {
 
   return (
     <div className="w-full flex items-center flex-col gap-4">
-      <h1>Reports Management</h1>
+     <h1 className="text-2xl font-bold mb-2">Report Management</h1>
       <div>
         {reports ? (
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-            <thead className="border-b bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 shadow-md">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   PostID
@@ -76,14 +76,18 @@ const Reports = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className=" divide-y divide-gray-200">
               {reports.map((report, index) => (
                 <tr
                   key={report._id}
-                  className={report.resolved ? "bg-gray-100" : "bg-white"}
+                  className={
+                    report.resolved
+                      ? "bg-gray-100 dark:bg-gray-800" 
+                      : "bg-white dark:bg-gray-700"
+                  }
                 >
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {report.postId?._id || 'Post deleted'}
+                    {report.postId?._id || "Post deleted"}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {report.reports ? (

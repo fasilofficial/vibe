@@ -30,7 +30,5 @@ export const adminApiSlice = apiSlice.injectEndpoints({
 export const {
   useAdminSignupMutation,
   useAdminSigninMutation,
-  useGetUsersMutation,
-  useGetPostsMutation,
   useAdminLogoutMutation,
 } = adminApiSlice;

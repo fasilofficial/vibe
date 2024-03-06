@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  setUsers,
-  updateUser,
-} from "@/app/(redux)/slices/data/dataSlice";
+import { setUsers, updateUser } from "@/app/(redux)/slices/data/dataSlice";
 import {
   useBlockUserMutation,
   useGetUsersMutation,
@@ -47,11 +44,11 @@ const Users = () => {
 
   return (
     <div className="w-full flex items-center flex-col gap-4">
-      <h1>User Management</h1>
+      <h1 className="text-2xl font-bold mb-2">User Management</h1>
       <div>
         {users ? (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 shadow-md">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th
                   scope="col"
@@ -79,9 +76,9 @@ const Users = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-700 divide-y divide-gray-200">
               {users?.map((user, index) => (
-                <tr key={index} className="bg-white">
+                <tr key={index}>
                   <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 import { selectChats, selectUser } from "../(redux)/selectors";
 import { useSelector, useDispatch } from "react-redux";
@@ -9,37 +9,53 @@ import {
   useAddChatMutation,
   useGetChatsMutation,
 } from "../(redux)/slices/chat/chatApiSlice";
-import { setChats } from "../(redux)/slices/data/dataSlice";
+import { addChat, setChats, setUsers } from "../(redux)/slices/data/dataSlice";
 import { IoSend } from "react-icons/io5";
 import moment from "moment";
 import Link from "next/link";
+import { useGetUsersMutation } from "../(redux)/slices/user/userApiSlice";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
+  // const { user } = useCallback(
+  //   () => useSelector(selectUser(userInfo._id)),
+  //   [userInfo._id]
+  // );
 
   const [receiver, setReceiver] = useState();
   const [sender, setSender] = useState(user);
 
   const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
 
+  // const { chats } = useCallback(
+  // () => useSelector(selectChats(userInfo?._id, receiver?._id)),
+  // [userInfo?._id, receiver?._id]
+  // );
+
   const [socket, setSocket] = useState();
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("followers");
 
-  const [addChat] = useAddChatMutation();
   const [getChats] = useGetChatsMutation();
+  const [getUsers] = useGetUsersMutation();
+
+  const canvasRef = useRef();
 
   const handleSelectReceiver = (receiver) => {
     setReceiver(receiver);
     setRoomName(generateRoomName(user?.email, receiver?.email));
+    if (canvasRef.current) {
+      canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
+    }
     socket.emit("joinRoom", roomName);
   };
 
   const dispatch = useDispatch();
 
   const handleSendMessage = async () => {
+    setSender(user);
     if (message.trim() === "" || !message || !roomName || !sender || !receiver)
       return;
 
@@ -52,11 +68,11 @@ const ChatPage = () => {
 
     try {
       socket.emit("message", data);
-      const res = await addChat(data).unwrap();
+      // const res = await addNewChat(data).unwrap();
 
-      if (res.data) {
-        dispatch(setChats([...chats, res.data]));
-      }
+      // if (res.data) {
+      //   dispatch(setChats([...chats, res.data]));
+      // }
     } catch (error) {
       console.error("Erorr sending message:", error);
     } finally {
@@ -67,21 +83,22 @@ const ChatPage = () => {
   useEffect(() => {
     const socket = io("http://localhost:3300");
 
-    socket.on("message", ({ message, roomName, sender, receiver }) => {
-      console.log({ message, roomName, sender, receiver });
+    socket.on("message", (chat) => {
       console.log("receive");
-      dispatch(setChats([...chats, { message, roomName, sender, receiver }]));
+      dispatch(addChat(chat));
 
-      // setInbox((prevState) => {
-      //   if (!prevState.includes(message)) {
-      //     return [...prevState, message];
-      //   } else {
-      //     return prevState;
-      //   }2
-      // });
+      setTimeout(() => {
+        if (canvasRef.current) {
+          canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
+        }
+      }, 100);
     });
 
     setSocket(socket);
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -95,8 +112,19 @@ const ChatPage = () => {
         console.error("Error fetching chats:", error);
       }
     };
+    const fetchUsers = async () => {
+      try {
+        const res = await getUsers().unwrap();
+        if (res.data) {
+          dispatch(setUsers(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
 
-    fetchChats();
+    if (!user) fetchUsers();
+    if (!chats || chats?.length <= 0) fetchChats();
   }, []);
 
   return (
@@ -158,9 +186,13 @@ const ChatPage = () => {
                 </div>
               </div>
 
-              <div className="flex flex-grow flex-col gap-4 bg-white dark:bg-gray-800 min-h-96 overflow-y-scroll p-2">
+              <div
+                ref={canvasRef}
+                className="flex flex-grow flex-col gap-4 bg-white dark:bg-gray-800 min-h-96 overflow-y-scroll p-2"
+              >
                 {chats.map((chat, index) => (
                   <div
+                    key={chat?._id}
                     className={`w-full flex ${
                       chat?.sender?._id === user?._id
                         ? "justify-end"
@@ -334,6 +366,7 @@ const FollowersList = ({ followers, receiver, handleSelectReceiver }) => {
                   className={`${
                     receiver?._id === follower?._id?._id ? "font-bold" : ""
                   }`}
+                  onClick={() => handleSelectReceiver(follower?._id)}
                 >
                   {follower?._id?.username}
                 </p>

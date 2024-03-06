@@ -31,15 +31,10 @@ const authSlice = createSlice({
       state.adminInfo = null;
       localStorage.removeItem("adminInfo");
     },
-
   },
 });
 
-export const {
-  setCredentials,
-  logout,
-  setAdminCredentials,
-  adminLogout,
-} = authSlice.actions;
+export const { setCredentials, logout, setAdminCredentials, adminLogout } =
+  authSlice.actions;
 
 export default authSlice.reducer;

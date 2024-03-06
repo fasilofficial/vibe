@@ -24,3 +24,21 @@ export const selectChats = (senderId, receiverId) => (state) => {
     ),
   };
 };
+
+export const selectSuggestions = (user) => (state) => {
+  const userId = user?._id;
+  const userFollowingIds = user?.followings.map(
+    (following) => following?._id?._id || following?._id
+  );
+  const userFollowerIds = user?.followers.map(
+    (follower) => follower?._id?._id || follower?._id
+  );
+  return {
+    suggestions: state?.data?.users.filter(
+      (user) =>
+        !userFollowerIds.includes(user._id) && // filter out followers
+        !userFollowingIds.includes(user._id) && // folter out followings
+        user._id !== userId // filter out the user
+    ),
+  };
+};

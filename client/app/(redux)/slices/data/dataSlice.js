@@ -43,6 +43,9 @@ const dataSlice = createSlice({
     addPost: (state, action) => {
       state.posts = [...state.posts, action.payload];
     },
+    addChat: (state, action) => {
+      state.chats = [...state.chats, action.payload];
+    },
 
     updatePost: (state, action) => {
       const { postId, updatedPost } = action.payload;
@@ -152,6 +155,7 @@ export const {
 
   addReport,
   addPost,
+  addChat
 } = dataSlice.actions;
 
 export default dataSlice.reducer;
