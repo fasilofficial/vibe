@@ -270,8 +270,8 @@ const UserProfile = () => {
       }
     };
 
-    fetchPosts();
-    fetchUsers();
+    if (!posts || posts?.length <= 0) fetchPosts();
+    if (!user) fetchUsers();
   }, []);
 
   return (
@@ -283,24 +283,26 @@ const UserProfile = () => {
         posts={posts}
       />
       <Navigation setActiveTab={setActiveTab} activeTab={activeTab} />
-      <MainContent
-        activeTab={activeTab}
-        user={user}
-        posts={posts}
-        followers={user?.followers}
-        followings={user?.followings}
-        saves={user?.saves}
-        handleDeletePost={handleDeletePost}
-        handleRemoveFollower={handleRemoveFollower}
-        handleFollow={handleFollow}
-        handleUnfollow={handleUnfollow}
-        handleLike={handleLike}
-        handleAddComment={handleAddComment}
-        handleAddReply={handleAddReply}
-        handleDeleteComment={handleDeleteComment}
-        handleDeleteReply={handleDeleteReply}
-        handleSavePost={handleSavePost}
-      />
+      {user && (
+        <MainContent
+          activeTab={activeTab}
+          user={user}
+          posts={posts}
+          followers={user?.followers}
+          followings={user?.followings}
+          saves={user?.saves}
+          handleDeletePost={handleDeletePost}
+          handleRemoveFollower={handleRemoveFollower}
+          handleFollow={handleFollow}
+          handleUnfollow={handleUnfollow}
+          handleLike={handleLike}
+          handleAddComment={handleAddComment}
+          handleAddReply={handleAddReply}
+          handleDeleteComment={handleDeleteComment}
+          handleDeleteReply={handleDeleteReply}
+          handleSavePost={handleSavePost}
+        />
+      )}
     </div>
   );
 };
@@ -879,7 +881,7 @@ const SavesList = ({ user, saves, handleSavePost }) => {
         {saves
           ? saves.map((post) => (
               <SavePost
-                key={post._id._id}
+                key={post?._id?._id}
                 post={post}
                 user={user}
                 handleSavePost={handleSavePost}

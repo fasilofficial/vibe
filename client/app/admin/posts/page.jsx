@@ -43,7 +43,7 @@ const Posts = () => {
       }
     };
 
-    fetchPosts();
+    if (!posts || posts?.length <= 0) fetchPosts();
   }, []);
 
   return (

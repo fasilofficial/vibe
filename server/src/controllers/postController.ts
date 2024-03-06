@@ -28,6 +28,14 @@ export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
       path: "creator",
       model: "User",
     });
+    await createdPost.populate({
+      path: "comments.userId",
+      model: "User",
+    });
+    await createdPost.populate({
+      path: "comments.replies.userId",
+      model: "User",
+    });
 
     res.status(201).json({ message: "Post created", data: createdPost });
   } catch (error) {
@@ -72,10 +80,7 @@ export const addComment = expressAsyncHandler(
     const { postId } = req.params;
 
     try {
-      const post = await Post.findById(postId).populate({
-        path: "creator",
-        model: "User",
-      });
+      const post = await Post.findById(postId);
 
       if (!post) {
         res.status(404).json({ message: "Post not found" });
@@ -95,6 +100,10 @@ export const addComment = expressAsyncHandler(
 
       await post.save();
 
+      await post.populate({
+        path: "creator",
+        model: "User",
+      });
       await post.populate({
         path: "comments.userId",
         model: "User",
@@ -283,10 +292,7 @@ export const addReply = expressAsyncHandler(
     const { userId, reply } = req.body;
 
     try {
-      const post = await Post.findOne({ _id: postId }).populate({
-        path: "creator",
-        model: "User",
-      });
+      const post = await Post.findOne({ _id: postId });
 
       if (post) {
         const commentIndex = post.comments.findIndex(
@@ -299,8 +305,20 @@ export const addReply = expressAsyncHandler(
           };
           post.comments[commentIndex].replies.push(newReply);
 
+          const activity = new Activity({
+            type: "reply",
+            by: userId,
+            userId: post.comments[commentIndex].userId,
+          });
+
+          activity.save();
+
           await post.save();
 
+          await post.populate({
+            path: "creator",
+            model: "User",
+          });
           await post.populate({
             path: "comments.userId",
             model: "User",

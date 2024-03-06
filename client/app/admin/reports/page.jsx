@@ -48,7 +48,7 @@ const Reports = () => {
       }
     };
 
-    fetchReports();
+    if (!reports || reports?.length <= 0) fetchReports();
   }, []);
 
   return (
@@ -83,7 +83,7 @@ const Reports = () => {
                   className={report.resolved ? "bg-gray-100" : "bg-white"}
                 >
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {report.postId?._id}
+                    {report.postId?._id || 'Post deleted'}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {report.reports ? (

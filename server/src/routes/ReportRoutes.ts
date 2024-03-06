@@ -16,7 +16,7 @@ router.get("/", getReports);
 // get report
 router.get("/:reportId", getReport);
 
-// get report
+// resolve report
 router.put("/:reportId", resolveReport);
 
 // add report

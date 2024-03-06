@@ -40,6 +40,9 @@ const dataSlice = createSlice({
     addReport: (state, action) => {
       state.reports = [...state.reports, action.payload];
     },
+    addPost: (state, action) => {
+      state.posts = [...state.posts, action.payload];
+    },
 
     updatePost: (state, action) => {
       const { postId, updatedPost } = action.payload;
@@ -148,6 +151,7 @@ export const {
   updateReport,
 
   addReport,
+  addPost,
 } = dataSlice.actions;
 
 export default dataSlice.reducer;

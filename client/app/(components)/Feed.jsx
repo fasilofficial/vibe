@@ -11,10 +11,14 @@ import {
   useGetPostsMutation,
   useLikePostMutation,
 } from "../(redux)/slices/post/postApiSlice";
-import { useSavePostMutation } from "../(redux)/slices/user/userApiSlice";
+import {
+  useGetUsersMutation,
+  useSavePostMutation,
+} from "../(redux)/slices/user/userApiSlice";
 
 import {
   setPosts,
+  setUsers,
   updateComments,
   updateLikes,
   updateSaves,
@@ -22,13 +26,12 @@ import {
 import { selectUser } from "../(redux)/selectors";
 
 const Feed = () => {
-  // const [posts, setPosts] = useState();
-
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
   const { posts } = useSelector((state) => state.data);
 
   const [getPosts] = useGetPostsMutation();
+  const [getUsers] = useGetUsersMutation();
 
   const [likePost] = useLikePostMutation();
   const [addComment] = useAddCommentMutation();
@@ -41,12 +44,28 @@ const Feed = () => {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const res = await getPosts().unwrap();
-      dispatch(setPosts(res.data));
+      try {
+        const res = await getPosts().unwrap();
+        if (res.data) {
+          dispatch(setPosts(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
     };
-    // if (!posts) {
-    fetchPosts();
-    // }
+    const fetchUsers = async () => {
+      try {
+        const res = await getUsers().unwrap();
+        if (res.data) {
+          dispatch(setUsers(res.data));
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    if (!posts || posts?.length <= 0) fetchPosts();
+    if (!user) fetchUsers();
   }, []);
 
   const handleLike = async (postId, userId) => {

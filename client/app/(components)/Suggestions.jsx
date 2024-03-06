@@ -15,6 +15,8 @@ import {
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
 
+  
+
   const [suggestions, setSuggestions] = useState();
 
   const [getUsers] = useGetUsersMutation();

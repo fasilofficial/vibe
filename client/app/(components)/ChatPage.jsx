@@ -17,10 +17,12 @@ import Link from "next/link";
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
-  const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
 
   const [receiver, setReceiver] = useState();
   const [sender, setSender] = useState(user);
+
+  const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
+
   const [socket, setSocket] = useState();
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
@@ -124,7 +126,7 @@ const ChatPage = () => {
           <div className="flex flex-col gap-2">
             <ChatList
               activeTab={activeTab}
-              all={[...user?.followers, ...user?.followings]}
+              all={[]}
               followers={user?.followers}
               followings={user?.followings}
               receiver={receiver}

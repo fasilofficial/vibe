@@ -1,5 +1,9 @@
 export const selectUser = (userId) => (state) => {
-  return { user: state?.data?.users?.find((user) => user?._id === userId) };
+  return {
+    user: state?.data?.users?.find(
+      (user) => user?._id?._id === userId || user?._id === userId
+    ),
+  };
 };
 
 export const selectPosts = (userId) => (state) => {

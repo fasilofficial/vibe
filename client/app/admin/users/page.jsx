@@ -42,7 +42,7 @@ const Users = () => {
       }
     };
 
-    if (!users) fetchUsers();
+    if (!users || users?.length <= 0) fetchUsers();
   }, []);
 
   return (

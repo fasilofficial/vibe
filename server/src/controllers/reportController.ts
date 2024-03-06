@@ -2,6 +2,7 @@ import expressAsyncHandler from "express-async-handler";
 import Report from "../models/Report";
 import { Request, Response } from "express";
 import Post from "../models/Post";
+import Activity from "../models/Activity";
 
 // get reports
 export const getReports = expressAsyncHandler(
@@ -73,6 +74,14 @@ export const resolveReport = expressAsyncHandler(
       }
 
       if (report.reports.length >= 5) {
+        const activity = new Activity({
+          type: "report",
+          by: post.creator, // dummy
+          userId: post.creator,
+        });
+
+        activity.save();
+
         await post.deleteOne();
 
         report.resolved = true;

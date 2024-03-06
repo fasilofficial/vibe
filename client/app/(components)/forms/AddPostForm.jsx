@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { useSelector, useDispatch } from "react-redux";
-import {
-  useAddPostMutation,
-} from "@/app/(redux)/slices/post/postApiSlice";
+import { useAddPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
+import { addPost } from "@/app/(redux)/slices/data/dataSlice";
 
 const AddPostForm = () => {
   const router = useRouter();
@@ -19,7 +18,7 @@ const AddPostForm = () => {
   const [loading, setLoading] = useState(false);
   const [isLocationListVisible, setIsLocationListVisible] = useState(false);
 
-  const [addPost] = useAddPostMutation();
+  const [addNewPost] = useAddPostMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
 
@@ -84,15 +83,21 @@ const AddPostForm = () => {
         creator: userInfo._id,
       };
 
-      const res = await addPost(newPost).unwrap();
-      // dispatch(updateAddPost(res.data));
+      const res = await addNewPost(newPost).unwrap();
 
-      setLoading(false);
+      if (res.data) {
+        dispatch(addPost(res.data));
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);
+      }
 
-      // router.push("/");
+      router.push("/");
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error uploading image. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
