@@ -69,7 +69,7 @@ const Post = ({
             <div className="flex items-center">
               <button
                 onClick={() => {
-                  handleLike(post._id, user?._id);
+                  handleLike(post, user?._id);
                 }}
                 data-postid={post._id}
                 className="text-gray-800 focus:outline-none"
@@ -212,7 +212,7 @@ const Post = ({
                                     type="button"
                                     onClick={() =>
                                       handleAddReply(
-                                        post._id,
+                                        post,
                                         comment._id,
                                         user._id,
                                         reply,
@@ -279,7 +279,7 @@ const Post = ({
                 <button
                   type="button"
                   onClick={() =>
-                    handleAddComment(post._id, user._id, comment, setComment)
+                    handleAddComment(post, user._id, comment, setComment)
                   }
                 >
                   <IoSend />

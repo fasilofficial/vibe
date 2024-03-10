@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaCompass,
   FaHome,
@@ -17,10 +17,24 @@ import { IoLogOut } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import { useLogoutMutation } from "@/redux/slices/user/userApiSlice";
+import Badge from "@mui/material/Badge";
+import { useSocket } from "@/providers/SocketProvider";
 
-const UserSidebar = ({ session }) => {
+const UserSidebar = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const pathname = usePathname();
+
+  const socket = useSocket()
+
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    console.log(socket);
+    socket?.on("receiveNotification", (data) => {
+      console.log("notification received", data);
+      setNotifications((prevState) => [...prevState, data]);
+    });
+  }, [socket]);
 
   return (
     <aside className="p-4 h-screen fixed left-0">
@@ -41,6 +55,7 @@ const UserSidebar = ({ session }) => {
               title: "Activities",
               icon: <IoIosNotifications />,
               path: "/activity",
+              badge: notifications.length > 0 ? notifications.length : null,
             },
             { title: "New Post", icon: <FaPlusCircle />, path: "/add-post" },
           ].map((item, index) => (
@@ -57,7 +72,13 @@ const UserSidebar = ({ session }) => {
                   : "bg-gray-100 text-gray-900"
               } hover:shadow-xl hover:scale-105 transition-all`}
             >
-              {item.icon}
+              {item.badge ? (
+                <Badge badgeContent={item.badge} color="primary">
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              )}
             </Link>
           ))}
         </div>

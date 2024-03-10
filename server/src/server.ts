@@ -11,25 +11,38 @@ const io = new Server(server, {
 });
 
 type User = {
-  userId: string;
+  username: string;
   socketId: string;
 };
 
-let usersOnline: User[] = [];
+let onlineUsers: User[] = [];
 
-function addUser(userId: string, socketId: string) {
-  usersOnline.push({ userId, socketId });
-}
+const addNewUser = (username: string, socketId: string) => {
+  const user = getUser(username);
+  if (user && user.socketId !== socketId) removeUser(user.socketId);
+  onlineUsers.push({ username, socketId });
+};
 
-function removeUser(userId: string) {
-  usersOnline = usersOnline.filter((user) => user.userId !== userId);
-}
+const removeUser = (socketId: string) => {
+  onlineUsers = onlineUsers.filter((user) => user.socketId !== socketId);
+};
+
+const getUser = (username: string) => {
+  return onlineUsers.find((user) => user.username === username);
+};
 
 io.on("connection", (socket) => {
-  socket.on("newUser", (user) => {
-    // const { userId, socketId } = user;
-    console.log(user);
-    // addUser(userId, socketId);
+  socket.on("newUser", (username) => {
+    addNewUser(username, socket.id);
+  });
+
+  socket.on("sendNotification", ({ type, senderName, receiverName }) => {
+    const receiver = getUser(receiverName);
+    if (receiver)
+      io.to(receiver?.socketId).emit("receiveNotification", {
+        senderName,
+        type,
+      });
   });
 
   socket.on("message", async ({ message, roomName, sender, receiver }) => {
@@ -54,6 +67,10 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", (roomName) => {
     // console.log(roomName);
     socket.join(roomName);
+  });
+
+  socket.on("getOnlineUsers", () => {
+    io.emit("onlineUsers", onlineUsers);
   });
 
   socket.on("disconnect", () => {

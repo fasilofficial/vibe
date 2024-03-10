@@ -13,18 +13,32 @@ import {
   updateFollowings,
 } from "../redux/slices/data/dataSlice";
 import { selectSuggestions, selectUser } from "../redux/selectors";
+import { NOTIFICATION_TYPES } from "@/constants";
+import { useSocket } from "@/providers/SocketProvider";
+
+const handleSendNotification = (socket, type, senderName, receiverName) => {
+  console.log(socket);
+  socket.emit("sendNotification", { type, senderName, receiverName });
+};
+
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo?._id));
   const { suggestions } = useSelector(selectSuggestions(user));
 
+
+
   const dispatch = useDispatch();
 
   const [getUsers] = useGetUsersMutation();
   const [followUser] = useFollowUserMutation();
 
-  const handleFollow = async (userId, followingId) => {
+
+  const handleFollow = async (
+    userId,
+    { _id: followingId, username: receiverName }
+  ) => {
     try {
       const res = await followUser({
         followingId,
@@ -43,6 +57,12 @@ const Suggestions = () => {
             userId: followingId,
             followers: res.data.followers,
           })
+        );
+        handleSendNotification(
+          socket,
+          NOTIFICATION_TYPES.follow,
+          user.username,
+          receiverName
         );
       }
     } catch (error) {
@@ -101,7 +121,7 @@ const Suggestions = () => {
                         {user.username}
                       </Link>
                       <h3
-                        onClick={() => handleFollow(userInfo._id, user._id)}
+                        onClick={() => handleFollow(userInfo._id, user)}
                         className="text-blue-700 cursor-pointer hover:text-blue-600 "
                       >
                         Follow

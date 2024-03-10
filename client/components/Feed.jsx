@@ -24,11 +24,25 @@ import {
   updateSaves,
 } from "../redux/slices/data/dataSlice";
 import { selectUser } from "../redux/selectors";
+import { NOTIFICATION_TYPES } from "@/constants";
+import { useSocket } from "@/providers/SocketProvider";
+
+export const handleSendNotification = (
+  socket,
+  type,
+  senderName,
+  receiverName
+) => {
+  console.log(socket)
+  socket.emit("sendNotification", { type, senderName, receiverName });
+};
 
 const Feed = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
   const { posts } = useSelector((state) => state.data);
+
+  const socket = useSocket();
 
   const [getPosts] = useGetPostsMutation();
   const [getUsers] = useGetUsersMutation();
@@ -68,7 +82,10 @@ const Feed = () => {
     if (!user) fetchUsers();
   }, []);
 
-  const handleLike = async (postId, userId) => {
+  const handleLike = async (
+    { _id: postId, creator: { username: receiverName } },
+    userId
+  ) => {
     try {
       const res = await likePost({
         postId,
@@ -76,12 +93,25 @@ const Feed = () => {
       }).unwrap();
 
       dispatch(updateLikes({ postId, likes: res.data }));
+      if (res.message && res.message === "liked") {
+        handleSendNotification(
+          socket,
+          NOTIFICATION_TYPES.like,
+          user.username,
+          receiverName
+        );
+      }
     } catch (error) {
       console.error("Error handling like:", error);
     }
   };
 
-  const handleAddComment = async (postId, userId, comment, setComment) => {
+  const handleAddComment = async (
+    { _id: postId, creator: { username: receiverName } },
+    userId,
+    comment,
+    setComment
+  ) => {
     if (comment.trim() === "") return;
 
     try {
@@ -92,6 +122,12 @@ const Feed = () => {
       }).unwrap();
 
       dispatch(updateComments({ postId, comments: res.data }));
+      handleSendNotification(
+        socket,
+        NOTIFICATION_TYPES.comment,
+        user.username,
+        receiverName
+      );
     } catch (error) {
       console.error("Error adding comment:", error);
     }

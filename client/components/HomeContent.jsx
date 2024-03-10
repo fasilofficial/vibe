@@ -21,24 +21,13 @@ const HomeContent = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const socket = io("http://localhost:3300");
-
-    // socket.on("newUser", (chat) => {});
-
-    if (userInfo && socket) {
-      console.log(userInfo);
-      console.log(socket);
-      console.log(socket.id);
-      const user = { userId: userInfo._id, socketId: socket.id };
-      socket.emit("newUser", user);
-    }
-
-    setSocket(socket);
-
-    return () => {
-      socket.disconnect();
-    };
+    setSocket(io("http://localhost:3300"));
+    // socket && dispatch(setSocket(socket));
   }, []);
+
+  useEffect(() => {
+    socket?.emit("newUser", userInfo?.username);
+  }, [userInfo, socket]);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -56,7 +45,7 @@ const HomeContent = () => {
 
   return (
     <>
-      {!userInfo ? (
+      {!userInfo && socket ? (
         <div className="w-screen h-screen relative">
           <div className=" absolute inset-0 flex items-center flex-col justify-center ">
             <h1 className=" text-8xl font-extrabold mb-4">VIBE.</h1>
@@ -73,8 +62,8 @@ const HomeContent = () => {
           />
         </div>
       ) : (
-        <UserLayout>
-          <Feed />
+        <UserLayout socket={socket}>
+          <Feed socket={socket} />
         </UserLayout>
       )}
     </>

@@ -15,7 +15,7 @@ import moment from "moment";
 import Link from "next/link";
 import { useGetUsersMutation } from "../redux/slices/user/userApiSlice";
 
-const ChatPage = () => {
+const ChatPage = ({ socket }) => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
   // const { user } = useCallback(
@@ -33,7 +33,11 @@ const ChatPage = () => {
   // [userInfo?._id, receiver?._id]
   // );
 
-  const [socket, setSocket] = useState();
+  useEffect(() => {
+    console.log(socket);
+  }, [socket]);
+
+  // const [socket, setSocket] = useState();
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
   const [activeTab, setActiveTab] = useState("followers");
@@ -80,26 +84,26 @@ const ChatPage = () => {
     }
   };
 
-  useEffect(() => {
-    const socket = io("http://localhost:3300");
+  // useEffect(() => {
+  //   const socket = io("http://localhost:3300");
 
-    socket.on("message", (chat) => {
-      console.log("receive");
-      dispatch(addChat(chat));
+  //   socket.on("message", (chat) => {
+  //     console.log("receive");
+  //     dispatch(addChat(chat));
 
-      setTimeout(() => {
-        if (canvasRef.current) {
-          canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
-        }
-      }, 100);
-    });
+  //     setTimeout(() => {
+  //       if (canvasRef.current) {
+  //         canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
+  //       }
+  //     }, 100);
+  //   });
 
-    setSocket(socket);
+  //   setSocket(socket);
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
   useEffect(() => {
     const fetchChats = async () => {

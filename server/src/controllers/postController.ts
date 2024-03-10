@@ -130,14 +130,18 @@ export const likePost = expressAsyncHandler(
 
     const post = await Post.findById(postId);
 
+    let message;
+
     if (post) {
       const userIdIndex = post.likes.indexOf(userId);
 
       if (userIdIndex !== -1) {
         // User has already liked the post
         post.likes.splice(userIdIndex, 1); // Remove the like
+        message = "disliked";
       } else {
         post.likes.push(userId); // Add the like
+        message = "liked";
 
         if (userId !== post.creator) {
           const activity = new Activity({
@@ -151,7 +155,7 @@ export const likePost = expressAsyncHandler(
 
       await post.save();
 
-      res.status(200).json({ message: "Post like toggled!", data: post.likes }); // Send a success response
+      res.status(200).json({ message, data: post.likes }); // Send a success response
     } else {
       res.status(404).send("Post not found");
     }

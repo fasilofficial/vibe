@@ -2,15 +2,14 @@
 
 import React, { useEffect } from "react";
 import UserSidebar from "./sidebars/UserSidebar";
-// import { options } from "../api/auth/[...nextauth]/options";
-// import { getServerSession } from "next-auth";
 import Suggestions from "./Suggestions";
 import ToggleTheme from "./ToggleTheme";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Loader from "./Loader";
+import { SocketProvider } from "@/providers/SocketProvider";
 
-const UserLayout = ({ children }) => {
+const UserLayout = ({ children, socket }) => {
   const { userInfo } = useSelector((state) => state.auth);
 
   const router = useRouter();
@@ -21,16 +20,18 @@ const UserLayout = ({ children }) => {
 
   if (userInfo) {
     return (
-      <div className="flex w-full justify-between h-screen">
-        <div className="relative">
-          <UserSidebar />
+      <SocketProvider socket={socket}>
+        <div className="flex w-full justify-between h-screen">
+          <div className="relative">
+            <UserSidebar />
+          </div>
+          <div className="w-full ">{children}</div>
+          <div className="relative">
+            <Suggestions />
+            <ToggleTheme />
+          </div>
         </div>
-        <div className="w-full ">{children}</div>
-        <div className="relative">
-          <Suggestions />
-          <ToggleTheme />
-        </div>
-      </div>
+      </SocketProvider>
     );
   } else {
     return <Loader />;
