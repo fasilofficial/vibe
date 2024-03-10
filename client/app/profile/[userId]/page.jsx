@@ -74,8 +74,6 @@ const UserProfile = ({ params: { userId } }) => {
         userId,
       }).unwrap();
 
-      console.log(res)
-
       if (res.data) {
         dispatch(
           updateFollowings({
@@ -290,7 +288,6 @@ const Header = ({
   const [isFollowing, setIsFollowing] = useState();
 
   const socket = useSocket();
-  console.log("profile", socket);
 
   useEffect(() => {
     const index = loggedUser?.followings.findIndex((following) => {

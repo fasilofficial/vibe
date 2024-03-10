@@ -24,7 +24,6 @@ const Reports = () => {
 
     try {
       const res = await resolveReport({ reportId, postId }).unwrap();
-      console.log(res);
       if (res.data) {
         dispatch(updateReport({ postId, updatedReport: res.data }));
         res.data ? toast.success(res.message) : toast(res.message);
@@ -52,8 +51,6 @@ const Reports = () => {
     // if (!reports || reports?.length <= 0) fetchReports();
     fetchReports();
   }, []);
-
-  console.log(reports);
 
   return (
     <div className="w-full flex items-center flex-col gap-4">

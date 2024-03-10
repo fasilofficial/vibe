@@ -25,7 +25,6 @@ const Suggestions = () => {
   const dispatch = useDispatch();
 
   const socket = useSocket();
-  console.log("suggestions", socket);
 
   const [getUsers] = useGetUsersMutation();
   const [followUser] = useFollowUserMutation();
