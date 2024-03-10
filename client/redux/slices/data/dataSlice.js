@@ -44,7 +44,15 @@ const dataSlice = createSlice({
       state.posts = [...state.posts, action.payload];
     },
     addChat: (state, action) => {
-      state.chats = [...state.chats, action.payload];
+      const newChat = action.payload;
+      const existingChatIndex = state.chats.findIndex(
+        (chat) => chat._id === newChat._id
+      );
+      if (existingChatIndex !== -1) {
+        state.chats[existingChatIndex] = newChat;
+      } else {
+        state.chats.push(newChat);
+      }
     },
 
     updatePost: (state, action) => {
@@ -155,7 +163,7 @@ export const {
 
   addReport,
   addPost,
-  addChat
+  addChat,
 } = dataSlice.actions;
 
 export default dataSlice.reducer;

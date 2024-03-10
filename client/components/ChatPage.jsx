@@ -29,11 +29,18 @@ const ChatPage = () => {
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
   const [activeTab, setActiveTab] = useState("followers");
+  const [image, setImage] = useState(null);
+  const [sendingImage, setSendingImage] = useState(false);
 
   const [getChats] = useGetChatsMutation();
   const [getUsers] = useGetUsersMutation();
 
   const canvasRef = useRef();
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+  };
 
   const handleSelectReceiver = (receiver) => {
     setReceiver(receiver);
@@ -65,16 +72,50 @@ const ChatPage = () => {
     }
   };
 
+  const handleSendMedia = async (image, sender, receiver) => {
+    if (!image) return;
+
+    setSendingImage(true);
+    const formData = new FormData();
+    formData.append("file", image);
+    formData.append("upload_preset", "z0o48jjp");
+    formData.append("cloud_name", "fasils");
+
+    try {
+      const response = await fetch(
+        "https://api.cloudinary.com/v1_1/fasils/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const resData = await response.json();
+
+      const imageUrl = resData.secure_url;
+      console.log(imageUrl);
+
+      const data = {
+        message: imageUrl,
+        sender,
+        receiver,
+      };
+
+      socket.emit("message", data);
+    } catch (error) {
+      console.error("Error sending image", error);
+    } finally {
+      setSendingImage(false);
+    }
+  };
+
   const dispatchAddChat = useCallback(
     (chat) => {
       dispatch(addChat(chat));
     },
     [dispatch]
   );
-    
 
   useEffect(() => {
-
     socket?.on("message", (chat) => {
       dispatchAddChat(chat);
 
@@ -187,7 +228,7 @@ const ChatPage = () => {
                     } `}
                   >
                     <div
-                      className={` min-w-80  max-w-fit flex gap-2`}
+                      className={` min-w-80  max-w-96 flex gap-2`}
                       key={chat._id || index}
                     >
                       {chat?.sender?._id === user?._id ? (
@@ -198,7 +239,15 @@ const ChatPage = () => {
                                 ? "Me"
                                 : chat?.sender?.username}
                             </p>
-                            <p>{chat?.message}</p>
+                            {chat?.message?.includes("cloudinary") ? (
+                              <img
+                                src={chat.message}
+                                className="w-full rounded-sm"
+                              />
+                            ) : (
+                              <p>{chat?.message}</p>
+                            )}
+
                             <p className="text-right text-xs text-gray-500">
                               {moment(chat?.createdAt)
                                 .startOf("second")
@@ -224,7 +273,14 @@ const ChatPage = () => {
                                 ? "Me"
                                 : chat?.sender?.username}
                             </p>
-                            <p>{chat?.message}</p>
+                            {chat?.message?.includes("cloudinary") ? (
+                              <img
+                                src={chat.message}
+                                className="w-full rounded-sm"
+                              />
+                            ) : (
+                              <p>{chat?.message}</p>
+                            )}
                             <p className="text-right text-xs text-gray-500">
                               {moment(chat?.createdAt)
                                 .startOf("second")
@@ -239,15 +295,16 @@ const ChatPage = () => {
               </div>
 
               <div className="flex flex-col gap-4 w-full">
-                <div className="flex gap-4 ">
+                <div className="flex gap-4 items-center">
                   <input
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     type="text"
                     name="message"
                     placeholder="Enter message"
-                    className="dark:bg-gray-700 p-2 text-gray-800 rounded-sm w-full outline-none border border-gray-300 focus:border-gray-400 "
+                    className="dark:bg-gray-700 p-2 text-gray-800 rounded-sm flex-1 outline-none border border-gray-300 focus:border-gray-400 "
                   />
+
                   <button
                     onClick={() => handleSendMessage(message, user, receiver)}
                     className="p-2 rounded-full h-12 w-12 flex justify-center items-center cursor-pointer border-black bg-blue-800 text-white"
@@ -256,6 +313,31 @@ const ChatPage = () => {
                     <IoSend />
                   </button>
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="imageUpload"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <span className="text-gray-700">Upload Image</span>
+                    <input
+                      id="imageUpload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                  <button
+                    onClick={() => handleSendMedia(image, user, receiver)}
+                    className="px-4 py-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700"
+                    type="button"
+                    disabled={sendingImage}
+                  >
+                    {sendingImage ? "Sending..." : "Send"}
+                  </button>
+                </div>
+
                 {/* <div className="flex gap-4">
                   <input
                     value={roomName}

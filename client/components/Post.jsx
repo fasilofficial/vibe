@@ -150,9 +150,12 @@ const Post = ({
                               replay
                             </p>
                             {comment.replies
-                              ? comment.replies.map((reply) => {
+                              ? comment.replies.map((reply, index) => {
                                   return (
-                                    <div className="flex justify-between  p-1 border rounded mb-2 min-w-64 ">
+                                    <div
+                                      key={index}
+                                      className="flex justify-between  p-1 border rounded mb-2 min-w-64 "
+                                    >
                                       <div className="flex gap-2 ">
                                         <img
                                           src={reply?.userId?.profileUrl}
@@ -212,7 +215,7 @@ const Post = ({
                                     type="button"
                                     onClick={() =>
                                       handleAddReply(
-                                        post,
+                                        post._id,
                                         comment._id,
                                         user._id,
                                         reply,

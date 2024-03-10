@@ -68,8 +68,10 @@ const Feed = () => {
       }
     };
 
-    if (!posts || posts?.length <= 0) fetchPosts();
-    if (!user) fetchUsers();
+    fetchPosts();
+    fetchUsers();
+    // if (!posts || posts?.length <= 0) fetchPosts();
+    // if (!user) fetchUsers();
   }, []);
 
   const handleLike = async (
