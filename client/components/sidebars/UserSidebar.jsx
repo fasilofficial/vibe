@@ -18,6 +18,7 @@ import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import Badge from "@mui/material/Badge";
 import { useSocket } from "@/providers/SocketProvider";
+import { NOTIFICATION_TYPES } from "@/constants";
 
 const UserSidebar = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -26,11 +27,18 @@ const UserSidebar = () => {
   const socket = useSocket();
 
   const [notifications, setNotifications] = useState([]);
+  const [messageNotifications, setMessageNotifications] = useState([]);
 
   useEffect(() => {
     socket?.on("receiveNotification", (data) => {
-      console.log("notification received", data);
-      setNotifications((prevState) => [...prevState, data]);
+
+      if (data.senderName !== userInfo?.username) {
+        if (data.type === NOTIFICATION_TYPES.message && pathname !== '/chat') {
+          setMessageNotifications((prevState) => [...prevState, data]);
+        } else {
+          setNotifications((prevState) => [...prevState, data]);
+        }
+      }
     });
   }, [socket]);
 
@@ -48,7 +56,15 @@ const UserSidebar = () => {
             { title: "Feed", icon: <FaHome />, path: "/" },
             { title: "Search", icon: <FaSearch />, path: "/search" },
             { title: "Explore", icon: <FaCompass />, path: "/explore" },
-            { title: "Chat", icon: <FaMessage />, path: "/chat" },
+            {
+              title: "Chat",
+              icon: <FaMessage />,
+              path: "/chat",
+              badge:
+                messageNotifications.length > 0
+                  ? messageNotifications.length
+                  : null,
+            },
             {
               title: "Activities",
               icon: <IoIosNotifications />,
@@ -71,9 +87,27 @@ const UserSidebar = () => {
               } hover:shadow-xl hover:scale-105 transition-all`}
             >
               {item.badge ? (
-                <Badge badgeContent={item.badge} color="primary">
-                  {item.icon}
-                </Badge>
+                <Link
+                  data-tooltip-id="item-tooltip"
+                  data-tooltip-content={item.title}
+                  data-tooltip-place="right"
+                  data-tooltip-delay-show={1000}
+                  key={index}
+                  href={item.path}
+                  className={`w-14 h-14 rounded-full  flex items-center justify-center shadow-md my-3 ${
+                    pathname == item.path
+                      ? "bg-blue-800 text-white"
+                      : "bg-gray-100 text-gray-900"
+                  } hover:shadow-xl hover:scale-105 transition-all`}
+                >
+                  {item.badge ? (
+                    <Badge badgeContent={item.badge} color="primary">
+                      {item.icon}
+                    </Badge>
+                  ) : (
+                    item.icon
+                  )}
+                </Link>
               ) : (
                 item.icon
               )}

@@ -45,22 +45,29 @@ io.on("connection", (socket) => {
       });
   });
 
-  socket.on("message", async ({ message, roomName, sender, receiver }) => {
-    // receives message from sender
-    console.log("Message received");
-
-    const chat = new Chat({ message, sender, receiver });
+  socket.on("message", async ({ message, sender, receiver }) => {
+    const chat = new Chat({
+      message,
+      sender: sender._id,
+      receiver: receiver._id,
+    });
 
     await chat.save();
     await chat.populate({ path: "sender", model: "User" });
     await chat.populate({ path: "receiver", model: "User" });
 
-    if (roomName.length) {
-      io.to(roomName).emit("message", chat); // send message to specific room (if any)
-      console.log("Message sent");
-    } else {
-      io.emit("message", chat); // send message to everyone
-      console.log("Message sent");
+    const receiverUser = getUser(receiver.username);
+    const senderUser = getUser(sender.username);
+
+    if (receiverUser) {
+      io.to(receiverUser?.socketId).emit("message", chat);
+      io.to(receiverUser?.socketId).emit("receiveNotification", {
+        senderName: sender.username,
+        type: "MESSAGE",
+      });
+    }
+    if (senderUser) {
+      io.to(senderUser?.socketId).emit("message", chat);
     }
   });
 

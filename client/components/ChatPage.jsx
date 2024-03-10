@@ -19,14 +19,12 @@ import { useSocket } from "@/providers/SocketProvider";
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
-  const socket = useSocket()
-
+  const socket = useSocket();
 
   const [receiver, setReceiver] = useState();
   const [sender, setSender] = useState(user);
 
   const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
-
 
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
@@ -48,25 +46,18 @@ const ChatPage = () => {
 
   const dispatch = useDispatch();
 
-  const handleSendMessage = async () => {
-    setSender(user);
-    if (message.trim() === "" || !message || !roomName || !sender || !receiver)
-      return;
+  const handleSendMessage = async (message, sender, receiver) => {
+    // setSender(user);
+    if (message.trim() === "" || !message || !sender || !receiver) return;
 
     const data = {
       message,
-      roomName,
-      sender: sender?._id,
-      receiver: receiver?._id,
+      sender,
+      receiver,
     };
 
     try {
       socket.emit("message", data);
-      // const res = await addNewChat(data).unwrap();
-
-      // if (res.data) {
-      //   dispatch(setChats([...chats, res.data]));
-      // }
     } catch (error) {
       console.error("Erorr sending message:", error);
     } finally {
@@ -74,12 +65,18 @@ const ChatPage = () => {
     }
   };
 
+  const dispatchAddChat = useCallback(
+    (chat) => {
+      dispatch(addChat(chat));
+    },
+    [dispatch]
+  );
+    
+
   useEffect(() => {
-    // const socket = io("http://localhost:3300");
 
     socket?.on("message", (chat) => {
-      console.log("receive", chat);
-      dispatch(addChat(chat));
+      dispatchAddChat(chat);
 
       setTimeout(() => {
         if (canvasRef.current) {
@@ -89,7 +86,6 @@ const ChatPage = () => {
     });
 
     // setSocket(socket);
-
   }, [socket]);
 
   useEffect(() => {
@@ -183,7 +179,7 @@ const ChatPage = () => {
               >
                 {chats.map((chat, index) => (
                   <div
-                    key={chat?._id}
+                    key={chat?._id || index}
                     className={`w-full flex ${
                       chat?.sender?._id === user?._id
                         ? "justify-end"
@@ -253,7 +249,7 @@ const ChatPage = () => {
                     className="dark:bg-gray-700 p-2 text-gray-800 rounded-sm w-full outline-none border border-gray-300 focus:border-gray-400 "
                   />
                   <button
-                    onClick={handleSendMessage}
+                    onClick={() => handleSendMessage(message, user, receiver)}
                     className="p-2 rounded-full h-12 w-12 flex justify-center items-center cursor-pointer border-black bg-blue-800 text-white"
                     type="button"
                   >
