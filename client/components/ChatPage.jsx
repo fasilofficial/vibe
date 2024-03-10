@@ -14,30 +14,20 @@ import { IoSend } from "react-icons/io5";
 import moment from "moment";
 import Link from "next/link";
 import { useGetUsersMutation } from "../redux/slices/user/userApiSlice";
+import { useSocket } from "@/providers/SocketProvider";
 
-const ChatPage = ({ socket }) => {
+const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
-  // const { user } = useCallback(
-  //   () => useSelector(selectUser(userInfo._id)),
-  //   [userInfo._id]
-  // );
+  const socket = useSocket()
+
 
   const [receiver, setReceiver] = useState();
   const [sender, setSender] = useState(user);
 
   const { chats } = useSelector(selectChats(userInfo?._id, receiver?._id));
 
-  // const { chats } = useCallback(
-  // () => useSelector(selectChats(userInfo?._id, receiver?._id)),
-  // [userInfo?._id, receiver?._id]
-  // );
 
-  useEffect(() => {
-    console.log(socket);
-  }, [socket]);
-
-  // const [socket, setSocket] = useState();
   const [message, setMessage] = useState("");
   const [roomName, setRoomName] = useState("");
   const [activeTab, setActiveTab] = useState("followers");
@@ -84,26 +74,23 @@ const ChatPage = ({ socket }) => {
     }
   };
 
-  // useEffect(() => {
-  //   const socket = io("http://localhost:3300");
+  useEffect(() => {
+    // const socket = io("http://localhost:3300");
 
-  //   socket.on("message", (chat) => {
-  //     console.log("receive");
-  //     dispatch(addChat(chat));
+    socket?.on("message", (chat) => {
+      console.log("receive", chat);
+      dispatch(addChat(chat));
 
-  //     setTimeout(() => {
-  //       if (canvasRef.current) {
-  //         canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
-  //       }
-  //     }, 100);
-  //   });
+      setTimeout(() => {
+        if (canvasRef.current) {
+          canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
+        }
+      }, 100);
+    });
 
-  //   setSocket(socket);
+    // setSocket(socket);
 
-  //   return () => {
-  //     socket.disconnect();
-  //   };
-  // }, []);
+  }, [socket]);
 
   useEffect(() => {
     const fetchChats = async () => {
