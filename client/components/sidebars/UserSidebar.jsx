@@ -16,7 +16,7 @@ import { IoIosNotifications } from "react-icons/io";
 import { IoLogOut } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
-import { useLogoutMutation } from "@/app/(redux)/slices/user/userApiSlice";
+import { useLogoutMutation } from "@/redux/slices/user/userApiSlice";
 
 const UserSidebar = ({ session }) => {
   const { userInfo } = useSelector((state) => state.auth);

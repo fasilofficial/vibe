@@ -1,14 +1,15 @@
 "use client";
 
-import { setReports, updateReport } from "@/app/(redux)/slices/data/dataSlice";
+import { setReports, updateReport } from "@/redux/slices/data/dataSlice";
 import {
   useGetReportsMutation,
   useResolveReportMutation,
-} from "@/app/(redux)/slices/report/reportApiSlice";
+} from "@/redux/slices/report/reportApiSlice";
 import React, { useEffect, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 const Reports = () => {
   const { reports } = useSelector((state) => state.data);
@@ -48,22 +49,28 @@ const Reports = () => {
       }
     };
 
-    if (!reports || reports?.length <= 0) fetchReports();
+    // if (!reports || reports?.length <= 0) fetchReports();
+    fetchReports();
   }, []);
+
+  console.log(reports);
 
   return (
     <div className="w-full flex items-center flex-col gap-4">
-     <h1 className="text-2xl font-bold mb-2">Report Management</h1>
+      <h1 className="text-2xl font-bold mb-2">Report Management</h1>
       <div>
         {reports ? (
           <table className="min-w-full divide-y divide-gray-200 shadow-md">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  PostID
+                  Post
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                  UserId
+                  Post Creator
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  Reported User(s)
                 </th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                   Description
@@ -82,18 +89,31 @@ const Reports = () => {
                   key={report._id}
                   className={
                     report.resolved
-                      ? "bg-gray-100 dark:bg-gray-800" 
+                      ? "bg-gray-100 dark:bg-gray-800"
                       : "bg-white dark:bg-gray-700"
                   }
                 >
                   <td className="px-4 py-2 whitespace-nowrap">
-                    {report.postId?._id || "Post deleted"}
+                    {report.postId ? (
+                      <img
+                        src={report.postId.imageUrl}
+                        alt="post"
+                        className="w-32 rounded"
+                      />
+                    ) : (
+                      "Post deleted"
+                    )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
+                    {report.postId && report.postId.creator.username}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap hover:text-black/70 dark:hover:text-white/70">
                     {report.reports ? (
                       <ul>
                         {report.reports.map((r) => (
-                          <p>{r.userId?._id}</p>
+                          <Link href={`/profile/${r.userId._id}`}>
+                            {r.userId?.username}
+                          </Link>
                         ))}
                       </ul>
                     ) : (

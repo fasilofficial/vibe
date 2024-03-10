@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { useSelector, useDispatch } from "react-redux";
-import { useAddPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
-import { addPost } from "@/app/(redux)/slices/data/dataSlice";
+import { useAddPostMutation } from "@/redux/slices/post/postApiSlice";
+import { addPost } from "@/redux/slices/data/dataSlice";
 
 const AddPostForm = () => {
   const router = useRouter();

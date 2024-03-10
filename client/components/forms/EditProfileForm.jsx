@@ -3,12 +3,12 @@
 import {
   useEditUserMutation,
   useGetUserMutation,
-} from "@/app/(redux)/slices/user/userApiSlice";
+} from "@/redux/slices/user/userApiSlice";
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { setCredentials } from "@/app/(redux)/slices/auth/authSlice";
+import { setCredentials } from "@/redux/slices/auth/authSlice";
 
 const EditProfileForm = () => {
   const { userInfo } = useSelector((state) => state.auth);

@@ -12,6 +12,10 @@ export const getReports = expressAsyncHandler(
         .populate({
           path: "postId",
           model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
         })
         .populate({
           path: "reports.userId",
@@ -38,10 +42,14 @@ export const getReport = expressAsyncHandler(
       .populate({
         path: "postId",
         model: "Post",
+        populate: {
+          path: "creator",
+          model: "User",
+        },
       })
       .populate({
         path: "reports.userId",
-        model: "Post",
+        model: "User",
       });
 
     if (report) {
@@ -90,6 +98,10 @@ export const resolveReport = expressAsyncHandler(
         await report.populate({
           path: "postId",
           model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
         });
         await report.populate({
           path: "reports.userId",
@@ -136,6 +148,10 @@ export const addReport = expressAsyncHandler(
         await existingReport.populate({
           path: "postId",
           model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
         });
         await existingReport.populate({
           path: "reports.userId",
@@ -156,6 +172,10 @@ export const addReport = expressAsyncHandler(
         await newReport.populate({
           path: "postId",
           model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
         });
         await newReport.populate({
           path: "reports.userId",

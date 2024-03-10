@@ -45,7 +45,7 @@ const AdminSidebar = ({ adminInfo }) => {
             return (
               <Link
                 key={index}
-                className={`flex gap-4 items-center p-4 rounded-md  ${
+                className={`flex gap-4 items-center p-4 rounded-md hover:text-gray-600 dark:hover:text-white/80 transition-all ${
                   item.route == pathname ? "bg-blue-500 text-white" : ""
                 }`}
                 href={item.route}
@@ -80,7 +80,7 @@ const AdminSidebar = ({ adminInfo }) => {
           return (
             <Link
               key={index}
-              className={`flex gap-4 items-center p-4 rounded-md ${
+              className={`flex gap-4 items-center p-4 rounded-md hover:text-gray-600 dark:hover:text-white/80 transition-all ${
                 item.route == pathname ? "bg-blue-500 text-white" : ""
               }`}
               href={item.route}

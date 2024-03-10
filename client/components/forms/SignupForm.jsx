@@ -4,14 +4,14 @@ import { useRouter } from "next/navigation";
 import React, { useRef, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import validateForm from "@/app/(utils)/validate-form";
+import validateForm from "@/utils/validate-form";
 import {
   useSendOtpMutation,
   useSignupMutation,
-} from "@/app/(redux)/slices/user/userApiSlice";
+} from "@/redux/slices/user/userApiSlice";
 
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import { setCredentials } from "@/app/(redux)/slices/auth/authSlice";
+import { setCredentials } from "@/redux/slices/auth/authSlice";
 
 import { useDispatch } from "react-redux";
 
@@ -165,7 +165,7 @@ const SignupForm = () => {
             body: imageData,
           }
         );
-        
+
         const data = await response.json();
 
         const profileUrl = data.secure_url;

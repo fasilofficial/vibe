@@ -5,14 +5,14 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 import { getProviders, signIn } from "next-auth/react";
-import validateForm from "@/app/(utils)/validate-form";
+import validateForm from "@/utils/validate-form";
 import { MutatingDots } from "react-loader-spinner";
 import { usePathname, useRouter } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import { useSigninMutation } from "@/app/(redux)/slices/user/userApiSlice";
+import { useSigninMutation } from "@/redux/slices/user/userApiSlice";
 import { useDispatch } from "react-redux";
-import { setCredentials } from "@/app/(redux)/slices/auth/authSlice";
-import { setPosts, setUsers } from "@/app/(redux)/slices/data/dataSlice";
+import { setCredentials } from "@/redux/slices/auth/authSlice";
+import { setPosts, setUsers } from "@/redux/slices/data/dataSlice";
 
 const SigninForm = () => {
   const [formData, setFormData] = useState({

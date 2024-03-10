@@ -5,13 +5,13 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 
 import { getProviders, signIn } from "next-auth/react";
-import validateForm from "@/app/(utils)/validate-form";
+import validateForm from "@/utils/validate-form";
 import { MutatingDots } from "react-loader-spinner";
 import { usePathname, useRouter } from "next/navigation";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { useDispatch } from "react-redux";
-import { setAdminCredentials } from "@/app/(redux)/slices/auth/authSlice";
-import { useAdminSigninMutation } from "@/app/(redux)/slices/admin/adminApiSlice";
+import { setAdminCredentials } from "@/redux/slices/auth/authSlice";
+import { useAdminSigninMutation } from "@/redux/slices/admin/adminApiSlice";
 
 const AdminSigninForm = () => {
   const [formData, setFormData] = useState({

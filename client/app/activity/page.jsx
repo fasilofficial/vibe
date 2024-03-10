@@ -1,6 +1,6 @@
+import Activities from "@/components/Activities";
+import UserLayout from "@/components/UserLayout";
 import React from "react";
-import UserLayout from "../(components)/UserLayout";
-import Activities from "../(components)/Activities";
 
 const Activity = () => {
   return (

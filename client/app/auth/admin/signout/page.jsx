@@ -1,12 +1,12 @@
 "use client";
 
-import { useAdminLogoutMutation } from "@/app/(redux)/slices/admin/adminApiSlice";
-import { adminLogout } from "@/app/(redux)/slices/auth/authSlice";
+import { useAdminLogoutMutation } from "@/redux/slices/admin/adminApiSlice";
+import { adminLogout } from "@/redux/slices/auth/authSlice";
 import {
   removePosts,
   removeReports,
   removeUsers,
-} from "@/app/(redux)/slices/data/dataSlice";
+} from "@/redux/slices/data/dataSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
 import toast from "react-hot-toast";

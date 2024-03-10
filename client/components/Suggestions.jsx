@@ -6,13 +6,13 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   useFollowUserMutation,
   useGetUsersMutation,
-} from "../(redux)/slices/user/userApiSlice";
+} from "../redux/slices/user/userApiSlice";
 import {
   setUsers,
   updateFollowers,
   updateFollowings,
-} from "../(redux)/slices/data/dataSlice";
-import { selectSuggestions, selectUser } from "../(redux)/selectors";
+} from "../redux/slices/data/dataSlice";
+import { selectSuggestions, selectUser } from "../redux/selectors";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);

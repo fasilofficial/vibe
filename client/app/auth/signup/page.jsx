@@ -1,7 +1,7 @@
 "use client";
 
-import Loader from "@/app/(components)/Loader";
-import SignupForm from "@/app/(components)/forms/SignupForm";
+import Loader from "@/components/Loader";
+import SignupForm from "@/components/forms/SignupForm";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";

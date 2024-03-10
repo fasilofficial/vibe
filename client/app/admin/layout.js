@@ -1,15 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import AdminHeader from "../(components)/header/AdminHeader";
-import AdminSidebar from "../(components)/sidebars/AdminSidebar";
-
-import ToggleTheme from "../(components)/ToggleTheme";
 
 import { useSelector } from "react-redux";
-import Loader from "../(components)/Loader";
 import { useEffect } from "react";
-
+import AdminSidebar from "@/components/sidebars/AdminSidebar";
+import AdminHeader from "@/components/header/AdminHeader";
+import ToggleTheme from "@/components/ToggleTheme";
+import Loader from "@/components/Loader";
 
 function AdminLayout({ children }) {
   const { adminInfo } = useSelector((state) => state.auth);

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import ExplorePost from "./ExplorePost";
-import { useGetPostsMutation } from "../(redux)/slices/post/postApiSlice";
+import { useGetPostsMutation } from "../redux/slices/post/postApiSlice";
 import { useSelector, useDispatch } from "react-redux";
-import { setPosts } from "../(redux)/slices/data/dataSlice";
+import { setPosts } from "../redux/slices/data/dataSlice";
 
 const PostsGrid = () => {
   const { posts } = useSelector((state) => state.data);

@@ -1,12 +1,12 @@
 "use client";
 
-import { logout } from "@/app/(redux)/slices/auth/authSlice";
+import { logout } from "@/redux/slices/auth/authSlice";
 import {
   removeChats,
   removePosts,
   removeUsers,
-} from "@/app/(redux)/slices/data/dataSlice";
-import { useLogoutMutation } from "@/app/(redux)/slices/user/userApiSlice";
+} from "@/redux/slices/data/dataSlice";
+import { useLogoutMutation } from "@/redux/slices/user/userApiSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
 import toast from "react-hot-toast";

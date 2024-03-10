@@ -1,10 +1,10 @@
 "use client";
 
-import { setUsers, updateUser } from "@/app/(redux)/slices/data/dataSlice";
+import { setUsers, updateUser } from "@/redux/slices/data/dataSlice";
 import {
   useBlockUserMutation,
   useGetUsersMutation,
-} from "@/app/(redux)/slices/user/userApiSlice";
+} from "@/redux/slices/user/userApiSlice";
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 

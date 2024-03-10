@@ -1,15 +1,15 @@
 "use client";
 
-import UserLayout from "@/app/(components)/UserLayout";
+import UserLayout from "@/components/UserLayout";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import toast from "react-hot-toast";
-import { useAddReportMutation } from "@/app/(redux)/slices/report/reportApiSlice";
-import { useGetPostMutation } from "@/app/(redux)/slices/post/postApiSlice";
+import { useAddReportMutation } from "@/redux/slices/report/reportApiSlice";
+import { useGetPostMutation } from "@/redux/slices/post/postApiSlice";
 import Link from "next/link";
-import { addReport, updateReport } from "@/app/(redux)/slices/data/dataSlice";
+import { addReport, updateReport } from "@/redux/slices/data/dataSlice";
 
 const page = ({ params: { postId } }) => {
   const [post, setPost] = useState();

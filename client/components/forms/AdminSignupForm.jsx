@@ -4,16 +4,16 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import validateForm from "@/app/(utils)/validate-form";
+import validateForm from "@/utils/validate-form";
 
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import {
   setAdminCredentials,
   setCredentials,
-} from "@/app/(redux)/slices/auth/authSlice";
+} from "@/redux/slices/auth/authSlice";
 
 import { useDispatch } from "react-redux";
-import { useAdminSignupMutation } from "@/app/(redux)/slices/admin/adminApiSlice";
+import { useAdminSignupMutation } from "@/redux/slices/admin/adminApiSlice";
 
 const AdminSignupForm = () => {
   const router = useRouter();

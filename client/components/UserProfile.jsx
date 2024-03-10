@@ -9,7 +9,7 @@ import {
   useRemoveFollowerMutation,
   useSavePostMutation,
   useUnfollowUserMutation,
-} from "../(redux)/slices/user/userApiSlice";
+} from "../redux/slices/user/userApiSlice";
 
 import {
   useAddCommentMutation,
@@ -19,7 +19,7 @@ import {
   useDeleteReplyMutation,
   useGetPostsMutation,
   useLikePostMutation,
-} from "../(redux)/slices/post/postApiSlice";
+} from "../redux/slices/post/postApiSlice";
 import SavePost from "./SavePost";
 import {
   removePost,
@@ -30,8 +30,8 @@ import {
   updateFollowings,
   updateLikes,
   updateSaves,
-} from "../(redux)/slices/data/dataSlice";
-import { selectPosts, selectUser } from "../(redux)/selectors";
+} from "../redux/slices/data/dataSlice";
+import { selectPosts, selectUser } from "../redux/selectors";
 
 import moment from "moment";
 import { IoSend } from "react-icons/io5";

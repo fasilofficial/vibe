@@ -1,6 +1,6 @@
 import React from "react";
-import UserLayout from "../(components)/UserLayout";
-import UserProfile from "../(components)/UserProfile";
+import UserLayout from "../../components/UserLayout";
+import UserProfile from "../../components/UserProfile";
 
 const Profile = () => {
   return (

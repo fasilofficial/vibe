@@ -6,12 +6,12 @@ import toast from "react-hot-toast";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 
 import Link from "next/link";
-import validateForm from "@/app/(utils)/validate-form";
+import validateForm from "@/utils/validate-form";
 import { useRouter } from "next/navigation";
 import {
   useForgotPasswordMutation,
   useSendOtpMutation,
-} from "@/app/(redux)/slices/user/userApiSlice";
+} from "@/redux/slices/user/userApiSlice";
 
 const ForgotPassword = () => {
   const [formData, setFormData] = useState({

@@ -10,11 +10,11 @@ import {
   useDeleteReplyMutation,
   useGetPostsMutation,
   useLikePostMutation,
-} from "../(redux)/slices/post/postApiSlice";
+} from "../redux/slices/post/postApiSlice";
 import {
   useGetUsersMutation,
   useSavePostMutation,
-} from "../(redux)/slices/user/userApiSlice";
+} from "../redux/slices/user/userApiSlice";
 
 import {
   setPosts,
@@ -22,8 +22,8 @@ import {
   updateComments,
   updateLikes,
   updateSaves,
-} from "../(redux)/slices/data/dataSlice";
-import { selectUser } from "../(redux)/selectors";
+} from "../redux/slices/data/dataSlice";
+import { selectUser } from "../redux/selectors";
 
 const Feed = () => {
   const { userInfo } = useSelector((state) => state.auth);

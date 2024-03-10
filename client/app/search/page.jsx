@@ -1,5 +1,5 @@
 import React from "react";
-import UserLayout from "../(components)/UserLayout";
+import UserLayout from "../../components/UserLayout";
 
 const Search = () => {
   return (

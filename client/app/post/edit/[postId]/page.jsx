@@ -10,8 +10,8 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   useEditPostMutation,
   useGetPostMutation,
-} from "@/app/(redux)/slices/post/postApiSlice";
-import { updatePost } from "@/app/(redux)/slices/data/dataSlice";
+} from "@/redux/slices/post/postApiSlice";
+import { updatePost } from "@/redux/slices/data/dataSlice";
 
 const page = ({ params: { postId } }) => {
   const router = useRouter();

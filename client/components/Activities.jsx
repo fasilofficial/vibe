@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useGetActivitiesMutation } from "../(redux)/slices/user/userApiSlice";
+import { useGetActivitiesMutation } from "../redux/slices/user/userApiSlice";
 import { useSelector } from "react-redux";
 import moment from "moment";
 const Activities = () => {

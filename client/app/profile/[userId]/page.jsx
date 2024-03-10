@@ -3,13 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
-import UserLayout from "@/app/(components)/UserLayout";
+import UserLayout from "@/components/UserLayout";
 import {
   useFollowUserMutation,
   useGetUsersMutation,
   useSavePostMutation,
   useUnfollowUserMutation,
-} from "@/app/(redux)/slices/user/userApiSlice";
+} from "@/redux/slices/user/userApiSlice";
 
 import moment from "moment";
 import { IoSend } from "react-icons/io5";
@@ -24,7 +24,7 @@ import {
   useDeleteReplyMutation,
   useGetPostsMutation,
   useLikePostMutation,
-} from "@/app/(redux)/slices/post/postApiSlice";
+} from "@/redux/slices/post/postApiSlice";
 import {
   setPosts,
   setUsers,
@@ -33,9 +33,9 @@ import {
   updateFollowings,
   updateLikes,
   updateSaves,
-} from "@/app/(redux)/slices/data/dataSlice";
+} from "@/redux/slices/data/dataSlice";
 import { useRouter } from "next/navigation";
-import { selectPosts, selectUser } from "@/app/(redux)/selectors";
+import { selectPosts, selectUser } from "@/redux/selectors";
 
 const UserProfile = ({ params: { userId } }) => {
   const [activeTab, setActiveTab] = useState("posts");

@@ -2,12 +2,12 @@
 
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setPosts, removePost } from "@/app/(redux)/slices/data/dataSlice";
+import { setPosts, removePost } from "@/redux/slices/data/dataSlice";
 
 import {
   useGetPostsMutation,
   useDeletePostMutation,
-} from "@/app/(redux)/slices/post/postApiSlice";
+} from "@/redux/slices/post/postApiSlice";
 
 const Posts = () => {
   const { posts } = useSelector((state) => state.data);

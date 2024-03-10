@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { io } from "socket.io-client";
 
 import { useSelector, useDispatch } from "react-redux";
 import UserLayout from "./UserLayout";
 import Feed from "./Feed";
 import { useSession } from "next-auth/react";
-import { setCredentials } from "../(redux)/slices/auth/authSlice";
-import { useGetUserByEmailMutation } from "../(redux)/slices/user/userApiSlice";
+import { setCredentials } from "../redux/slices/auth/authSlice";
+import { useGetUserByEmailMutation } from "../redux/slices/user/userApiSlice";
 
 const HomeContent = () => {
+  const [socket, setSocket] = useState(null);
   const { userInfo } = useSelector((state) => state.auth);
   const { data: session } = useSession();
 
@@ -19,11 +21,33 @@ const HomeContent = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    const socket = io("http://localhost:3300");
+
+    // socket.on("newUser", (chat) => {});
+
+    if (userInfo && socket) {
+      console.log(userInfo);
+      console.log(socket);
+      console.log(socket.id);
+      const user = { userId: userInfo._id, socketId: socket.id };
+      socket.emit("newUser", user);
+    }
+
+    setSocket(socket);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchUserInfo = async () => {
       if (session && !userInfo) {
         const { email } = session?.user;
         const res = await getUserByEmail(email).unwrap();
-        dispatch(setCredentials(res));
+        if (res.data) {
+          dispatch(setCredentials(res.data));
+        }
       }
     };
 

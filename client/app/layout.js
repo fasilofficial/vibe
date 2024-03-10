@@ -1,7 +1,7 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import AuthProvider from "./(providers)/AuthProvider";
-import StoreProvider from "./(providers)/StoreProvider";
+import AuthProvider from "../providers/AuthProvider";
+import StoreProvider from "../providers/StoreProvider";
 import { Toaster } from "react-hot-toast";
 
 const poppins = Poppins({ subsets: ["latin"], weight: "400" });

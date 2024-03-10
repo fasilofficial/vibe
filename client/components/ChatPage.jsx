@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
-import { selectChats, selectUser } from "../(redux)/selectors";
+import { selectChats, selectUser } from "../redux/selectors";
 import { useSelector, useDispatch } from "react-redux";
-import generateRoomName from "../(utils)/generateRoomName";
+import generateRoomName from "../utils/generateRoomName";
 import {
   useAddChatMutation,
   useGetChatsMutation,
-} from "../(redux)/slices/chat/chatApiSlice";
-import { addChat, setChats, setUsers } from "../(redux)/slices/data/dataSlice";
+} from "../redux/slices/chat/chatApiSlice";
+import { addChat, setChats, setUsers } from "../redux/slices/data/dataSlice";
 import { IoSend } from "react-icons/io5";
 import moment from "moment";
 import Link from "next/link";
-import { useGetUsersMutation } from "../(redux)/slices/user/userApiSlice";
+import { useGetUsersMutation } from "../redux/slices/user/userApiSlice";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
