@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
-import UserLayout from "@/components/UserLayout";
+import UserLayout, { handleSendNotification } from "@/components/UserLayout";
 import {
   useFollowUserMutation,
   useGetUsersMutation,
@@ -36,6 +36,8 @@ import {
 } from "@/redux/slices/data/dataSlice";
 import { useRouter } from "next/navigation";
 import { selectPosts, selectUser } from "@/redux/selectors";
+import { useSocket } from "@/providers/SocketProvider";
+import { NOTIFICATION_TYPES } from "@/constants";
 
 const UserProfile = ({ params: { userId } }) => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -65,12 +67,14 @@ const UserProfile = ({ params: { userId } }) => {
   const [deleteReply] = useDeleteReplyMutation(); // delete reply
   const [savePost] = useSavePostMutation(); // save post
 
-  const handleFollow = async (userId, followingId) => {
+  const handleFollow = async (socket, userId, { _id: followingId, username: receiverName }) => {
     try {
       const res = await followUser({
         followingId,
         userId,
       }).unwrap();
+
+      console.log(res)
 
       if (res.data) {
         dispatch(
@@ -84,6 +88,12 @@ const UserProfile = ({ params: { userId } }) => {
             userId: followingId,
             followers: res.data.followers,
           })
+        );
+        handleSendNotification(
+          socket,
+          NOTIFICATION_TYPES.follow,
+          user.username,
+          receiverName
         );
       }
     } catch (error) {
@@ -279,6 +289,9 @@ const Header = ({
 }) => {
   const [isFollowing, setIsFollowing] = useState();
 
+  const socket = useSocket();
+  console.log("profile", socket);
+
   useEffect(() => {
     const index = loggedUser?.followings.findIndex((following) => {
       return following?._id?._id === user?._id || following?._id === user?._id;
@@ -316,7 +329,7 @@ const Header = ({
         {!isFollowing ? (
           <button
             className="p-2 px-3 rounded-sm bg-blue-700 hover:bg-blue-600 text-white"
-            onClick={() => handleFollow(loggedUser?._id, user?._id)}
+            onClick={() => handleFollow(socket, loggedUser?._id, user)}
           >
             Follow
           </button>

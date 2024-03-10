@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import UserSidebar from "./sidebars/UserSidebar";
 import Suggestions from "./Suggestions";
 import ToggleTheme from "./ToggleTheme";
@@ -8,11 +8,26 @@ import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Loader from "./Loader";
 import { SocketProvider } from "@/providers/SocketProvider";
+import { io } from "socket.io-client";
 
-const UserLayout = ({ children, socket }) => {
+export const handleSendNotification = (socket, type, senderName, receiverName) => {
+  socket.emit("sendNotification", { type, senderName, receiverName });
+};
+
+const UserLayout = ({ children }) => {
   const { userInfo } = useSelector((state) => state.auth);
 
+  const [socket, setSocket] = useState(null);
+
   const router = useRouter();
+
+  useEffect(() => {
+    setSocket(io("http://localhost:3300"));
+  }, []);
+
+  useEffect(() => {
+    socket?.emit("newUser", userInfo?.username);
+  }, [userInfo, socket]);
 
   useEffect(() => {
     if (!userInfo) router.push("/auth/signin");

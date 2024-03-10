@@ -15,25 +15,24 @@ import {
 import { selectSuggestions, selectUser } from "../redux/selectors";
 import { NOTIFICATION_TYPES } from "@/constants";
 import { useSocket } from "@/providers/SocketProvider";
-
-const handleSendNotification = (socket, type, senderName, receiverName) => {
-  console.log(socket);
-  socket.emit("sendNotification", { type, senderName, receiverName });
-};
-
+import { handleSendNotification } from "./UserLayout";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo?._id));
   const { suggestions } = useSelector(selectSuggestions(user));
 
-
-
   const dispatch = useDispatch();
+
+  const socket = useSocket();
+  console.log("suggestions", socket);
 
   const [getUsers] = useGetUsersMutation();
   const [followUser] = useFollowUserMutation();
 
+  // const handleSendNotification = (socket, type, senderName, receiverName) => {
+  //   socket.emit("sendNotification", { type, senderName, receiverName });
+  // };
 
   const handleFollow = async (
     userId,

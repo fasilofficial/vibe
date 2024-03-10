@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Post from "./Post";
 import {
@@ -26,22 +26,12 @@ import {
 import { selectUser } from "../redux/selectors";
 import { NOTIFICATION_TYPES } from "@/constants";
 import { useSocket } from "@/providers/SocketProvider";
-
-export const handleSendNotification = (
-  socket,
-  type,
-  senderName,
-  receiverName
-) => {
-  console.log(socket)
-  socket.emit("sendNotification", { type, senderName, receiverName });
-};
+import { handleSendNotification } from "./UserLayout";
 
 const Feed = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo._id));
   const { posts } = useSelector((state) => state.data);
-
   const socket = useSocket();
 
   const [getPosts] = useGetPostsMutation();

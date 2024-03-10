@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
+import { usePathname } from "next/navigation";
+import { useSelector } from "react-redux";
 import React, { useEffect, useState } from "react";
 import {
   FaCompass,
@@ -16,7 +16,6 @@ import { IoIosNotifications } from "react-icons/io";
 import { IoLogOut } from "react-icons/io5";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
-import { useLogoutMutation } from "@/redux/slices/user/userApiSlice";
 import Badge from "@mui/material/Badge";
 import { useSocket } from "@/providers/SocketProvider";
 
@@ -24,12 +23,11 @@ const UserSidebar = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const pathname = usePathname();
 
-  const socket = useSocket()
+  const socket = useSocket();
 
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    console.log(socket);
     socket?.on("receiveNotification", (data) => {
       console.log("notification received", data);
       setNotifications((prevState) => [...prevState, data]);
