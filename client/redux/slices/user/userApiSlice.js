@@ -49,6 +49,12 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
       }),
     }),
+    toggleAccountType: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data}/account-type`,
+        method: "PUT",
+      }),
+    }),
     sendOtp: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/sendOtp`,
@@ -150,5 +156,6 @@ export const {
   useFollowUserMutation,
   useRemoveFollowerMutation,
   useEditUserMutation,
-  useAddBluetickMutation
+  useAddBluetickMutation,
+  useToggleAccountTypeMutation,
 } = usersApiSlice;

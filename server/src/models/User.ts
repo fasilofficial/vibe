@@ -9,6 +9,7 @@ interface IUser extends Document {
   profileUrl: string;
   password: string;
   blocked: boolean;
+  private: boolean;
   dob: Date;
   bluetick: {
     status: boolean;
@@ -41,6 +42,7 @@ const userSchema = new Schema(
       type: { type: String },
     },
     blocked: { type: Boolean, required: true, default: false },
+    private: { type: Boolean, required: true, default: false },
     followings: { type: [], default: [] },
     followers: { type: [], default: [] },
     saves: { type: [], default: [] },

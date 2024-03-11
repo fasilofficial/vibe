@@ -644,7 +644,6 @@ export const editUser = expressAsyncHandler(async (req: any, res: any) => {
 // add bluetick
 export const addBluetick = expressAsyncHandler(
   async (req: Request, res: Response) => {
-
     const { userId } = req.params;
     const { type } = req.body;
 
@@ -678,7 +677,7 @@ export const addBluetick = expressAsyncHandler(
       }
 
       user.bluetick.status = true;
-      user.bluetick.type = type
+      user.bluetick.type = type;
 
       const expiryDate = new Date();
       if (type === "month") {
@@ -692,6 +691,51 @@ export const addBluetick = expressAsyncHandler(
       await user.save();
 
       res.status(200).json({ message: "Bluetick added", data: user });
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error", error });
+    }
+  }
+);
+
+// toggle account type
+export const toggleAccountType = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+      res.status(400);
+      throw new Error("Bad request: Missing userId");
+    }
+
+    try {
+      const user = await User.findById(userId)
+        .populate({
+          path: "followers._id",
+          model: "User",
+        })
+        .populate({
+          path: "followings._id",
+          model: "User",
+        })
+        .populate({
+          path: "saves._id",
+          model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
+        });
+
+      if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+      }
+
+      user.private = !user.private;
+
+      await user.save();
+
+      res.status(200).json({ message: "Account type toggled", data: user });
     } catch (error) {
       res.status(500).json({ message: "Internal Server Error", error });
     }

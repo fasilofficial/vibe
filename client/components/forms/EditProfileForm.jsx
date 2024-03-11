@@ -2,30 +2,30 @@
 
 import {
   useEditUserMutation,
-  useGetUserMutation,
+  useToggleAccountTypeMutation,
 } from "@/redux/slices/user/userApiSlice";
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { setCredentials } from "@/redux/slices/auth/authSlice";
+import { updateUser } from "@/redux/slices/data/dataSlice";
+import { selectUser } from "@/redux/selectors";
+import Link from "next/link";
 
 const EditProfileForm = () => {
   const { userInfo } = useSelector((state) => state.auth);
+  const { user } = useSelector(selectUser(userInfo?._id));
 
   const router = useRouter();
   const dispatch = useDispatch();
 
-  const [formData, setFormData] = useState({
-    name: userInfo?.name,
-    username: userInfo?.username,
-    profileUrl: userInfo?.profileUrl,
-  });
+  const [formData, setFormData] = useState({});
 
   const [image, setImage] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
   const [editUser] = useEditUserMutation();
+  const [toggleAccountType] = useToggleAccountTypeMutation();
 
   const handleChange = (e) => {
     const key = e.target.name;
@@ -68,11 +68,13 @@ const EditProfileForm = () => {
 
     try {
       const res = await editUser({
-        userId: userInfo._id,
+        userId: user._id,
         ...formData,
       }).unwrap();
 
-      dispatch(setCredentials(res.data));
+      if (res.data) {
+        dispatch(updateUser({ userId: user._id, updatedUser: res.data }));
+      }
     } catch (error) {
       console.log(error);
       toast.error(error?.data?.message);
@@ -81,6 +83,28 @@ const EditProfileForm = () => {
       router.push("/profile");
     }
   };
+
+  const handlePrivateAccount = async (e) => {
+    try {
+      const res = await toggleAccountType(user?._id).unwrap();
+      console.log(res);
+
+      if (res.data) {
+        dispatch(updateUser({ userId: user?._id, updatedUser: res.data }));
+      }
+    } catch (error) {
+      console.error("Error toggling account type", error);
+    }
+  };
+
+  useEffect(() => {
+    console.log(user)
+    setFormData({
+      name: user?.name,
+      username: user?.username,
+      profileUrl: user?.profileUrl,
+    });
+  }, [user]);
 
   return (
     <div className="ml-36 my-4 max-w-6xl">
@@ -142,6 +166,24 @@ const EditProfileForm = () => {
           </button>
         </form>
       </div>
+      <div className="w-full p-6 my-4 rounded-md shadow-md">
+        <h1 className="font-bold mb-2">Account Type</h1>
+        <form action="" className="flex gap-2 item-center">
+          <label htmlFor="private">Private account</label>
+          <input
+            type="checkbox"
+            id="private"
+            checked={user?.private}
+            onChange={handlePrivateAccount}
+          />
+        </form>
+      </div>
+      <Link
+        href="/profile"
+        className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-colors duration-300"
+      >
+        Back
+      </Link>
     </div>
   );
 };

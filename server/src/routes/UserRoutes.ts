@@ -20,6 +20,7 @@ import {
   removeFollower,
   editUser,
   addBluetick,
+  toggleAccountType
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -49,6 +50,9 @@ router.get("/:userId/posts", getUserPosts);
 
 // block user
 router.put("/:userId", blockUser);
+
+// toggle account type
+router.put("/:userId/account-type", toggleAccountType);
 
 // get followings
 router.get("/:userId/followings", getFollowings);

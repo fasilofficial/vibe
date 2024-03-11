@@ -33,12 +33,14 @@ export const selectSuggestions = (user) => (state) => {
   const userFollowerIds = user?.followers.map(
     (follower) => follower?._id?._id || follower?._id
   );
-  return {
-    suggestions: state?.data?.users.filter(
-      (user) =>
-        !userFollowerIds.includes(user._id) && // filter out followers
-        !userFollowingIds.includes(user._id) && // folter out followings
-        user._id !== userId // filter out the user
-    ),
-  };
+  if (userFollowingIds || userFollowerIds) {
+    return {
+      suggestions: state?.data?.users.filter(
+        (user) =>
+          !userFollowerIds.includes(user._id) && // filter out followers
+          !userFollowingIds.includes(user._id) && // folter out followings
+          user._id !== userId // filter out the user
+      ),
+    };
+  } else return {suggestions:[]}
 };
