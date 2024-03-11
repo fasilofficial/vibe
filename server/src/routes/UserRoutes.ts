@@ -19,6 +19,7 @@ import {
   savePost,
   removeFollower,
   editUser,
+  addBluetick,
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -78,5 +79,8 @@ router.get("/:id", getUser);
 
 // edit user
 router.patch("/:userId", editUser);
+
+// add blue tick
+router.post("/:userId/bluetick", addBluetick);
 
 export default router;

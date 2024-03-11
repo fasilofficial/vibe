@@ -10,6 +10,11 @@ interface IUser extends Document {
   password: string;
   blocked: boolean;
   dob: Date;
+  bluetick: {
+    status: boolean;
+    expiryDate: Date;
+    type: string;
+  };
   followings: {
     _id: string;
   }[];
@@ -30,6 +35,11 @@ const userSchema = new Schema(
     profileUrl: { type: String },
     password: { type: String },
     dob: { type: Date },
+    bluetick: {
+      status: { type: Boolean, default: false },
+      expiryDate: { type: Date },
+      type: { type: String },
+    },
     blocked: { type: Boolean, required: true, default: false },
     followings: { type: [], default: [] },
     followers: { type: [], default: [] },

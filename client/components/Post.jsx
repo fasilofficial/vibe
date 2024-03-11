@@ -11,6 +11,7 @@ import { FaComment, FaHeart, FaRegComment, FaRegHeart } from "react-icons/fa";
 import { MdDelete, MdReport } from "react-icons/md";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
+import VerifiedIcon from "@mui/icons-material/Verified";
 
 const Post = ({
   post,
@@ -47,9 +48,16 @@ const Post = ({
           className="w-14 h-14 rounded-full object-cover "
           src={post?.creator?.profileUrl}
         />
-        <Link href={`/profile/${post?.creator?._id}`}>
-          {post?.creator?.username}
-        </Link>
+        <div className="flex gap-2 items-center">
+          <Link href={`/profile/${post?.creator?._id}`}>
+            {post?.creator?.username}
+          </Link>
+          {post?.creator?.bluetick.status ? (
+            <VerifiedIcon className="text-blue-800" />
+          ) : (
+            ""
+          )}
+        </div>
         {post?.creator?._id !== user?._id ? (
           <Link className="absolute right-2" href={`/report/${post._id}`}>
             <MdReport color="#f00" size={18} />

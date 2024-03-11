@@ -115,6 +115,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    addBluetick: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/${data.userId}/bluetick`,
+        method: "POST",
+        body: { type: data.type },
+      }),
+    }),
     getUser: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}`,
@@ -143,4 +150,5 @@ export const {
   useFollowUserMutation,
   useRemoveFollowerMutation,
   useEditUserMutation,
+  useAddBluetickMutation
 } = usersApiSlice;

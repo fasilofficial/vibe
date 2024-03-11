@@ -92,7 +92,6 @@ const ChatPage = () => {
       const resData = await response.json();
 
       const imageUrl = resData.secure_url;
-      console.log(imageUrl);
 
       const data = {
         message: imageUrl,

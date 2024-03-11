@@ -150,7 +150,6 @@ export const addUser = expressAsyncHandler(async (req, res): Promise<void> => {
   res.status(200).json(user);
 });
 
-// Block/Unblock user
 
 export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
   const newPost = { ...req.body };

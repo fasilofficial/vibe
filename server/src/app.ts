@@ -6,16 +6,14 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
 
-import { connectDatabase } from "./config/database";
-
 import userRouter from "./routes/UserRoutes";
 import adminRouter from "./routes/AdminRoutes";
 import postRouter from "./routes/PostRoutes";
 import reportRouter from "./routes/ReportRoutes";
 import chatRouter from "./routes/ChatRoutes";
+import stripeRouter from "./routes/StripeRoutes";
 
 import { errorHandler, notFound } from "./middleware/errorMiddleware";
-import { protect } from "./middleware/authMiddleware";
 
 const app = express();
 
@@ -45,6 +43,7 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/reports", reportRouter);
 app.use("/api/v1/chats", chatRouter);
+app.use("/api/v1/stripe", stripeRouter);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -640,3 +640,60 @@ export const editUser = expressAsyncHandler(async (req: any, res: any) => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+// add bluetick
+export const addBluetick = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+
+    const { userId } = req.params;
+    const { type } = req.body;
+
+    if (!userId || !type) {
+      res.status(400);
+      throw new Error("Bad Request: Missing userId or subscription type");
+    }
+
+    try {
+      const user = await User.findById(userId)
+        .populate({
+          path: "followers._id",
+          model: "User",
+        })
+        .populate({
+          path: "followings._id",
+          model: "User",
+        })
+        .populate({
+          path: "saves._id",
+          model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
+        });
+
+      if (!user) {
+        res.status(404);
+        throw new Error("User not found");
+      }
+
+      user.bluetick.status = true;
+      user.bluetick.type = type
+
+      const expiryDate = new Date();
+      if (type === "month") {
+        expiryDate.setMonth(expiryDate.getMonth() + 1);
+      } else if (type === "year") {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      }
+
+      user.bluetick.expiryDate = expiryDate;
+
+      await user.save();
+
+      res.status(200).json({ message: "Bluetick added", data: user });
+    } catch (error) {
+      res.status(500).json({ message: "Internal Server Error", error });
+    }
+  }
+);

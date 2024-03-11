@@ -38,6 +38,8 @@ import { useRouter } from "next/navigation";
 import { selectPosts, selectUser } from "@/redux/selectors";
 import { useSocket } from "@/providers/SocketProvider";
 import { NOTIFICATION_TYPES } from "@/constants";
+import VerifiedIcon from "@mui/icons-material/Verified";
+import { Tooltip } from "react-tooltip";
 
 const UserProfile = ({ params: { userId } }) => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -67,7 +69,11 @@ const UserProfile = ({ params: { userId } }) => {
   const [deleteReply] = useDeleteReplyMutation(); // delete reply
   const [savePost] = useSavePostMutation(); // save post
 
-  const handleFollow = async (socket, userId, { _id: followingId, username: receiverName }) => {
+  const handleFollow = async (
+    socket,
+    userId,
+    { _id: followingId, username: receiverName }
+  ) => {
     try {
       const res = await followUser({
         followingId,
@@ -298,6 +304,7 @@ const Header = ({
 
   return (
     <div className="flex items-center justify-between p-4 ">
+      <Tooltip id="item-tooltip" />
       <div className="flex items-center">
         <img
           src={user?.profileUrl}
@@ -306,7 +313,21 @@ const Header = ({
         />
         <div>
           <h1 className="text-2xl font-semibold">{user?.name}</h1>
-          <h1 className="text-xl">@{user?.username}</h1>
+          <div className="flex gap-2 items-center">
+            <h1 className="text-xl">@{user?.username}</h1>
+            {user?.bluetick.status ? (
+              <Link href="/features/bluetick">
+                <VerifiedIcon
+                  data-tooltip-id="item-tooltip"
+                  data-tooltip-content="Verified user"
+                  data-tooltip-place="right"
+                  className="text-blue-800"
+                />
+              </Link>
+            ) : (
+              ""
+            )}
+          </div>
           <div className="flex items-center space-x-4 mt-4">
             <p className="text-gray-600">
               {posts?.length} {posts?.length === 1 ? "post" : "posts"}

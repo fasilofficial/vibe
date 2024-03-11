@@ -16,6 +16,7 @@ import { selectSuggestions, selectUser } from "../redux/selectors";
 import { NOTIFICATION_TYPES } from "@/constants";
 import { useSocket } from "@/providers/SocketProvider";
 import { handleSendNotification } from "./UserLayout";
+import VerifiedIcon from "@mui/icons-material/Verified";
 
 const Suggestions = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -86,16 +87,30 @@ const Suggestions = () => {
   return (
     <div className="p-4 w-80 fixed right-0 ">
       <div className="bg-white dark:bg-gray-800 p-4">
-        {userInfo?.profileUrl && (
-          <div className="flex flex-col gap-4">
+        {user?.profileUrl && (
+          <div className="flex flex-col items-center gap-4">
             <img
-              src={userInfo?.profileUrl}
+              src={user?.profileUrl}
               className="w-48 h-48 mx-auto rounded-full object-cover"
             />
-            <p className="text-center">@{userInfo?.username}</p>
+            <div className="flex gap-2 items-center">
+              <h1 className="text-xl">@{user?.username}</h1>
+              {user?.bluetick.status ? (
+                <Link href="/features/bluetick">
+                  <VerifiedIcon
+                    data-tooltip-id="item-tooltip"
+                    data-tooltip-content="Verified user"
+                    data-tooltip-place="right"
+                    className="text-blue-800"
+                  />
+                </Link>
+              ) : (
+                ""
+              )}
+            </div>
             <Link
               href="/profile"
-              className="p-2 mb-4 rounded bg-blue-500 text-white text-center"
+              className="p-2 mb-4 rounded bg-blue-500 text-white text-center w-full"
             >
               View Profile
             </Link>
@@ -119,7 +134,7 @@ const Suggestions = () => {
                         {user.username}
                       </Link>
                       <h3
-                        onClick={() => handleFollow(userInfo._id, user)}
+                        onClick={() => handleFollow(user._id, user)}
                         className="text-blue-700 cursor-pointer hover:text-blue-600 "
                       >
                         Follow
