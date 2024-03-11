@@ -12,7 +12,7 @@ export const SUBSCRIPTION_PLANS = [
     price: "99",
     type: "month",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus excepturi, magni unde ad fugit consequuntur hic doloremque aspernatur? Officia, molestias. Officia.",
+      "Subscribe to our monthly plan and enjoy uninterrupted access to premium features every month. With this plan, you'll get full access to our platform's premium features for a month, including exclusive content, advanced tools, and priority support.",
   },
   {
     id: 2,
@@ -20,6 +20,6 @@ export const SUBSCRIPTION_PLANS = [
     price: "999",
     type: "year",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus excepturi, magni unde ad fugit consequuntur hic doloremque aspernatur? Officia, molestias. Officia.",
+      "Opt for our yearly subscription plan and unlock a full year of premium access to our platform's features. With this plan, you'll enjoy all the benefits of our premium features for an entire year, including exclusive content, advanced tools, and priority support.",
   },
 ];

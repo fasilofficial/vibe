@@ -43,6 +43,7 @@ import { Tooltip } from "react-tooltip";
 
 const UserProfile = ({ params: { userId } }) => {
   const [activeTab, setActiveTab] = useState("posts");
+  const [showContent, setShowContent] = useState(false);
 
   const { user } = useSelector(selectUser(userId));
   const { posts } = useSelector(selectPosts(userId));
@@ -250,6 +251,17 @@ const UserProfile = ({ params: { userId } }) => {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    if (user?.private) {
+      const followingIndex = loggedUser?.followings.findIndex((following) => {
+        return (
+          following?._id?._id === user?._id || following?._id === user?._id
+        );
+      });
+      setShowContent(followingIndex != -1);
+    } else setShowContent(true);
+  }, [user]);
+
   return (
     <UserLayout>
       <div className="max-w-6xl ml-36 mt-4">
@@ -262,21 +274,29 @@ const UserProfile = ({ params: { userId } }) => {
           handleFollow={handleFollow}
           handleUnfollow={handleUnfollow}
         />
-        <Navigation setActiveTab={setActiveTab} activeTab={activeTab} />
-        <MainContent
-          activeTab={activeTab}
-          user={user}
-          posts={posts}
-          followers={user?.followers}
-          followings={user?.followings}
-          loggedUser={loggedUser}
-          handleLike={handleLike}
-          handleAddComment={handleAddComment}
-          handleAddReply={handleAddReply}
-          handleDeleteComment={handleDeleteComment}
-          handleDeleteReply={handleDeleteReply}
-          handleSavePost={handleSavePost}
-        />
+        {showContent ? (
+          <>
+            <Navigation setActiveTab={setActiveTab} activeTab={activeTab} />
+            <MainContent
+              activeTab={activeTab}
+              user={user}
+              posts={posts}
+              followers={user?.followers}
+              followings={user?.followings}
+              loggedUser={loggedUser}
+              handleLike={handleLike}
+              handleAddComment={handleAddComment}
+              handleAddReply={handleAddReply}
+              handleDeleteComment={handleDeleteComment}
+              handleDeleteReply={handleDeleteReply}
+              handleSavePost={handleSavePost}
+            />
+          </>
+        ) : (
+          <h1 className="text-center mt-10 mx-auto text-2xl font-semibold">
+            Private Account
+          </h1>
+        )}
       </div>
     </UserLayout>
   );
@@ -487,7 +507,7 @@ const PostCard = ({
   }, [user]);
 
   useEffect(() => {
-    setLiked(post.likes?.includes(loggedUser._id));
+    setLiked(post.likes?.includes(loggedUser?._id));
   }, [post]);
 
   return (
@@ -500,7 +520,7 @@ const PostCard = ({
         <Link href={`/profile/${post?.creator?._id}`}>
           {post?.creator?.username}
         </Link>
-        {post?.creator?._id !== loggedUser._id ? (
+        {post?.creator?._id !== loggedUser?._id ? (
           <Link className="absolute right-2" href={`/report/${post._id}`}>
             <MdReport color="#f00" size={18} />
           </Link>

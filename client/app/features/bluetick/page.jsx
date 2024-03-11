@@ -6,11 +6,14 @@ import { selectUser } from "@/redux/selectors";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import React from "react";
-
+import moment from "moment";
+import { useGetCheckoutSessionMutation } from "@/redux/slices/stripe/stripeApiSlice";
 
 const SubscriptionPlan = ({ plan, handleSubscribe }) => (
   <div className="flex flex-col items-center border p-4">
-    <div className="w-24 h-24 rounded-full bg-gray-400 flex justify-center items-center text-3xl uppercase">{plan.name[0]}</div>
+    <div className="w-24 h-24 rounded-full bg-gray-400 flex justify-center items-center text-3xl uppercase">
+      {plan.name[0]}
+    </div>
     <h2 className="font-bold text-2xl my-4">{plan.name}</h2>
     <h3 className="font-semibold mb-2">
       ₹{plan.price}/{plan.type}
@@ -30,28 +33,21 @@ const SubscriptionPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
   const { user } = useSelector(selectUser(userInfo?._id));
 
+  const [getCheckoutSession] = useGetCheckoutSessionMutation();
+
   // Handle Subscription
-  const handleSubscribe = (plan) => {
-    fetch("http://localhost:3300/api/v1/stripe/create-checkout-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+  const handleSubscribe = async (plan) => {
+    try {
+      const res = await getCheckoutSession({
         items: [{ id: plan.id, quantity: 1 }],
         userId: user._id,
-      }),
-    })
-      .then((res) => {
-        if (res.ok) return res.json();
-        return res.json().then((json) => Promise.reject(json));
-      })
-      .then(({ url }) => {
-        router.push(url);
-      })
-      .catch((error) => {
-        console.error(error.error);
-      });
+      }).unwrap();
+
+      if (res.url) router.push(res.url);
+
+    } catch (error) {
+      console.error("Error getting checkout session:", error);
+    }
   };
 
   return (
@@ -76,13 +72,18 @@ const SubscribedPlan = ({ user }) => {
 
   return (
     <div className="flex flex-col items-center border p-4">
-      <div className="w-24 h-24 rounded-full bg-gray-400 flex justify-center items-center text-3xl uppercase">{USER_SUBSCRIPTION.name[0]}</div>
+      <div className="w-24 h-24 rounded-full bg-gray-400 flex justify-center items-center text-3xl uppercase">
+        {USER_SUBSCRIPTION.name[0]}
+      </div>
       <h2 className="font-bold text-2xl my-4">{USER_SUBSCRIPTION.name}</h2>
       <h3 className="font-semibold mb-2">
         ₹{USER_SUBSCRIPTION.price}/{USER_SUBSCRIPTION.type}
       </h3>
       <p className="max-w-96 text-gray-600 text-justify ">
         {USER_SUBSCRIPTION.description}
+      </p>
+      <p className="my-2">
+        Expires on: {moment(user?.bluetick.expiryDate).format("L")}
       </p>
       <button
         className={`px-3 py-2 bg-blue-500 mt-4 rounded-md  cursor-not-allowed `}

@@ -87,7 +87,6 @@ const EditProfileForm = () => {
   const handlePrivateAccount = async (e) => {
     try {
       const res = await toggleAccountType(user?._id).unwrap();
-      console.log(res);
 
       if (res.data) {
         dispatch(updateUser({ userId: user?._id, updatedUser: res.data }));
@@ -98,7 +97,6 @@ const EditProfileForm = () => {
   };
 
   useEffect(() => {
-    console.log(user)
     setFormData({
       name: user?.name,
       username: user?.username,
