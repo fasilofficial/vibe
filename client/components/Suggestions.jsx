@@ -118,31 +118,37 @@ const Suggestions = () => {
         )}
 
         <div className="p-4 pr-8 dark:bg-gray-800 shadow-md rounded flex flex-col gap-4">
-          <h1>People you may know</h1>
           <div>
             {suggestions ? (
-              suggestions.map((user, index) => {
-                return (
-                  <div key={index} className="mb-2 flex gap-2 items-center">
-                    <img
-                      src={user.profileUrl}
-                      className="w-12 h-12 rounded-full object-cover border-gray-400 border flex justify-center items-center"
-                    />
+              suggestions.length ? (
+                <>
+                  <h1>People you may know</h1>
+                  {suggestions.map((user, index) => {
+                    return (
+                      <div key={index} className="mb-2 flex gap-2 items-center">
+                        <img
+                          src={user.profileUrl}
+                          className="w-12 h-12 rounded-full object-cover border-gray-400 border flex justify-center items-center"
+                        />
 
-                    <div className="flex flex-col">
-                      <Link href={`/profile/${user?._id}`}>
-                        {user.username}
-                      </Link>
-                      <h3
-                        onClick={() => handleFollow(user._id, user)}
-                        className="text-blue-700 cursor-pointer hover:text-blue-600 "
-                      >
-                        Follow
-                      </h3>
-                    </div>
-                  </div>
-                );
-              })
+                        <div className="flex flex-col">
+                          <Link href={`/profile/${user?._id}`}>
+                            {user.username}
+                          </Link>
+                          <h3
+                            onClick={() => handleFollow(user._id, user)}
+                            className="text-blue-700 cursor-pointer hover:text-blue-600 "
+                          >
+                            Follow
+                          </h3>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                "No suggestions"
+              )
             ) : (
               <h1>Loading...</h1>
             )}

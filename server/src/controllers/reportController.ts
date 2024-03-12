@@ -113,9 +113,25 @@ export const resolveReport = expressAsyncHandler(
           data: report,
         });
       } else {
+        report.resolved = true;
+
+        await report.save();
+        await report.populate({
+          path: "postId",
+          model: "Post",
+          populate: {
+            path: "creator",
+            model: "User",
+          },
+        });
+        await report.populate({
+          path: "reports.userId",
+          model: "User",
+        });
+
         res
           .status(200)
-          .json({ message: "Post not deleted because of few reports." });
+          .json({ message: "Report marked as resolved.", data: report });
       }
     } catch (error) {
       console.error("Error resolving report:", error);
