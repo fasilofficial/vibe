@@ -1,9 +1,12 @@
-import React from 'react'
+import CallPage from "@/components/CallPage";
+import UserLayout from "@/components/UserLayout";
 
 const page = () => {
   return (
-    <div>page</div>
-  )
-}
+    <UserLayout>
+      <CallPage />
+    </UserLayout>
+  );
+};
 
-export default page
+export default page;

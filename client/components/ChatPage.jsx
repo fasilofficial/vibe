@@ -12,6 +12,8 @@ import { useGetUsersMutation } from "../redux/slices/user/userApiSlice";
 import { useSocket } from "@/providers/SocketProvider";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { Router } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -28,12 +30,19 @@ const ChatPage = () => {
   const [sendingImage, setSendingImage] = useState(false);
   const [page, setPage] = useState(10);
 
+  const [receivingCall, setReceivingCall] = useState(false);
+  const [caller, setCaller] = useState("");
+  const [callerSignal, setCallerSignal] = useState();
+  const [name, setName] = useState("");
+
   const [getChats] = useGetChatsMutation();
   const [getUsers] = useGetUsersMutation();
 
   const canvasRef = useRef();
 
   const dispatch = useDispatch();
+
+  const router = useRouter();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -56,7 +65,7 @@ const ChatPage = () => {
     try {
       socket.emit("message", data);
     } catch (error) {
-      console.error("Erorr sending message:", error);
+      console.error("Error sending message:", error);
     } finally {
       setMessage("");
     }
@@ -112,6 +121,23 @@ const ChatPage = () => {
     setPage((prev) => prev + 10);
   };
 
+  const answerCall = () => {
+    // setCallAccepted(true);
+    // const peer = new Peer({
+    //   initiator: false,
+    //   trickle: false,
+    //   stream: stream,
+    // });
+    // peer.on("signal", (data) => {
+    //   socket?.emit("answerCall", { signal: data, to: caller });
+    // });
+    // peer.on("stream", (stream) => {
+    //   userVideo.current.srcObject = stream;
+    // });
+    // peer.signal(callerSignal);
+    // connectionRef.current = peer;
+  };
+
   useEffect(() => {
     socket?.on("message", (chat) => {
       dispatchAddChat(chat);
@@ -121,6 +147,13 @@ const ChatPage = () => {
           canvasRef.current.scrollTop = canvasRef.current.scrollHeight;
         }
       }, 100);
+    });
+
+    socket?.on("callUser", (data) => {
+      setReceivingCall(true);
+      setCaller(data.from);
+      setName(data.name);
+      setCallerSignal(data.signal);
     });
   }, [socket]);
 
@@ -172,6 +205,25 @@ const ChatPage = () => {
           </div>
         </div>
         <div className="flex flex-col justify-between gap-2 w-full p-2 border ">
+          {receivingCall ? (
+            <div className="absolute bg-gray-300 p-4 rounded left-1/2 -translate-x-1/2 top-10 min-w-40 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <h1 className="text-lg">{name} is calling...</h1>
+                <div className="flex items-center gap-2">
+                  <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none">
+                    <span className="font-semibold">Decline</span>
+                  </button>
+                  <Link
+                    href={`/chat/call?fromId=${user?._id}`}
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 focus:outline-none"
+                  >
+                    <span className="font-semibold">Answer</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           {receiver ? (
             <>
               <div className="flex-none flex  border justify-between rounded p-2 items-center w-full cursor-pointer">
@@ -195,12 +247,16 @@ const ChatPage = () => {
                     </p>
                   </div>
                 </div>
-                <div
+
+                {/* <div
                   className="w-14 h-14 border rounded-full flex justify-center items-center"
                   onClick={handleVideoCall}
                 >
                   <VideocamIcon />
-                </div>
+                </div> */}
+                <Link href={`/chat/call?receiverId=${receiver?._id}`}>
+                  <VideocamIcon />
+                </Link>
               </div>
 
               <div

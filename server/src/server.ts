@@ -80,8 +80,25 @@ io.on("connection", (socket) => {
     io.emit("onlineUsers", onlineUsers);
   });
 
+  socket.on("callUser", (data) => {
+    const sender = getUser(data.from);
+    const receiver = getUser(data.userToCall);
+
+    if (receiver) {
+      io.to(receiver?.socketId).emit("callUser", {
+        signal: data.signalData,
+        from: sender?.socketId,
+        name: sender?.username,
+      });
+    }
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
+  });
+
   socket.on("disconnect", () => {
-    // console.log("User disconnected");
+    socket.broadcast.emit("callEnded");
   });
 });
 
