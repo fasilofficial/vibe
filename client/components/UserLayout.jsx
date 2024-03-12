@@ -1,29 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import UserSidebar from "./sidebars/UserSidebar";
 import Suggestions from "./Suggestions";
 import ToggleTheme from "./ToggleTheme";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import Loader from "./Loader";
-import { SocketProvider } from "@/providers/SocketProvider";
-import { io } from "socket.io-client";
+import { useSocket } from "@/providers/SocketProvider";
 
-export const handleSendNotification = (socket, type, senderName, receiverName) => {
+export const handleSendNotification = (
+  socket,
+  type,
+  senderName,
+  receiverName
+) => {
   socket.emit("sendNotification", { type, senderName, receiverName });
 };
 
 const UserLayout = ({ children }) => {
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [socket, setSocket] = useState(null);
-
+  const socket = useSocket()
   const router = useRouter();
-
-  useEffect(() => {
-    setSocket(io("http://localhost:3300"));
-  }, []);
 
   useEffect(() => {
     socket?.emit("newUser", userInfo?.username);
@@ -35,18 +34,16 @@ const UserLayout = ({ children }) => {
 
   if (userInfo) {
     return (
-      <SocketProvider socket={socket}>
-        <div className="flex w-full justify-between h-screen">
-          <div className="relative">
-            <UserSidebar />
-          </div>
-          <div className="w-full ">{children}</div>
-          <div className="relative">
-            <Suggestions />
-            <ToggleTheme />
-          </div>
+      <div className="flex w-full justify-between h-screen">
+        <div className="relative">
+          <UserSidebar />
         </div>
-      </SocketProvider>
+        <div className="w-full ">{children}</div>
+        <div className="relative">
+          <Suggestions />
+          <ToggleTheme />
+        </div>
+      </div>
     );
   } else {
     return <Loader />;
