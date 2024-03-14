@@ -12,8 +12,8 @@ import { useGetUsersMutation } from "../redux/slices/user/userApiSlice";
 import { useSocket } from "@/providers/SocketProvider";
 import VideocamIcon from "@mui/icons-material/Videocam";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { Router } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
+import CallNotification from "./CallNotification";
 
 const ChatPage = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -34,6 +34,7 @@ const ChatPage = () => {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
   const [name, setName] = useState("");
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   const [getChats] = useGetChatsMutation();
   const [getUsers] = useGetUsersMutation();
@@ -113,10 +114,6 @@ const ChatPage = () => {
     [dispatch]
   );
 
-  const handleVideoCall = async () => {
-    console.log("video call");
-  };
-
   const handleShowPrevChats = () => {
     setPage((prev) => prev + 10);
   };
@@ -136,6 +133,18 @@ const ChatPage = () => {
     // });
     // peer.signal(callerSignal);
     // connectionRef.current = peer;
+
+    setReceivingCall(false);
+    // setCaller(data.from);
+    // setName(data.name);
+    // setCallerSignal(data.signal);
+
+    router.push("/chat/call");
+  };
+
+  const declineCall = () => {
+    setReceivingCall(false);
+    socket?.emit("declineCall", { to: caller });
   };
 
   useEffect(() => {
@@ -155,6 +164,23 @@ const ChatPage = () => {
       setName(data.name);
       setCallerSignal(data.signal);
     });
+
+    socket?.on("callCanceled", () => {
+      setReceivingCall(false);
+      setCaller("");
+      setName("");
+      setCallerSignal(null);
+    });
+
+    socket?.on("onlineUsers", (data) => {
+      setOnlineUsers(data);
+    });
+
+    const fetchOnlineUsers = () => {
+      socket?.emit("getOnlineUsers", null);
+    };
+
+    // fetchOnlineUsers()
   }, [socket]);
 
   useEffect(() => {
@@ -206,22 +232,11 @@ const ChatPage = () => {
         </div>
         <div className="flex flex-col justify-between gap-2 w-full p-2 border ">
           {receivingCall ? (
-            <div className="absolute bg-gray-300 p-4 rounded left-1/2 -translate-x-1/2 top-10 min-w-40 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <h1 className="text-lg">{name} is calling...</h1>
-                <div className="flex items-center gap-2">
-                  <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none">
-                    <span className="font-semibold">Decline</span>
-                  </button>
-                  <Link
-                    href={`/chat/call?fromId=${user?._id}`}
-                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 focus:outline-none"
-                  >
-                    <span className="font-semibold">Answer</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <CallNotification
+              name={name}
+              declineCall={declineCall}
+              answerCall={answerCall}
+            />
           ) : null}
 
           {receiver ? (

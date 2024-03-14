@@ -7,6 +7,8 @@ import Peer from "simple-peer";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import CallNotification from "./CallNotification";
 
 const CallPage = () => {
   const [stream, setStream] = useState();
@@ -14,7 +16,6 @@ const CallPage = () => {
   const [caller, setCaller] = useState("");
   const [callerSignal, setCallerSignal] = useState();
   const [callAccepted, setCallAccepted] = useState(false);
-  const [idToCall, setIdToCall] = useState("");
   const [ringing, setRinging] = useState(false);
 
   const [callEnded, setCallEnded] = useState(false);
@@ -33,6 +34,8 @@ const CallPage = () => {
   const { user } = useSelector(selectUser(userInfo?._id));
   const { user: receiver } = useSelector(selectUser(receiverId));
 
+  const [idToCall, setIdToCall] = useState(receiver?.username);
+
   const socket = useSocket();
 
   const router = useRouter();
@@ -50,6 +53,13 @@ const CallPage = () => {
       setCaller(data.from);
       setName(data.name);
       setCallerSignal(data.signal);
+    });
+
+    socket?.on("callCanceled", () => {
+      setReceivingCall(false);
+      setCaller("");
+      setName("");
+      setCallerSignal(null);
     });
   }, [socket]);
 
@@ -76,7 +86,13 @@ const CallPage = () => {
 
     socket?.on("callAccepted", (signal) => {
       setCallAccepted(true);
+      setRinging(false);
       peer.signal(signal);
+    });
+
+    socket?.on("callDeclined", () => {
+      setRinging(false);
+      toast("Call Declined");
     });
 
     connectionRef.current = peer;
@@ -84,6 +100,7 @@ const CallPage = () => {
 
   const answerCall = () => {
     setCallAccepted(true);
+    setReceivingCall(false);
 
     const peer = new Peer({
       initiator: false,
@@ -108,8 +125,22 @@ const CallPage = () => {
     setCallEnded(true);
     connectionRef.current.destroy();
     setCallAccepted(false);
-    // router.push("/chat");
+    router.push("/chat");
   };
+
+  const cancelCall = () => {
+    setRinging(false);
+    socket?.emit("cancelCall", { to: idToCall });
+  };
+
+  const declineCall = () => {
+    setReceivingCall(false);
+    socket?.emit("declineCall", { to: caller });
+  };
+
+  useEffect(() => {
+    setIdToCall(receiver?.username);
+  }, [receiver]);
 
   return (
     <div className="w-4/6 h-[90%] ml-36 p-4 border my-4">
@@ -154,7 +185,7 @@ const CallPage = () => {
               value={idToCall}
               onChange={(e) => setIdToCall(e.target.value)}
               placeholder="Call ID"
-              className="border border-gray-300 rounded px-2 py-1 mb-2"
+              className="border border-gray-300 rounded px-2 py-1 mb-2 hidden"
             />
           ) : null}
 
@@ -167,33 +198,32 @@ const CallPage = () => {
                 End Call
               </button>
             ) : (
-              <button
-                onClick={() => callUser(idToCall)}
-                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-              >
-                {ringing ? "Ringing..." : "Start Call"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => callUser(idToCall)}
+                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                >
+                  {ringing ? "Ringing..." : "Start Call"}
+                </button>
+                {ringing && (
+                  <button
+                    onClick={cancelCall}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
       </div>
       {receivingCall && !callAccepted ? (
-        <div className="absolute bg-gray-300 p-4 rounded left-1/2 -translate-x-1/2 top-10 min-w-40 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg">{name} is calling...</h1>
-            <div className="flex items-center gap-2">
-              <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 focus:outline-none">
-                <span className="font-semibold">Decline</span>
-              </button>
-              <button
-                onClick={answerCall}
-                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 focus:outline-none"
-              >
-                <span className="font-semibold">Answer</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <CallNotification
+          name={name}
+          declineCall={declineCall}
+          answerCall={answerCall}
+        />
       ) : null}
     </div>
   );

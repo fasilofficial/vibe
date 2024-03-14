@@ -23,8 +23,13 @@ const Post = ({
   handleDeleteReply,
   handleSavePost,
 }) => {
-  const [liked, setLiked] = useState();
-  const [saved, setSaved] = useState();
+  const [liked, setLiked] = useState(post.likes?.includes(user?._id));
+  const [saved, setSaved] = useState(() => {
+    const saveIndex = user?.saves?.findIndex(
+      (save) => String(save?._id?._id) === post._id
+    );
+    return saveIndex != -1 ? true : false;
+  });
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [showReplyInput, setShowReplyInput] = useState(false);
@@ -83,7 +88,11 @@ const Post = ({
                 className="text-gray-800 focus:outline-none"
                 type="button"
               >
-                {liked ? <FaHeart color="#F00" /> : <FaRegHeart />}
+                {liked ? (
+                  <FaHeart class="#F00" />
+                ) : (
+                  <FaRegHeart className="text-black dark:text-white" />
+                )}
               </button>
               <span className="ml-2 text-gray-600 dark:text-gray-200">
                 {post?.likes?.length} likes
@@ -98,7 +107,11 @@ const Post = ({
                 className="text-gray-800 focus:outline-none ml-2"
                 type="button"
               >
-                {showComments ? <FaComment /> : <FaRegComment />}
+                {showComments ? (
+                  <FaComment />
+                ) : (
+                  <FaRegComment className="text-black dark:text-white" />
+                )}
               </button>
               <span className="ml-2 text-gray-600 dark:text-gray-200">
                 {post?.comments?.length} comments

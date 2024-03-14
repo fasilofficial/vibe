@@ -71,11 +71,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("joinRoom", (roomName) => {
-    // console.log(roomName);
-    socket.join(roomName);
-  });
-
   socket.on("getOnlineUsers", () => {
     io.emit("onlineUsers", onlineUsers);
   });
@@ -95,6 +90,18 @@ io.on("connection", (socket) => {
 
   socket.on("answerCall", (data) => {
     io.to(data.to).emit("callAccepted", data.signal);
+  });
+
+  socket.on("declineCall", (data) => {
+    io.to(data.to).emit("callDeclined", null);
+  });
+
+  socket.on("cancelCall", (data) => {
+    const receiver = getUser(data.to);
+
+    if(receiver) {
+      io.to(receiver.socketId).emit("callCanceled", null);
+    }
   });
 
   socket.on("disconnect", () => {
