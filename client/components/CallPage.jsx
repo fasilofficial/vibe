@@ -9,6 +9,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import CallNotification from "./CallNotification";
+import VideoCanvas from "./VideoCanvas";
 
 const CallPage = () => {
   const [stream, setStream] = useState();
@@ -125,6 +126,14 @@ const CallPage = () => {
     setCallEnded(true);
     connectionRef.current.destroy();
     setCallAccepted(false);
+
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+    }
+    setStream(null)
+    
     router.push("/chat");
   };
 
@@ -148,32 +157,15 @@ const CallPage = () => {
         {callAccepted && !callEnded ? (
           <>
             <div className="absolute left-0 top-0 h-40 flex justify-center items-center z-10">
-              <video
-                playsInline
-                ref={myVideo}
-                autoPlay
-                className="w-full h-full object-cover"
-              />
+              <VideoCanvas videoRef={myVideo} muted />
             </div>
             <div className="absolute inset-0 flex justify-center items-center">
-              <video
-                playsInline
-                muted
-                ref={userVideo}
-                autoPlay
-                className="w-full h-full object-cover"
-              />
+              <VideoCanvas videoRef={userVideo} />
             </div>
           </>
         ) : (
           <div className="absolute inset-0 flex justify-center items-center">
-            <video
-              playsInline
-              muted
-              ref={myVideo}
-              autoPlay
-              className="w-full h-full object-cover"
-            />
+            <VideoCanvas videoRef={myVideo} muted />
           </div>
         )}
       </div>
@@ -198,22 +190,24 @@ const CallPage = () => {
                 End Call
               </button>
             ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => callUser(idToCall)}
-                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                >
-                  {ringing ? "Ringing..." : "Start Call"}
-                </button>
-                {ringing && (
+              receiver && (
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={cancelCall}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => callUser(idToCall)}
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
                   >
-                    Cancel
+                    {ringing ? "Ringing..." : "Start Call"}
                   </button>
-                )}
-              </div>
+                  {ringing && (
+                    <button
+                      onClick={cancelCall}
+                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              )
             )}
           </div>
         </div>
