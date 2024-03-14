@@ -1,6 +1,6 @@
 const CallNotification = ({ name, declineCall, answerCall }) => {
   return (
-    <div className="absolute bg-gray-300 p-4 rounded left-1/2 -translate-x-1/2 top-10 min-w-40 flex items-center justify-between">
+    <div className="fixed z-20 bg-gray-300 p-4 rounded left-1/2 -translate-x-1/2 top-10 min-w-40 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <h1 className="text-lg">{name} is calling...</h1>
         <div className="flex items-center gap-2">

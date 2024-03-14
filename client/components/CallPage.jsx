@@ -87,6 +87,7 @@ const CallPage = () => {
 
     socket?.on("callAccepted", (signal) => {
       setCallAccepted(true);
+      setReceivingCall(false);
       setRinging(false);
       peer.signal(signal);
     });
@@ -132,8 +133,8 @@ const CallPage = () => {
         track.stop();
       });
     }
-    setStream(null)
-    
+    setStream(null);
+
     router.push("/chat");
   };
 

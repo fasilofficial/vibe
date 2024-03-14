@@ -119,25 +119,7 @@ const ChatPage = () => {
   };
 
   const answerCall = () => {
-    // setCallAccepted(true);
-    // const peer = new Peer({
-    //   initiator: false,
-    //   trickle: false,
-    //   stream: stream,
-    // });
-    // peer.on("signal", (data) => {
-    //   socket?.emit("answerCall", { signal: data, to: caller });
-    // });
-    // peer.on("stream", (stream) => {
-    //   userVideo.current.srcObject = stream;
-    // });
-    // peer.signal(callerSignal);
-    // connectionRef.current = peer;
-
     setReceivingCall(false);
-    // setCaller(data.from);
-    // setName(data.name);
-    // setCallerSignal(data.signal);
 
     router.push("/chat/call");
   };
@@ -263,13 +245,10 @@ const ChatPage = () => {
                   </div>
                 </div>
 
-                {/* <div
-                  className="w-14 h-14 border rounded-full flex justify-center items-center"
-                  onClick={handleVideoCall}
+                <Link
+                  href={`/chat/call?receiverId=${receiver?._id}`}
+                  className="hover:scale-105"
                 >
-                  <VideocamIcon />
-                </div> */}
-                <Link href={`/chat/call?receiverId=${receiver?._id}`}>
                   <VideocamIcon />
                 </Link>
               </div>
@@ -414,7 +393,7 @@ const ChatPage = () => {
               </div>
             </>
           ) : (
-            <div className="w-full">No chat selected</div>
+            <div className="w-full">Select a user and start chatting</div>
           )}
         </div>
       </div>
