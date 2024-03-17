@@ -40,6 +40,7 @@ import { useSocket } from "@/providers/SocketProvider";
 import { NOTIFICATION_TYPES } from "@/constants";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import { Tooltip } from "react-tooltip";
+import NavButton from "@/components/NavButton";
 
 const UserProfile = ({ params: { userId } }) => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -387,36 +388,21 @@ const Header = ({
 const Navigation = ({ setActiveTab, activeTab }) => {
   return (
     <div className="flex justify-center p-4 space-x-4 border-b border-gray-300">
-      <button
-        onClick={() => setActiveTab("posts")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "posts"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Posts
-      </button>
-      <button
-        onClick={() => setActiveTab("followers")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "followers"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Followers
-      </button>
-      <button
-        onClick={() => setActiveTab("followings")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "followings"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Followings
-      </button>
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"posts"}
+      />
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"followers"}
+      />
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"followings"}
+      />
     </div>
   );
 };

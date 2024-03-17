@@ -42,6 +42,7 @@ import { MdDelete, MdReport } from "react-icons/md";
 import TurnedInNotIcon from "@mui/icons-material/TurnedInNot";
 import TurnedInIcon from "@mui/icons-material/TurnedIn";
 import { Tooltip } from "react-tooltip";
+import NavButton from "./NavButton";
 
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState("posts");
@@ -321,9 +322,8 @@ const Header = ({ user, followers, followings, posts }) => {
           className="w-24 h-24 rounded-full object-cover mr-4"
         />
         <div>
-          <h1 className="text-2xl font-semibold">{user?.name}</h1>
           <div className="flex gap-2 items-center">
-            <h1 className="text-xl">@{user?.username}</h1>
+            <h1 className="text-2xl font-semibold">@{user?.username}</h1>
             {user?.bluetick.status ? (
               <Link href="/features/bluetick">
                 <VerifiedIcon
@@ -337,6 +337,7 @@ const Header = ({ user, followers, followings, posts }) => {
               ""
             )}
           </div>
+          <h1 className="text-xl">{user?.name}</h1>
           <div className="flex items-center space-x-4 mt-4">
             <p className="text-gray-600">
               {posts?.length} {posts?.length === 1 ? "post" : "posts"}
@@ -373,46 +374,26 @@ const Header = ({ user, followers, followings, posts }) => {
 const Navigation = ({ setActiveTab, activeTab }) => {
   return (
     <div className="flex justify-center p-4 space-x-4 border-b border-gray-300">
-      <button
-        onClick={() => setActiveTab("posts")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "posts"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Posts
-      </button>
-      <button
-        onClick={() => setActiveTab("followers")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "followers"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Followers
-      </button>
-      <button
-        onClick={() => setActiveTab("followings")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "followings"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Followings
-      </button>
-      <button
-        onClick={() => setActiveTab("saves")}
-        className={`px-4 py-2  rounded-md  transition-colors ${
-          activeTab == "saves"
-            ? "bg-blue-400 hover:bg-blue-500"
-            : "bg-gray-100 hover:bg-gray-200"
-        }`}
-      >
-        Saves
-      </button>
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"posts"}
+      />
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"followers"}
+      />
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"followings"}
+      />
+      <NavButton
+        setActiveTab={setActiveTab}
+        activeTab={activeTab}
+        tab={"saves"}
+      />
     </div>
   );
 };

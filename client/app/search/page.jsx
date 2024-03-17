@@ -1,10 +1,11 @@
 import React from "react";
 import UserLayout from "../../components/UserLayout";
+import SearchPage from "@/components/SearchPage";
 
 const Search = () => {
   return (
     <UserLayout>
-      <div className="ml-36 p-4">Search</div>
+      <SearchPage />
     </UserLayout>
   );
 };

@@ -37,7 +37,10 @@ export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
       model: "User",
     });
 
-    res.status(201).json({ message: "Post created", data: createdPost });
+    res.status(201).json({
+      message: "Post created",
+      data: { ...createdPost, comments: createdPost.comments.reverse() },
+    });
   } catch (error) {
     console.error("Error occurred while adding post:", error);
     res.status(500).json({ message: "Failed to add post" });
@@ -63,7 +66,12 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
       .sort({ createdAt: -1 });
 
     if (posts.length > 0) {
-      res.status(200).json({ data: posts });
+      res.status(200).json({
+        data: posts.map((post: any) => ({
+          ...post._doc,
+          comments: post.comments.reverse(),
+        })),
+      });
     } else {
       throw new Error("Posts not found");
     }
@@ -113,9 +121,10 @@ export const addComment = expressAsyncHandler(
         model: "User",
       });
 
-      res
-        .status(201)
-        .json({ message: "Comment added successfully", data: post.comments });
+      res.status(201).json({
+        message: "Comment added successfully",
+        data: post.comments.reverse(),
+      });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -201,7 +210,7 @@ export const deleteComment = expressAsyncHandler(
 
       res.status(200).json({
         message: "Comment deleted successfully",
-        data: post.comments,
+        data: post.comments.reverse(),
       });
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -233,7 +242,7 @@ export const deletePost = expressAsyncHandler(async (req: any, res: any) => {
 export const getPost = expressAsyncHandler(async (req: any, res: any) => {
   const { id: postId } = req.params;
 
-  const post = await Post.findById(postId)
+  const post: any = await Post.findById(postId)
     .populate({
       path: "creator",
       model: "User",
@@ -248,7 +257,9 @@ export const getPost = expressAsyncHandler(async (req: any, res: any) => {
     });
 
   if (post) {
-    res.status(200).json({ data: post });
+    res
+      .status(200)
+      .json({ data: { ...post._doc, comments: post.comments.reverse() } });
   } else {
     res.status(404);
     throw new Error("Post not found");
@@ -260,9 +271,13 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
   const { id: postId } = req.params;
 
   try {
-    const updatedPost = await Post.findByIdAndUpdate(postId, req.body.newPost, {
-      new: true,
-    });
+    const updatedPost: any = await Post.findByIdAndUpdate(
+      postId,
+      req.body.newPost,
+      {
+        new: true,
+      }
+    );
 
     if (updatedPost) {
       await updatedPost.populate({
@@ -277,9 +292,16 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
         path: "comments.replies.userId",
         model: "User",
       });
+
       return res
         .status(200)
-        .json({ message: "Post updated successfully", data: updatedPost });
+        .json({
+          message: "Post updated successfully",
+          data: {
+            ...updatedPost._doc,
+            comments: updatedPost.comments.reverse(),
+          },
+        });
     } else {
       return res.status(404).json({ message: "Post not found" });
     }
@@ -332,9 +354,10 @@ export const addReply = expressAsyncHandler(
             model: "User",
           });
 
-          res
-            .status(201)
-            .json({ message: "Reply added successfully", data: post.comments });
+          res.status(201).json({
+            message: "Reply added successfully",
+            data: post.comments.reverse(),
+          });
         } else {
           res.status(404).json({ message: "Comment not found" });
         }
@@ -397,7 +420,7 @@ export const deleteReply = expressAsyncHandler(
 
       res.status(200).json({
         message: "Reply deleted successfully",
-        data: post.comments,
+        data: post.comments.reverse(),
       });
     } catch (error) {
       console.error("Error deleting reply:", error);

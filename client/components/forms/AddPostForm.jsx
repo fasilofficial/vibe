@@ -26,6 +26,14 @@ const AddPostForm = () => {
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+
+    const validFormats = ["image/jpeg", "image/png"];
+    
+    if (!validFormats.includes(file.type)) {
+      toast.error("Invalid file format. Please upload a JPEG or PNG image.");
+      return;
+    }
+
     setImage(file);
   };
 

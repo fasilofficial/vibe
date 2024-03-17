@@ -53,15 +53,18 @@ const Post = ({
           className="w-14 h-14 rounded-full object-cover "
           src={post?.creator?.profileUrl}
         />
-        <div className="flex gap-2 items-center">
-          <Link href={`/profile/${post?.creator?._id}`}>
-            {post?.creator?.username}
-          </Link>
-          {post?.creator?.bluetick.status ? (
-            <VerifiedIcon className="text-blue-800" />
-          ) : (
-            ""
-          )}
+        <div className="flex flex-col">
+          <div className="flex gap-2 items-center">
+            <Link href={`/profile/${post?.creator?._id}`}>
+              {post?.creator?.username}
+            </Link>
+            {post?.creator?.bluetick.status ? (
+              <VerifiedIcon className="text-blue-800" />
+            ) : (
+              ""
+            )}
+          </div>
+          <p className="text-sm text-gray-500">{post?.location}</p>
         </div>
         {post?.creator?._id !== user?._id ? (
           <Link className="absolute right-2" href={`/report/${post._id}`}>
@@ -89,9 +92,9 @@ const Post = ({
                 type="button"
               >
                 {liked ? (
-                  <FaHeart class="#F00" />
+                  <FaHeart className="text-red-500" />
                 ) : (
-                  <FaRegHeart className="text-black dark:text-white" />
+                  <FaRegHeart className="dark:text-white" />
                 )}
               </button>
               <span className="ml-2 text-gray-600 dark:text-gray-200">
@@ -249,24 +252,7 @@ const Post = ({
                                   </button>
                                 </div>
                               </form>
-                            ) : (
-                              // <form
-                              //   onSubmit={(e) =>
-                              //     handleAddReply(e, post._id, comment._id, reply)
-                              //   }
-                              //   data-postid={post._id}
-                              //   className="mt-2"
-                              // >
-                              //   <input
-                              //     type="text"
-                              //     placeholder="Add a comment..."
-                              //     value={reply}
-                              //     onChange={(e) => setReply(e.target.value)}
-                              //     className="w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 focus:outline-none focus:border-blue-500"
-                              //   />
-                              // </form>
-                              ""
-                            )}
+                            ) : null}
                           </>
                         ) : (
                           ""
