@@ -74,7 +74,7 @@ const UserLayout = ({ children }) => {
         <div className="relative">
           <UserSidebar />
         </div>
-        <div className="w-full ">{children}</div>
+        <div className="w-full p-2 md:p-4">{children}</div>
         <div className="relative">
           <Suggestions />
           <ToggleTheme />

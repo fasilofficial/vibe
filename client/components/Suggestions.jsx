@@ -85,7 +85,7 @@ const Suggestions = () => {
   }, []);
 
   return (
-    <div className="p-4 w-80 fixed right-0 ">
+    <div className="p-4 w-80 fixed right-0 hidden lg:block">
       <div className="bg-white dark:bg-gray-800 p-4">
         {user?.profileUrl && (
           <div className="flex flex-col items-center gap-4">

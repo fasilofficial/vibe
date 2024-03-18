@@ -180,7 +180,7 @@ const Feed = () => {
   };
 
   return (
-    <div className="w-4/6 ml-36 py-4">
+    <div className="w-full md:w-4/6 mx-auto md:ml-36 py-2 md:py-4">
       <div className="flex flex-col items-center gap-6">
         {posts
           ? posts.map((post, index) => (

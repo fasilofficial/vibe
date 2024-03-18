@@ -47,7 +47,7 @@ const Post = ({
   }, [post]);
 
   return (
-    <div className="mx-auto w-4/6 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden mb-8">
+    <div className="mx-auto w-full lg:w-4/6 bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden mb-8">
       <div className="p-2 flex gap-2 items-center dark:text-white relative">
         <img
           className="w-14 h-14 rounded-full object-cover "

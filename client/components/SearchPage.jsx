@@ -33,12 +33,12 @@ const SearchPage = () => {
 
   return (
     <div className="ml-36 p-4 border w-2/6 my-4 flex flex-col gap-4">
-      <div className="flex gap-2 items-center w-full p-2 bg-white rounded border">
+      <div className="flex gap-2 items-center w-full p-2 bg-white dark:bg-gray-700 rounded border">
         <SearchIcon className="text-gray-600" />
         <input
           type="text"
           placeholder="Search by username, name or email"
-          className=" focus:outline-none flex-grow "
+          className=" focus:outline-none flex-grow dark:bg-gray-700 "
           value={searchTerm}
           onChange={handleChange}
         />
