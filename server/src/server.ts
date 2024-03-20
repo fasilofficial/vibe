@@ -38,11 +38,12 @@ io.on("connection", (socket) => {
 
   socket.on("sendNotification", ({ type, senderName, receiverName }) => {
     const receiver = getUser(receiverName);
-    if (receiver)
+    if (receiver) {
       io.to(receiver?.socketId).emit("receiveNotification", {
         senderName,
         type,
       });
+    }
   });
 
   socket.on("message", async ({ message, sender, receiver }) => {
@@ -64,6 +65,7 @@ io.on("connection", (socket) => {
       io.to(receiverUser?.socketId).emit("receiveNotification", {
         senderName: sender.username,
         type: "MESSAGE",
+        receiverName: receiver.username,
       });
     }
     if (senderUser) {
@@ -99,7 +101,7 @@ io.on("connection", (socket) => {
   socket.on("cancelCall", (data) => {
     const receiver = getUser(data.to);
 
-    if(receiver) {
+    if (receiver) {
       io.to(receiver.socketId).emit("callCanceled", null);
     }
   });

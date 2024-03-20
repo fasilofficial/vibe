@@ -198,7 +198,7 @@ const ChatPage = () => {
   }, [receiver]);
 
   return (
-    <div className="w-4/6 ml-36 mt-4 h-screen">
+    <div className="w-4/6 ml-36 h-screen">
       <div className="flex gap-4 h-[96%]">
         <div className="flex flex-col gap-2 min-w-64 p-2 dark:bg-gray-800 shadow-md rounded-sm">
           <NavigationPanel activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -447,29 +447,13 @@ const FollowersList = ({ followers, receiver, handleSelectReceiver }) => {
     <>
       {followers && followers?.length > 0
         ? followers.map((follower) => (
-            <div
-              key={follower?._id?._id}
-              className=" flex gap-2 border rounded p-2 items-center cursor-pointer"
-              onClick={() => handleSelectReceiver(follower?._id)}
-            >
-              <img
-                className="w-14 h-14 rounded-full object-cover"
-                src={follower?._id?.profileUrl}
-                alt={follower?._id?.username}
-              />
-              <div>
-                <p
-                  className={`${
-                    receiver?._id === follower?._id?._id ? "font-bold" : ""
-                  }`}
-                  onClick={() => handleSelectReceiver(follower?._id)}
-                >
-                  {follower?._id?.username}
-                </p>
-              </div>
-            </div>
+            <ListUser
+              listUser={follower}
+              handleSelectReceiver={handleSelectReceiver}
+              receiver={receiver}
+            />
           ))
-        : "No users"}
+        : "No followers"}
     </>
   );
 };
@@ -479,28 +463,13 @@ const FollowingsList = ({ followings, receiver, handleSelectReceiver }) => {
     <>
       {followings && followings?.length > 0
         ? followings.map((following) => (
-            <div
-              key={following?._id?._id}
-              className=" flex gap-2 border rounded p-2 items-center cursor-pointer"
-              onClick={() => handleSelectReceiver(following?._id)}
-            >
-              <img
-                className="w-14 h-14 rounded-full object-cover"
-                src={following?._id?.profileUrl}
-                alt={following?._id?.username}
-              />
-              <div>
-                <p
-                  className={`${
-                    receiver?._id === following?._id?._id ? "font-bold" : ""
-                  }`}
-                >
-                  {following?._id?.username}
-                </p>
-              </div>
-            </div>
+            <ListUser
+              listUser={following}
+              handleSelectReceiver={handleSelectReceiver}
+              receiver={receiver}
+            />
           ))
-        : "No users"}
+        : "No followings"}
     </>
   );
 };
@@ -520,6 +489,59 @@ const NavigationPanel = ({ activeTab, setActiveTab }) => {
       >
         Followings
       </button>
+    </div>
+  );
+};
+
+const ListUser = ({ listUser, handleSelectReceiver, receiver }) => {
+  const socket = useSocket();
+
+  const [messageCount, setMessageCount] = useState(0);
+
+  useEffect(() => {
+  
+    if (socket) {
+      socket.on("receiveNotification",  (data) => {
+        if (data.senderName == listUser?._id?.username) {
+          setMessageCount((prev) => prev + 1);
+        }
+      });
+    }
+  
+  }, [socket, listUser]);
+
+  return (
+    <div
+      key={listUser?._id?._id}
+      className=" flex gap-2 border rounded p-2 items-center cursor-pointer"
+      onClick={() => {
+        setMessageCount(0);
+        handleSelectReceiver(listUser?._id);
+      }}
+    >
+      <img
+        className="w-14 h-14 rounded-full object-cover"
+        src={listUser?._id?.profileUrl}
+        alt={listUser?._id?.username}
+      />
+      <div className="flex flex-grow items-center justify-between">
+        <p
+          className={`${
+            receiver?._id === listUser?._id?._id ? "font-bold" : ""
+          }`}
+          onClick={() => {
+            setMessageCount(0);
+            handleSelectReceiver(listUser?._id);
+          }}
+        >
+          {listUser?._id?.username}
+        </p>
+        {messageCount > 1 && (
+          <span className=" flex justify-center items-center text-white w-6 h-6 rounded-full bg-blue-700 ">
+            {messageCount}
+          </span>
+        )}
+      </div>
     </div>
   );
 };
