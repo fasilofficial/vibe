@@ -31,12 +31,11 @@ const UserSidebar = () => {
 
   useEffect(() => {
     socket?.on("receiveNotification", (data) => {
-
       if (data.senderName !== userInfo?.username) {
-        if (data.type === NOTIFICATION_TYPES.message && pathname !== '/chat') {
+        if (data.type !== NOTIFICATION_TYPES.message) {
+          return setNotifications((prevState) => [...prevState, data]);
+        } else if (pathname !== "/chat") {
           setMessageNotifications((prevState) => [...prevState, data]);
-        } else {
-          setNotifications((prevState) => [...prevState, data]);
         }
       }
     });
@@ -47,7 +46,10 @@ const UserSidebar = () => {
       <div
         className={`bg-white dark:bg-gray-800 rounded-md h-full md:p-4 shadow-md flex md:flex-col  justify-between items-center`}
       >
-        <Link href="/" className="hidden md:block text-3xl font-extrabold text-blue-800">
+        <Link
+          href="/"
+          className="hidden md:block text-3xl font-extrabold text-blue-800"
+        >
           VIBE.
         </Link>
         <div className="flex md:flex-col">

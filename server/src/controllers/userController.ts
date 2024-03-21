@@ -103,8 +103,6 @@ export const authUser = expressAsyncHandler(
       if (!user.blocked) {
         generateToken(res, user._id);
 
-        req.session.user = user;
-
         const posts = await Post.find({})
           .populate({
             path: "creator",
@@ -142,7 +140,7 @@ export const authUser = expressAsyncHandler(
           .status(201)
           .json({ message: "Login successful", user, posts, users });
       } else {
-        // res.status(400).json({ error: "You're blocked by the admin" });
+        res.status(400)
         throw new Error("You're blocked by the admin");
       }
     } else {

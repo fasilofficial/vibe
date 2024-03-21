@@ -443,11 +443,37 @@ const ChatList = ({
 };
 
 const FollowersList = ({ followers, receiver, handleSelectReceiver }) => {
+  const socket = useSocket();
+  const [updatedFollowers, setUpdatedFollowers] = useState(followers);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("receiveNotification", (data) => {
+        const updated = followers.map((follower) => {
+          if (follower?._id?.username === data.senderName) {
+            return {
+              ...follower,
+              messageCount: (follower.messageCount || 0) + 1,
+            };
+          } else {
+            return follower;
+          }
+        });
+        setUpdatedFollowers(updated);
+      });
+    }
+  }, [socket, followers]);
+
+  const sortedFollowers = [...updatedFollowers].sort(
+    (a, b) => (b.messageCount || 0) - (a.messageCount || 0)
+  );
+
   return (
     <>
-      {followers && followers?.length > 0
-        ? followers.map((follower) => (
+      {sortedFollowers && sortedFollowers.length > 0
+        ? sortedFollowers.map((follower) => (
             <ListUser
+              key={follower?._id?._id}
               listUser={follower}
               handleSelectReceiver={handleSelectReceiver}
               receiver={receiver}
@@ -459,17 +485,43 @@ const FollowersList = ({ followers, receiver, handleSelectReceiver }) => {
 };
 
 const FollowingsList = ({ followings, receiver, handleSelectReceiver }) => {
+  // const socket = useSocket();
+  // const [updatedFollowers, setUpdatedFollowers] = useState(followings);
+
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.on("receiveNotification", (data) => {
+  //       const updated = followings.map((follower) => {
+  //         if (follower?._id?.username === data.senderName) {
+  //           return {
+  //             ...follower,
+  //             messageCount: (follower.messageCount || 0) + 1,
+  //           };
+  //         } else {
+  //           return follower;
+  //         }
+  //       });
+  //       setUpdatedFollowers(updated);
+  //     });
+  //   }
+  // }, [socket, followings]);
+
+  // const sortedFollowers = [...updatedFollowers].sort(
+  //   (a, b) => (b.messageCount || 0) - (a.messageCount || 0)
+  // );
+
   return (
     <>
-      {followings && followings?.length > 0
-        ? followings.map((following) => (
+      {followings && followings.length > 0
+        ? followings.map((follower) => (
             <ListUser
-              listUser={following}
+              key={follower?._id?._id}
+              listUser={follower}
               handleSelectReceiver={handleSelectReceiver}
               receiver={receiver}
             />
           ))
-        : "No followings"}
+        : "No followers"}
     </>
   );
 };
@@ -494,28 +546,28 @@ const NavigationPanel = ({ activeTab, setActiveTab }) => {
 };
 
 const ListUser = ({ listUser, handleSelectReceiver, receiver }) => {
-  const socket = useSocket();
+  // const socket = useSocket();
 
   const [messageCount, setMessageCount] = useState(0);
 
-  useEffect(() => {
-  
-    if (socket) {
-      socket.on("receiveNotification",  (data) => {
-        if (data.senderName == listUser?._id?.username) {
-          setMessageCount((prev) => prev + 1);
-        }
-      });
-    }
-  
-  }, [socket, listUser]);
+  // useEffect(() => {
+
+  //   if (socket) {
+  //     socket.on("receiveNotification",  (data) => {
+  //       if (data.senderName == listUser?._id?.username) {
+  //         setMessageCount((prev) => prev + 1);
+  //       }
+  //     });
+  //   }
+
+  // }, [socket, listUser]);
 
   return (
     <div
       key={listUser?._id?._id}
       className=" flex gap-2 border rounded p-2 items-center cursor-pointer"
       onClick={() => {
-        setMessageCount(0);
+        // setMessageCount(0);
         handleSelectReceiver(listUser?._id);
       }}
     >
@@ -530,15 +582,15 @@ const ListUser = ({ listUser, handleSelectReceiver, receiver }) => {
             receiver?._id === listUser?._id?._id ? "font-bold" : ""
           }`}
           onClick={() => {
-            setMessageCount(0);
+            // setMessageCount(0);
             handleSelectReceiver(listUser?._id);
           }}
         >
           {listUser?._id?.username}
         </p>
-        {messageCount > 1 && (
+        {listUser?.messageCount >= 1 && (
           <span className=" flex justify-center items-center text-white w-6 h-6 rounded-full bg-blue-700 ">
-            {messageCount}
+            {listUser?.messageCount}
           </span>
         )}
       </div>
