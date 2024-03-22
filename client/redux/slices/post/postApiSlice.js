@@ -1,6 +1,6 @@
 import { apiSlice } from "../apiSlice";
 
-const BASE_URL = "http://localhost:3300/api/v1/posts";
+const BASE_URL = `http://${process.env.HOST}:3300/api/v1/posts`;
 
 export const postApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -83,5 +83,5 @@ export const {
   useAddReplyMutation,
   useDeleteCommentMutation,
   useEditPostMutation,
-  useDeleteReplyMutation
+  useDeleteReplyMutation,
 } = postApiSlice;

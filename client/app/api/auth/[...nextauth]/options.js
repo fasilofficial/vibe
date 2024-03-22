@@ -7,7 +7,7 @@ export const options = {
     GitHubProvider({
       async profile(profile) {
         const res = await fetch(
-          `http://localhost:3300/api/v1/users?email=${profile?.email}`
+          `http://${process.env.HOST}:3300/api/v1/users?email=${profile?.email}`
         );
 
         if (res.ok) {
@@ -20,7 +20,7 @@ export const options = {
           };
         } else {
           // user doesn't exist
-          const res = await fetch("http://localhost:3300/api/v1/users", {
+          const res = await fetch(`http://${process.env.HOST}:3300/api/v1/users`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -53,7 +53,7 @@ export const options = {
     GoogleProvider({
       async profile(profile) {
         const res = await fetch(
-          `http://localhost:3300/api/v1/users?email=${profile?.email}`
+          `http://${process.env.HOST}:3300/api/v1/users?email=${profile?.email}`
         );
 
         if (res.ok) {
@@ -66,7 +66,7 @@ export const options = {
           };
         } else {
           // user doesn't exist
-          const res = await fetch("http://localhost:3300/api/v1/users", {
+          const res = await fetch("http://${process.env.HOST}:3300/api/v1/users", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -115,7 +115,7 @@ export const options = {
           let userRole = "user";
 
           const response = await fetch(
-            "http://localhost:3300/api/v1/users/auth",
+            `http://${process.env.HOST}:3300/api/v1/users/auth`,
             {
               method: "POST",
               headers: {
