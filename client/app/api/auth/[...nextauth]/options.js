@@ -20,18 +20,21 @@ export const options = {
           };
         } else {
           // user doesn't exist
-          const res = await fetch(`http://${process.env.HOST}:3300/api/v1/users`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: profile?.name,
-              email: profile?.email,
-              profileUrl: profile?.avatar_url,
-              username: profile?.login,
-            }),
-          });
+          const res = await fetch(
+            `http://${process.env.HOST}:3300/api/v1/users`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: profile?.name,
+                email: profile?.email,
+                profileUrl: profile?.avatar_url,
+                username: profile?.login,
+              }),
+            }
+          );
 
           if (res.ok) {
             // user created
@@ -66,18 +69,21 @@ export const options = {
           };
         } else {
           // user doesn't exist
-          const res = await fetch("http://${process.env.HOST}:3300/api/v1/users", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: profile?.given_name + " " + profile?.family_name,
-              email: profile?.email,
-              profileUrl: profile?.picture,
-              username: profile?.email.split("@")[0],
-            }),
-          });
+          const res = await fetch(
+            `http://${process.env.HOST}:3300/api/v1/users`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: profile?.given_name + " " + profile?.family_name,
+                email: profile?.email,
+                profileUrl: profile?.picture,
+                username: profile?.email.split("@")[0],
+              }),
+            }
+          );
 
           if (res.ok) {
             // user created
