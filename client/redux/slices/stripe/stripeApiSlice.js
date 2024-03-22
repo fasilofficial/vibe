@@ -1,6 +1,6 @@
 import { apiSlice } from "../apiSlice";
 
-const BASE_URL = `http://${process.env.HOST}:3300/api/v1/stripe`;
+const BASE_URL = `http://${process.env.HOST_NAME}:3300/api/v1/stripe`;
 
 export const stripeApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

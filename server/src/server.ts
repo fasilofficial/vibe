@@ -7,7 +7,7 @@ import Chat from "./models/Chat";
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "http://${process.env.HOST}:3000", methods: ["GET", "POST"] },
+  cors: { origin: "http://${process.env.HOST_NAME}:3000", methods: ["GET", "POST"] },
 });
 
 type User = {
