@@ -23,3 +23,6 @@ export const SUBSCRIPTION_PLANS = [
       "Opt for our yearly subscription plan and unlock a full year of premium access to our platform's features. With this plan, you'll enjoy all the benefits of our premium features for an entire year, including exclusive content, advanced tools, and priority support.",
   },
 ];
+
+const ENV = 'development'
+export const SERVER_BASE_URL = ENV === 'development' ? "http://localhost:3300" : 'http://34.125.126.65:3300'

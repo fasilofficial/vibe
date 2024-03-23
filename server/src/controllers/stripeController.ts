@@ -1,16 +1,16 @@
 import { Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import stripe from "../config/stripe";
-import { CLIENT_URL, STORE_ITEMS } from "../constants";
+import { CLIENT_BASE_URL, STORE_ITEMS } from "../constants";
 
 export const createCheckoutSession = expressAsyncHandler(
   async (req: Request, res: Response) => {
     try {
-      const successUrl = `${CLIENT_URL}/features/bluetick/success?userId=${
+      const successUrl = `${CLIENT_BASE_URL}/features/bluetick/success?userId=${
         req.body.userId
       }&type=${STORE_ITEMS.get(req.body.items[0].id)?.type}`;
 
-      const cancelUrl = `${CLIENT_URL}/features/bluetick/cancel?userId=${
+      const cancelUrl = `${CLIENT_BASE_URL}/features/bluetick/cancel?userId=${
         req.body.userId
       }&type=${STORE_ITEMS.get(req.body.items[0].id)?.type}`;
 

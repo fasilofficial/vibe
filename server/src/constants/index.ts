@@ -1,4 +1,4 @@
-export const CLIENT_URL = "http://${process.env.HOST_NAME}:3000";
+export const CLIENT_BASE_URL = "http://localhost:3000";
 
 export const STORE_ITEMS = new Map([
   [

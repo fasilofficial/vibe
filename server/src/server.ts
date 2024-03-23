@@ -3,11 +3,12 @@ import { Server } from "socket.io";
 import app from "./app";
 import { connectDatabase } from "./config/database";
 import Chat from "./models/Chat";
+import { CLIENT_BASE_URL } from "./constants";
 
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "http://${process.env.HOST_NAME}:3000", methods: ["GET", "POST"] },
+  cors: { origin: CLIENT_BASE_URL, methods: ["GET", "POST"] },
 });
 
 type User = {

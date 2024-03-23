@@ -1,6 +1,7 @@
+import { SERVER_BASE_URL } from "@/constants";
 import { apiSlice } from "../apiSlice";
 
-const BASE_URL = `http://${process.env.HOST_NAME}:3300/api/v1/chats`;
+const BASE_URL = `${SERVER_BASE_URL}/api/v1/chats`;
 
 export const reportApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
