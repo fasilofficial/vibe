@@ -377,6 +377,7 @@ export const handleForgotPassword = expressAsyncHandler(
   }
 );
 
+// change password
 export const handleChangePassword = expressAsyncHandler(async (req:any, res:any) => {
   const { currentPassword, newPassword, userId } = req.body;
 
@@ -405,7 +406,6 @@ export const handleChangePassword = expressAsyncHandler(async (req:any, res:any)
       res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 // follow
 export const followUser = expressAsyncHandler(

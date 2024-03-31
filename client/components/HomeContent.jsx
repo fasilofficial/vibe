@@ -30,7 +30,7 @@ const HomeContent = () => {
     };
 
     fetchUserInfo();
-  }, []);
+  }, [session]);
 
   return (
     <>
