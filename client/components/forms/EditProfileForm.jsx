@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useChangePasswordMutation,
   useEditUserMutation,
   useToggleAccountTypeMutation,
 } from "@/redux/slices/user/userApiSlice";
@@ -11,6 +12,7 @@ import { useRouter } from "next/navigation";
 import { updateUser } from "@/redux/slices/data/dataSlice";
 import { selectUser } from "@/redux/selectors";
 import Link from "next/link";
+import validateForm from "@/utils/validate-form";
 
 const EditProfileForm = () => {
   const { userInfo } = useSelector((state) => state.auth);
@@ -24,8 +26,12 @@ const EditProfileForm = () => {
   const [image, setImage] = useState();
   const [isLoading, setIsLoading] = useState(false);
 
+  const [currentPassword, setCurrentPassword] = useState();
+  const [newPassword, setNewPassword] = useState();
+
   const [editUser] = useEditUserMutation();
   const [toggleAccountType] = useToggleAccountTypeMutation();
+  const [changePassword] = useChangePasswordMutation();
 
   const handleChange = (e) => {
     const key = e.target.name;
@@ -93,6 +99,33 @@ const EditProfileForm = () => {
       }
     } catch (error) {
       console.error("Error toggling account type", error);
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+
+    if (!currentPassword || !newPassword)
+      return toast.error("All fields are required");
+
+    try {
+      if (validateForm({ newPassword })) {
+        try {
+          const res = await changePassword({
+            currentPassword,
+            newPassword,
+            userId: user?._id,
+          }).unwrap();
+
+          toast.success(res.message);
+          setCurrentPassword("");
+          setNewPassword("");
+        } catch (error) {
+          toast.error(error.data.message || error.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error?.message || error?.data?.message);
     }
   };
 
@@ -164,18 +197,56 @@ const EditProfileForm = () => {
           </button>
         </form>
       </div>
-      <div className="w-full p-6 my-4 rounded-md shadow-md">
-        <h1 className="font-bold mb-2">Account Type</h1>
-        <form action="" className="flex gap-2 item-center">
-          <label htmlFor="private">Private account</label>
-          <input
-            type="checkbox"
-            id="private"
-            checked={user?.private}
-            onChange={handlePrivateAccount}
-          />
-        </form>
+      <div className="flex justify-between gap-2">
+        <div className="w-full p-6 my-4 rounded-md shadow-md">
+          <h1 className="font-bold mb-2">Account Type</h1>
+          <form action="" className="flex gap-2 item-center">
+            <label htmlFor="private">Private account</label>
+            <input
+              type="checkbox"
+              id="private"
+              checked={user?.private}
+              onChange={handlePrivateAccount}
+            />
+          </form>
+        </div>
+        <div className="w-full p-6 my-4 rounded-md shadow-md">
+          <h1 className="font-bold mb-2">Change Password</h1>
+          <form
+            action=""
+            className="flex flex-col gap-2 item-center"
+            onSubmit={handleChangePassword}
+          >
+            <div className="flex justify-between">
+              <label htmlFor="current">Current Password</label>
+              <input
+                className="rounded p-1"
+                type="password"
+                id="current"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-between">
+              <label htmlFor="new">New Password</label>
+              <input
+                className="rounded p-1"
+                type="password"
+                id="new"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <button
+              className=" self-end p-2 bg-blue-500 text-white rounded-md"
+              type="submit"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
       </div>
+
       <Link
         href="/profile"
         className="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 transition-colors duration-300"

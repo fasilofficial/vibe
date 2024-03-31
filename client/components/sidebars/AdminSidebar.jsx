@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { IoIosPeople } from "react-icons/io";
 import { IoSettings, IoLogOut } from "react-icons/io5";
-import { MdSpaceDashboard } from "react-icons/md";
+import { MdSpaceDashboard, MdVerified } from "react-icons/md";
 import { TiDocumentText } from "react-icons/ti";
 import { usePathname } from "next/navigation";
 import { GoReport } from "react-icons/go";
@@ -41,6 +41,11 @@ const AdminSidebar = ({ adminInfo }) => {
               route: "/admin/reports",
               icon: <GoReport />,
             },
+            {
+              title: "subscriptions",
+              route: "/admin/subscriptions",
+              icon: <MdVerified />,
+            },
           ].map((item, index) => {
             return (
               <Link
@@ -61,16 +66,16 @@ const AdminSidebar = ({ adminInfo }) => {
       </div>
       <div>
         {[
-          {
-            title: "profile",
-            route: "/admin/profile",
-            icon: <IoIosPeople />,
-          },
-          {
-            title: "settings",
-            route: "/admin/settings",
-            icon: <IoSettings />,
-          },
+          // {
+          //   title: "profile",
+          //   route: "/admin/profile",
+          //   icon: <IoIosPeople />,
+          // },
+          // {
+          //   title: "settings",
+          //   route: "/admin/settings",
+          //   icon: <IoSettings />,
+          // },
           {
             title: "logout",
             route: "/auth/admin/signout",

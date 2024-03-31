@@ -140,7 +140,7 @@ export const authUser = expressAsyncHandler(
           .status(201)
           .json({ message: "Login successful", user, posts, users });
       } else {
-        res.status(400)
+        res.status(400);
         throw new Error("You're blocked by the admin");
       }
     } else {
@@ -376,6 +376,36 @@ export const handleForgotPassword = expressAsyncHandler(
     }
   }
 );
+
+export const handleChangePassword = expressAsyncHandler(async (req:any, res:any) => {
+  const { currentPassword, newPassword, userId } = req.body;
+
+  try {
+      if (!currentPassword || !newPassword || !userId) {
+          return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const user = await User.findById(userId);
+
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
+
+      const isPasswordValid = await user.matchPasswords(currentPassword);
+      if (!isPasswordValid) {
+          return res.status(400).json({ message: "Incorrect current password" });
+      }
+
+      user.password = newPassword;
+      await user.save();
+
+      res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+      console.error("Error while changing password:", error);
+      res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 
 // follow
 export const followUser = expressAsyncHandler(

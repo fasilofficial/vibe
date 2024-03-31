@@ -164,99 +164,96 @@ const Post = ({
                             .startOf("minute")
                             .fromNow()}
                         </p>
-                        {comment.userId._id !== user._id ? (
-                          <>
-                            <p
-                              type="button"
-                              className="text-gray-400 hover:text-gray-500 cursor-pointer"
-                              onClick={() => setShowReplyInput((prev) => !prev)}
-                            >
-                              replay
-                            </p>
-                            {comment.replies
-                              ? comment.replies.map((reply, index) => {
-                                  return (
-                                    <div
-                                      key={index}
-                                      className="flex justify-between  p-1 border rounded mb-2 min-w-64 "
-                                    >
-                                      <div className="flex gap-2 ">
-                                        <img
-                                          src={reply?.userId?.profileUrl}
-                                          className="w-8 h-8 rounded-full object-cover "
-                                        />
-                                        <div className="flex flex-col">
-                                          <Link
-                                            href={`/profile/${reply?.userId?._id}`}
-                                            className="text-gray-500 dark:text-gray-200 text-sm"
-                                          >
-                                            @{reply.userId.username}
-                                          </Link>
-                                          <p className="text-gray-700 dark:text-gray-200">
-                                            {reply.comment}
-                                          </p>
-                                          <p className="text-gray-300 dark:text-gray-200">
-                                            {moment(reply.createdAt)
-                                              .startOf("minute")
-                                              .fromNow()}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <div>
-                                        {reply.userId._id === user._id ? (
-                                          <button
-                                            type="button"
-                                            onClick={() =>
-                                              handleDeleteReply(
-                                                post._id,
-                                                comment._id,
-                                                reply._id
-                                              )
-                                            }
-                                          >
-                                            <MdDelete />
-                                          </button>
-                                        ) : (
-                                          ""
-                                        )}
+
+                        <>
+                          <p
+                            type="button"
+                            className="text-gray-400 hover:text-gray-500 cursor-pointer"
+                            onClick={() => setShowReplyInput((prev) => !prev)}
+                          >
+                            replay
+                          </p>
+                          {comment.replies
+                            ? comment.replies.map((reply, index) => {
+                                return (
+                                  <div
+                                    key={index}
+                                    className="flex justify-between  p-1 border rounded mb-2 min-w-64 "
+                                  >
+                                    <div className="flex gap-2 ">
+                                      <img
+                                        src={reply?.userId?.profileUrl}
+                                        className="w-8 h-8 rounded-full object-cover "
+                                      />
+                                      <div className="flex flex-col">
+                                        <Link
+                                          href={`/profile/${reply?.userId?._id}`}
+                                          className="text-gray-500 dark:text-gray-200 text-sm"
+                                        >
+                                          @{reply.userId.username}
+                                        </Link>
+                                        <p className="text-gray-700 dark:text-gray-200">
+                                          {reply.comment}
+                                        </p>
+                                        <p className="text-gray-300 dark:text-gray-200">
+                                          {moment(reply.createdAt)
+                                            .startOf("minute")
+                                            .fromNow()}
+                                        </p>
                                       </div>
                                     </div>
-                                  );
-                                })
-                              : ""}
+                                    <div>
+                                      {reply.userId._id === user._id ? (
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            handleDeleteReply(
+                                              post._id,
+                                              comment._id,
+                                              reply._id
+                                            )
+                                          }
+                                        >
+                                          <MdDelete />
+                                        </button>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            : ""}
 
-                            {showReplyInput ? (
-                              <form className="mt-2">
-                                <div className="flex justify-between items-center w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
-                                  <input
-                                    type="text"
-                                    placeholder="Reply for comment..."
-                                    value={reply}
-                                    onChange={(e) => setReply(e.target.value)}
-                                    className="focus:outline-none"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      handleAddReply(
-                                        post._id,
-                                        comment._id,
-                                        user._id,
-                                        reply,
-                                        setReply,
-                                        setShowReplyInput
-                                      )
-                                    }
-                                  >
-                                    <IoSend />
-                                  </button>
-                                </div>
-                              </form>
-                            ) : null}
-                          </>
-                        ) : (
-                          ""
-                        )}
+                          {showReplyInput ? (
+                            <form className="mt-2">
+                              <div className="flex justify-between items-center w-full border rounded-md p-2 dark:text-gray-200 dark:bg-gray-700 ">
+                                <input
+                                  type="text"
+                                  placeholder="Reply for comment..."
+                                  value={reply}
+                                  onChange={(e) => setReply(e.target.value)}
+                                  className="focus:outline-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleAddReply(
+                                      post._id,
+                                      comment._id,
+                                      user._id,
+                                      reply,
+                                      setReply,
+                                      setShowReplyInput
+                                    )
+                                  }
+                                >
+                                  <IoSend />
+                                </button>
+                              </div>
+                            </form>
+                          ) : null}
+                        </>
                       </div>
                     </div>
                     <div>

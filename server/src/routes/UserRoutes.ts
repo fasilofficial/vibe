@@ -20,7 +20,8 @@ import {
   removeFollower,
   editUser,
   addBluetick,
-  toggleAccountType
+  toggleAccountType,
+  handleChangePassword,
 } from "../controllers/userController";
 
 import { protect } from "../middleware/authMiddleware";
@@ -41,6 +42,9 @@ router.post("/sendOtp", sendOtp);
 
 // forgotPassword
 router.post("/forgotPassword", handleForgotPassword);
+
+// changePassword
+router.post("/changePassword", handleChangePassword);
 
 // get users
 router.get("/", getUsers);

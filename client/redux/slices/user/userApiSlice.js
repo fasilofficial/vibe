@@ -70,6 +70,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         body: data,
       }),
     }),
+    changePassword: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}/changePassword`,
+        method: "POST",
+        body: data,
+      }),
+    }),
     getUserPosts: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}/posts`,
@@ -147,6 +154,7 @@ export const {
   useBlockUserMutation,
   useSendOtpMutation,
   useForgotPasswordMutation,
+  useChangePasswordMutation,
   useGetUserByEmailMutation,
   useGetUserMutation,
   useGetFollowingsMutation,
