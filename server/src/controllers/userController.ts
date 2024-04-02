@@ -378,39 +378,41 @@ export const handleForgotPassword = expressAsyncHandler(
 );
 
 // change password
-export const handleChangePassword = expressAsyncHandler(async (req:any, res:any) => {
-  const { currentPassword, newPassword, userId } = req.body;
+export const handleChangePassword = expressAsyncHandler(
+  async (req: any, res: any) => {
+    const { currentPassword, newPassword, userId } = req.body;
 
-  try {
+    try {
       if (!currentPassword || !newPassword || !userId) {
-          return res.status(400).json({ message: "Missing required fields" });
+        return res.status(400).json({ message: "Missing required fields" });
       }
 
       const user = await User.findById(userId);
 
       if (!user) {
-          return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       }
 
       const isPasswordValid = await user.matchPasswords(currentPassword);
       if (!isPasswordValid) {
-          return res.status(400).json({ message: "Incorrect current password" });
+        return res.status(400).json({ message: "Incorrect current password" });
       }
 
       user.password = newPassword;
       await user.save();
 
       res.status(200).json({ message: "Password updated successfully" });
-  } catch (error) {
+    } catch (error) {
       console.error("Error while changing password:", error);
       res.status(500).json({ message: "Internal server error" });
+    }
   }
-});
+);
 
 // follow
 export const followUser = expressAsyncHandler(
   async (req: Request, res: any) => {
-    const { followingId } = req.body;
+    const { followingId, acceptRequest } = req.body;
     const { userId } = req.params;
 
     const user = await User.findById(userId);
@@ -426,17 +428,32 @@ export const followUser = expressAsyncHandler(
     );
 
     if (!isFollowing) {
+      if (following.private && !acceptRequest) {
+        const activity = new Activity({
+          type: "follow_request",
+          by: userId,
+          userId: following._id,
+        });
+
+        await activity.save();
+
+        return res.json({ message: "Follow request sent" });
+      }
+
       // Follow the user
       user.followings.push({ _id: followingId });
       following.followers.push({ _id: userId });
 
-      const activity = new Activity({
-        type: "follow",
-        by: userId,
-        userId: following._id,
-      });
+      if (!acceptRequest) {
+        const activity = new Activity({
+          type: "follow",
+          by: userId,
+          userId: following._id,
+        });
 
-      await activity.save();
+        await activity.save();
+      }
+      
       await user.save();
       await following.save();
 

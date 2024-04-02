@@ -29,13 +29,15 @@ const Admin = () => {
   useEffect(() => {
     const fetchStatsData = async () => {
       try {
-        const res1 = await getUsers().unwrap();
-        const res2 = await getPosts().unwrap();
-        const res3 = await getReports().unwrap();
+        const [userData, postData, reportData] = await Promise.all([
+          getUsers().unwrap(),
+          getPosts().unwrap(),
+          getReports().unwrap(),
+        ]);
 
-        if (res1.data) setUsers(res1.data);
-        if (res2.data) setPosts(res2.data);
-        if (res3.data) setReports(res3.data);
+        if (userData.data) setUsers(userData.data);
+        if (postData.data) setPosts(postData.data);
+        if (reportData.data) setReports(reportData.data);
       } catch (error) {
         console.log(error);
       }
