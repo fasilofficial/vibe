@@ -1,9 +1,6 @@
 import expressAsyncHandler from "express-async-handler";
 import Admin from "../models/Admin";
 import generateToken from "../utils/generateToken";
-import User from "../models/User";
-import Post from "../models/Post";
-import Report from "../models/Report";
 
 // Register
 export const registerAdmin = expressAsyncHandler(
@@ -29,7 +26,14 @@ export const registerAdmin = expressAsyncHandler(
     });
 
     if (admin) {
-      generateToken(res, admin._id, true);
+      const token = generateToken(admin._id);
+
+      res.cookie("adminJwt", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== "development",
+        sameSite: "strict",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
 
       res.status(201).json(admin);
     } else {
@@ -48,39 +52,14 @@ export const authAdmin = expressAsyncHandler(
     }
     const admin = await Admin.findOne({ email });
     if (admin && (await admin.matchPasswords(password))) {
-      generateToken(res, admin._id, true);
+      const token = generateToken(admin._id);
 
-      const posts = await Post.find({})
-        .populate({
-          path: "creator",
-          model: "User",
-        })
-        .populate({
-          path: "comments.userId",
-          model: "User",
-        })
-        .populate({
-          path: "comments.replies.userId",
-          model: "User",
-        })
-        .sort({ createdAt: -1 });
-
-      const users = await User.find({})
-        .populate({
-          path: "followers._id",
-          model: "User",
-        })
-        .populate({
-          path: "followings._id",
-          model: "User",
-        })
-        .populate({
-          path: "saves._id",
-          model: "Post",
-        })
-        .sort({ createdAt: -1 });
-
-      const reports = await User.find({}).sort({ createdAt: -1 });
+      res.cookie("adminJwt", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== "development",
+        sameSite: "strict",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
 
       res.status(201).json(admin);
     } else {
@@ -97,79 +76,3 @@ export const logoutAdmin = expressAsyncHandler(
     res.status(200).json({ message: "Admin logged out" });
   }
 );
-
-// Get users
-export const getUsers = expressAsyncHandler(async (req, res): Promise<void> => {
-  const users = await User.find({}).select("-password");
-  res.status(200).json(users);
-});
-
-// Get posts
-export const getPosts = expressAsyncHandler(async (req, res): Promise<void> => {
-  const posts = await Post.find({}).populate({
-    path: "creator",
-    model: "User",
-  });
-
-  res.status(200).json(posts);
-});
-
-// Get users
-export const getUser = expressAsyncHandler(async (req, res): Promise<void> => {
-  const { credential } = req.params;
-
-  if (credential) {
-    if (credential.includes("@")) {
-      let user = await User.findOne({ email: credential });
-      if (user) res.status(200).json(user);
-      else {
-        res.status(404);
-        throw new Error("User not found");
-      }
-    } else {
-      let user = await User.findOne({ username: credential });
-      if (user) res.status(200).json(user);
-      else {
-        res.status(404);
-        throw new Error("User not found");
-      }
-    }
-  }
-});
-
-// Get user by username
-export const addUser = expressAsyncHandler(async (req, res): Promise<void> => {
-  let username;
-
-  if (!req.body.username)
-    username =
-      req.body.firstName.toLowerCase() + Math.floor(Math.random() * 100);
-
-  const user = new User({ ...req.body, username });
-  await user.save();
-  res.status(200).json(user);
-});
-
-
-export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
-  const newPost = { ...req.body };
-
-  const createdPost = new Post(newPost);
-  createdPost.save();
-
-  res.status(200).json(createdPost);
-});
-
-export const addReport = expressAsyncHandler(async (req: any, res: any) => {
-  try {
-    const { reportDescription: description, postId, userId } = req.body;
-
-    const report = new Report({ description, userId, postId });
-    await report.save();
-
-    res.status(201).json({ message: "Report added successfully", report });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});

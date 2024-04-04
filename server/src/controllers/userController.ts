@@ -2,7 +2,6 @@ import expressAsyncHandler from "express-async-handler";
 import User from "../models/User";
 import generateToken from "../utils/generateToken";
 import Post from "../models/Post";
-import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import otpGenerator from "otp-generator";
 import Activity from "../models/Activity";
@@ -64,7 +63,15 @@ export const registerUser = expressAsyncHandler(
     });
 
     if (user) {
-      generateToken(res, user._id);
+      const token = generateToken(user._id);
+
+      res.cookie("adminJwt", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== "development",
+        sameSite: "strict",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      });
+
       res.status(201).json(user);
     } else {
       res.status(400).json({ error: { message: "Invalid user data" } });
@@ -101,7 +108,14 @@ export const authUser = expressAsyncHandler(
 
     if (user && (await user.matchPasswords(password))) {
       if (!user.blocked) {
-        generateToken(res, user._id);
+        const token = generateToken(user._id);
+
+        res.cookie("jwt", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== "development",
+          sameSite: "strict",
+          maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
 
         const posts = await Post.find({})
           .populate({
@@ -193,12 +207,44 @@ export const getUserPosts = expressAsyncHandler(
 export const getUsers = expressAsyncHandler(
   async (req: Request, res: Response) => {
     try {
-      const { email } = req.query;
+      const { email, searchTerm }: { email?: string; searchTerm?: string } =
+        req.query;
 
       let users;
 
       if (email) users = await User.findOne({ email });
-      else
+      else if (searchTerm) {
+        const escapedSearchTerm = searchTerm.replace(
+          /[-\/\\^$*+?.()|[\]{}]/g,
+          "\\$&"
+        );
+
+        const regexPattern = new RegExp(escapedSearchTerm, "i");
+
+        users = await User.find({
+          $or: [
+            { username: { $regex: regexPattern } },
+            { email: { $regex: regexPattern } },
+            { name: { $regex: regexPattern } },
+          ],
+        })
+          .populate({
+            path: "followers._id",
+            model: "User",
+          })
+          .populate({
+            path: "followings._id",
+            model: "User",
+          })
+          .populate({
+            path: "saves._id",
+            model: "Post",
+            populate: {
+              path: "creator",
+              model: "User",
+            },
+          });
+      } else {
         users = await User.find({})
           .populate({
             path: "followers._id",
@@ -216,6 +262,7 @@ export const getUsers = expressAsyncHandler(
               model: "User",
             },
           });
+      }
 
       if (users) {
         res.status(200).json({ data: users });
@@ -453,7 +500,7 @@ export const followUser = expressAsyncHandler(
 
         await activity.save();
       }
-      
+
       await user.save();
       await following.save();
 

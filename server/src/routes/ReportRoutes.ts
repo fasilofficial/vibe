@@ -6,7 +6,8 @@ import {
   resolveReport,
   addReport,
 } from "../controllers/reportController";
-import { protect } from "../middleware/authMiddleware";
+import { protectAdmin } from "../middleware/authMiddleware";
+
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.get("/", getReports);
 router.get("/:reportId", getReport);
 
 // resolve report
-router.put("/:reportId", resolveReport);
+router.put("/:reportId", protectAdmin, resolveReport);
 
 // add report
 router.post("/", addReport);

@@ -44,6 +44,12 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getUserBySearchTerm: builder.mutation({
+      query: (data) => ({
+        url: `${BASE_URL}?searchTerm=${data}`,
+        method: "GET",
+      }),
+    }),
     blockUser: builder.mutation({
       query: (data) => ({
         url: `${BASE_URL}/${data}`,
@@ -156,6 +162,7 @@ export const {
   useForgotPasswordMutation,
   useChangePasswordMutation,
   useGetUserByEmailMutation,
+  useGetUserBySearchTermMutation,
   useGetUserMutation,
   useGetFollowingsMutation,
   useGetFollowersMutation,

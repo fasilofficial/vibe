@@ -24,7 +24,8 @@ import {
   handleChangePassword,
 } from "../controllers/userController";
 
-import { protect } from "../middleware/authMiddleware";
+import { protect, protectAdmin } from "../middleware/authMiddleware";
+import { isBlocked } from "../middleware/isBlocked";
 
 const router = express.Router();
 
@@ -44,7 +45,7 @@ router.post("/sendOtp", sendOtp);
 router.post("/forgotPassword", handleForgotPassword);
 
 // changePassword
-router.post("/changePassword", handleChangePassword);
+router.post("/changePassword", protect, isBlocked, handleChangePassword);
 
 // get users
 router.get("/", getUsers);
@@ -53,10 +54,10 @@ router.get("/", getUsers);
 router.get("/:userId/posts", getUserPosts);
 
 // block user
-router.put("/:userId", blockUser);
+router.put("/:userId", protectAdmin, blockUser);
 
 // toggle account type
-router.put("/:userId/account-type", toggleAccountType);
+router.put("/:userId/account-type", protect, isBlocked, toggleAccountType);
 
 // get followings
 router.get("/:userId/followings", getFollowings);
@@ -68,27 +69,27 @@ router.get("/:userId/followers", getFollowers);
 router.get("/:userId/activities", getActivities);
 
 // follow user
-router.post("/:userId/followings", followUser);
+router.post("/:userId/followings", protect, isBlocked, followUser);
 
 // unfollow user
-router.delete("/:userId/followings", unfollowUser);
+router.delete("/:userId/followings", protect, isBlocked, unfollowUser);
 
 // remove follower
-router.delete("/:userId/followers", removeFollower);
+router.delete("/:userId/followers", protect, isBlocked, removeFollower);
 
 // get suggestions
 router.get("/:userId/suggestions", getSuggestions);
 
 // save post
-router.post("/:userId/saves", savePost);
+router.post("/:userId/saves", protect, isBlocked, savePost);
 
 // get user
 router.get("/:id", getUser);
 
 // edit user
-router.patch("/:userId", editUser);
+router.patch("/:userId", protect, isBlocked, editUser);
 
 // add blue tick
-router.post("/:userId/bluetick", addBluetick);
+router.post("/:userId/bluetick", protect, isBlocked, addBluetick);
 
 export default router;

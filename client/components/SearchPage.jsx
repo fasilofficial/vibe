@@ -6,27 +6,25 @@ import Link from "next/link";
 
 import SearchIcon from "@mui/icons-material/Search";
 import BackspaceIcon from "@mui/icons-material/Backspace";
+import { useGetUserBySearchTermMutation } from "@/redux/slices/user/userApiSlice";
 
 const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [resultUsers, setResultUsers] = useState([]);
 
+  const [getUsers] = useGetUserBySearchTermMutation()
+
   const { users } = useSelector((state) => state.data);
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const searchTerm = e.target.value;
     setSearchTerm(searchTerm);
 
     if (searchTerm.trim() === "") return setResultUsers(users);
 
-    const filteredUsers = users.filter(
-      (user) =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const res = await getUsers(searchTerm).unwrap()
 
-    setResultUsers(filteredUsers);
+    setResultUsers(res.data);
   };
 
   useEffect(() => setResultUsers(users), [users]);
@@ -52,8 +50,8 @@ const SearchPage = () => {
       </div>
       <div className="flex flex-col gap-2">
         {resultUsers.length > 0 &&
-          resultUsers.map((user) => (
-            <div className="p-2 flex gap-2 border items-center">
+          resultUsers.map((user,index) => (
+            <div key={index} className="p-2 flex gap-2 border items-center">
               <img
                 src={user.profileUrl}
                 alt={user.name}
