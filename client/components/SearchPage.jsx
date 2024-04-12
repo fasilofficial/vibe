@@ -12,20 +12,38 @@ const SearchPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [resultUsers, setResultUsers] = useState([]);
 
-  const [getUsers] = useGetUserBySearchTermMutation()
+  const [getUsers] = useGetUserBySearchTermMutation();
 
   const { users } = useSelector((state) => state.data);
 
-  const handleChange = async (e) => {
+  const debounce = (func, delay) => {
+    let timerId;
+    
+    return function (...args) {
+      clearTimeout(timerId);
+      timerId = setTimeout(() => {
+        func.apply(this, args);
+      }, delay);
+    };
+  };
+  
+  const handleSearch = async () => {
+    if (searchTerm.trim() === "") return setResultUsers(users);
+  
+    const res = await getUsers(searchTerm).unwrap();
+  
+    setResultUsers(res.data);
+  };
+  
+  const debouncedHandleSearch = debounce(handleSearch, 300);
+  
+  const handleChange = (e) => {
     const searchTerm = e.target.value;
     setSearchTerm(searchTerm);
 
-    if (searchTerm.trim() === "") return setResultUsers(users);
-
-    const res = await getUsers(searchTerm).unwrap()
-
-    setResultUsers(res.data);
+    debouncedHandleSearch();
   };
+  
 
   useEffect(() => setResultUsers(users), [users]);
 
@@ -50,7 +68,7 @@ const SearchPage = () => {
       </div>
       <div className="flex flex-col gap-2">
         {resultUsers.length > 0 &&
-          resultUsers.map((user,index) => (
+          resultUsers.map((user, index) => (
             <div key={index} className="p-2 flex gap-2 border items-center">
               <img
                 src={user.profileUrl}
