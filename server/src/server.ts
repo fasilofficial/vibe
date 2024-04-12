@@ -8,7 +8,7 @@ import { CLIENT_BASE_URL } from "./constants";
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: CLIENT_BASE_URL, methods: ["GET", "POST"] },
+  cors: { origin: [CLIENT_BASE_URL], methods: ["GET", "POST"] },
 });
 
 type User = {

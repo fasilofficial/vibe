@@ -2,16 +2,17 @@ import expressAsyncHandler from "express-async-handler";
 import Post from "../models/Post";
 import Activity from "../models/Activity";
 import { Request, Response } from "express";
+import { HttpStatusCode } from "../types";
 
 export const getUserPosts = expressAsyncHandler(async (req, res) => {
   const { creator } = req.query;
 
   if (creator) {
     const posts = await Post.find({ creator });
-    res.status(200).json(posts);
+    res.status(HttpStatusCode.OK).json(posts);
   } else {
     const posts = await Post.find({});
-    res.status(200).json(posts);
+    res.status(HttpStatusCode.OK).json(posts);
   }
 });
 
@@ -37,13 +38,15 @@ export const addPost = expressAsyncHandler(async (req, res): Promise<void> => {
       model: "User",
     });
 
-    res.status(201).json({
+    res.status(HttpStatusCode.Created).json({
       message: "Post created",
       data: { ...createdPost, comments: createdPost.comments.reverse() },
     });
   } catch (error) {
     console.error("Error occurred while adding post:", error);
-    res.status(500).json({ message: "Failed to add post" });
+    res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Failed to add post" });
   }
 });
 
@@ -66,7 +69,7 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
       .sort({ createdAt: -1 });
 
     if (posts.length > 0) {
-      res.status(200).json({
+      res.status(HttpStatusCode.OK).json({
         data: posts.map((post: any) => ({
           ...post._doc,
           comments: post.comments.reverse(),
@@ -77,7 +80,9 @@ export const getPosts = expressAsyncHandler(async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching posts:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Internal server error" });
   }
 });
 
@@ -91,7 +96,7 @@ export const addComment = expressAsyncHandler(
       const post = await Post.findById(postId);
 
       if (!post) {
-        res.status(404).json({ message: "Post not found" });
+        res.status(HttpStatusCode.NotFound).json({ message: "Post not found" });
         return;
       }
 
@@ -121,12 +126,14 @@ export const addComment = expressAsyncHandler(
         model: "User",
       });
 
-      res.status(201).json({
+      res.status(HttpStatusCode.Created).json({
         message: "Comment added successfully",
         data: post.comments.reverse(),
       });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -164,9 +171,9 @@ export const likePost = expressAsyncHandler(
 
       await post.save();
 
-      res.status(200).json({ message, data: post.likes }); // Send a success response
+      res.status(HttpStatusCode.OK).json({ message, data: post.likes }); // Send a success response
     } else {
-      res.status(404).send("Post not found");
+      res.status(HttpStatusCode.NotFound).send("Post not found");
     }
   }
 );
@@ -183,7 +190,7 @@ export const deleteComment = expressAsyncHandler(
       });
 
       if (!post) {
-        res.status(404).json({ message: "Post not found" });
+        res.status(HttpStatusCode.NotFound).json({ message: "Post not found" });
         return;
       }
 
@@ -192,7 +199,9 @@ export const deleteComment = expressAsyncHandler(
       );
 
       if (commentIndex === -1) {
-        res.status(404).json({ message: "Comment not found" });
+        res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "Comment not found" });
         return;
       }
 
@@ -208,13 +217,15 @@ export const deleteComment = expressAsyncHandler(
         model: "User",
       });
 
-      res.status(200).json({
+      res.status(HttpStatusCode.OK).json({
         message: "Comment deleted successfully",
         data: post.comments.reverse(),
       });
     } catch (error) {
       console.error("Error deleting comment:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -226,15 +237,19 @@ export const deletePost = expressAsyncHandler(async (req: any, res: any) => {
     const deletedPost = await Post.findByIdAndDelete(postId);
 
     if (!deletedPost) {
-      return res.status(404).json({ message: "Post not found" });
+      return res
+        .status(HttpStatusCode.NotFound)
+        .json({ message: "Post not found" });
     }
 
     return res
-      .status(200)
+      .status(HttpStatusCode.OK)
       .json({ message: "Post deleted successfully", data: deletedPost });
   } catch (error) {
     console.error("Error deleting post:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Internal server error" });
   }
 });
 
@@ -258,10 +273,10 @@ export const getPost = expressAsyncHandler(async (req: any, res: any) => {
 
   if (post) {
     res
-      .status(200)
+      .status(HttpStatusCode.OK)
       .json({ data: { ...post._doc, comments: post.comments.reverse() } });
   } else {
-    res.status(404);
+    res.status(HttpStatusCode.NotFound);
     throw new Error("Post not found");
   }
 });
@@ -293,21 +308,23 @@ export const editPost = expressAsyncHandler(async (req: any, res: any) => {
         model: "User",
       });
 
-      return res
-        .status(200)
-        .json({
-          message: "Post updated successfully",
-          data: {
-            ...updatedPost._doc,
-            comments: updatedPost.comments.reverse(),
-          },
-        });
+      return res.status(HttpStatusCode.OK).json({
+        message: "Post updated successfully",
+        data: {
+          ...updatedPost._doc,
+          comments: updatedPost.comments.reverse(),
+        },
+      });
     } else {
-      return res.status(404).json({ message: "Post not found" });
+      return res
+        .status(HttpStatusCode.NotFound)
+        .json({ message: "Post not found" });
     }
   } catch (error) {
     console.error("Error updating post:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Internal server error" });
   }
 });
 
@@ -354,19 +371,23 @@ export const addReply = expressAsyncHandler(
             model: "User",
           });
 
-          res.status(201).json({
+          res.status(HttpStatusCode.Created).json({
             message: "Reply added successfully",
             data: post.comments.reverse(),
           });
         } else {
-          res.status(404).json({ message: "Comment not found" });
+          res
+            .status(HttpStatusCode.NotFound)
+            .json({ message: "Comment not found" });
         }
       } else {
-        res.status(404).json({ message: "Post not found" });
+        res.status(HttpStatusCode.NotFound).json({ message: "Post not found" });
       }
     } catch (error) {
       console.error("Error adding reply:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -383,7 +404,7 @@ export const deleteReply = expressAsyncHandler(
       });
 
       if (!post) {
-        res.status(404).json({ message: "Post not found" });
+        res.status(HttpStatusCode.NotFound).json({ message: "Post not found" });
         return;
       }
 
@@ -392,7 +413,9 @@ export const deleteReply = expressAsyncHandler(
       );
 
       if (!comment) {
-        res.status(404).json({ message: "Comment not found" });
+        res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "Comment not found" });
         return;
       }
 
@@ -401,7 +424,9 @@ export const deleteReply = expressAsyncHandler(
       );
 
       if (replyIndex === -1) {
-        res.status(404).json({ message: "Reply not found" });
+        res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "Reply not found" });
         return;
       }
 
@@ -418,13 +443,15 @@ export const deleteReply = expressAsyncHandler(
         model: "User",
       });
 
-      res.status(200).json({
+      res.status(HttpStatusCode.OK).json({
         message: "Reply deleted successfully",
         data: post.comments.reverse(),
       });
     } catch (error) {
       console.error("Error deleting reply:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );

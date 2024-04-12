@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
+import { HttpStatusCode } from "../types";
 
 const notFound = (req: Request, res: Response, next: NextFunction) => {
   const error = new Error(`Not found - ${req.originalUrl}`);
-  res.status(404);
+  res.status(HttpStatusCode.NotFound);
   next(error);
 };
 
@@ -15,14 +16,17 @@ const errorHandler = (
   if (res.headersSent) {
     return next(err);
   }
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode =
+    res.statusCode === HttpStatusCode.OK
+      ? HttpStatusCode.InternalServerError
+      : res.statusCode;
   let message = err.message;
 
   if (err.name === "CastError") {
-    statusCode = 404;
+    statusCode = HttpStatusCode.NotFound;
     message = "Resource not found";
   }
-  
+
   res.status(statusCode).json({
     message: message,
     stack: process.env.NODE_ENV === "production" ? null : err.stack,

@@ -3,6 +3,7 @@ import Report from "../models/Report";
 import { Request, Response } from "express";
 import Post from "../models/Post";
 import Activity from "../models/Activity";
+import { HttpStatusCode } from "../types";
 
 // get reports
 export const getReports = expressAsyncHandler(
@@ -23,13 +24,19 @@ export const getReports = expressAsyncHandler(
         });
 
       if (reports.length > 0) {
-        res.status(200).json({ message: "reports", data: reports });
+        res
+          .status(HttpStatusCode.OK)
+          .json({ message: "reports", data: reports });
       } else {
-        res.status(404).json({ message: "No reports found" });
+        res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "No reports found" });
       }
     } catch (error) {
       console.error("Error fetching reports:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -53,7 +60,7 @@ export const getReport = expressAsyncHandler(
       });
 
     if (report) {
-      res.status(200).json({ message: "report", data: report });
+      res.status(HttpStatusCode.OK).json({ message: "report", data: report });
     } else {
       throw new Error("Report not found");
     }
@@ -70,14 +77,14 @@ export const resolveReport = expressAsyncHandler(
       const post = await Post.findById(postId);
 
       if (!post) {
-        res.status(404);
+        res.status(HttpStatusCode.NotFound);
         throw new Error("Post not found");
       }
 
       const report = await Report.findOne({ postId });
 
       if (!report) {
-        res.status(404);
+        res.status(HttpStatusCode.NotFound);
         throw new Error("No report found for this post");
       }
 
@@ -108,7 +115,7 @@ export const resolveReport = expressAsyncHandler(
           model: "User",
         });
 
-        res.status(200).json({
+        res.status(HttpStatusCode.OK).json({
           message: "Post deleted due to excessive reports",
           data: report,
         });
@@ -130,12 +137,14 @@ export const resolveReport = expressAsyncHandler(
         });
 
         res
-          .status(200)
+          .status(HttpStatusCode.OK)
           .json({ message: "Report marked as resolved.", data: report });
       }
     } catch (error) {
       console.error("Error resolving report:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -174,7 +183,7 @@ export const addReport = expressAsyncHandler(
           model: "User",
         });
 
-        res.status(200).json({
+        res.status(HttpStatusCode.OK).json({
           message: "New report added",
           data: { updatedReport: existingReport },
         });
@@ -204,7 +213,9 @@ export const addReport = expressAsyncHandler(
       }
     } catch (error) {
       console.error("Error adding report:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );

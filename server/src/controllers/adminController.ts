@@ -1,6 +1,7 @@
 import expressAsyncHandler from "express-async-handler";
 import Admin from "../models/Admin";
 import generateToken from "../utils/generateToken";
+import { HttpStatusCode } from "../types";
 
 // Register
 export const registerAdmin = expressAsyncHandler(
@@ -8,14 +9,14 @@ export const registerAdmin = expressAsyncHandler(
     const { name, email, password, profileUrl } = req.body;
 
     if (!name || !email || !password || !profileUrl) {
-      res.status(400);
+      res.status(HttpStatusCode.BadRequest);
       throw new Error("All fields are required");
     }
 
     const adminExist = await Admin.findOne({ email });
 
     if (adminExist) {
-      res.status(400);
+      res.status(HttpStatusCode.Conflict);
       throw new Error("User already exist");
     }
     const admin = await Admin.create({
@@ -35,9 +36,9 @@ export const registerAdmin = expressAsyncHandler(
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
-      res.status(201).json(admin);
+      res.status(HttpStatusCode.Created).json(admin);
     } else {
-      res.status(400);
+      res.status(HttpStatusCode.BadRequest);
       throw new Error("Invalid admin data");
     }
   }
@@ -61,9 +62,9 @@ export const authAdmin = expressAsyncHandler(
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
-      res.status(201).json(admin);
+      res.status(HttpStatusCode.Created).json(admin);
     } else {
-      res.status(401);
+      res.status(HttpStatusCode.Unauthorized);
       throw new Error("Invalid email or password");
     }
   }
@@ -73,6 +74,6 @@ export const authAdmin = expressAsyncHandler(
 export const logoutAdmin = expressAsyncHandler(
   async (req, res): Promise<void> => {
     res.cookie("adminJwt", "", { httpOnly: true, expires: new Date(0) });
-    res.status(200).json({ message: "Admin logged out" });
+    res.status(HttpStatusCode.OK).json({ message: "Admin logged out" });
   }
 );

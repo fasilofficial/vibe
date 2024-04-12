@@ -7,6 +7,7 @@ import otpGenerator from "otp-generator";
 import Activity from "../models/Activity";
 import { Request, Response } from "express";
 import cron from "node-cron";
+import { HttpStatusCode } from "../types";
 
 // cron job to update expired blueticks
 cron.schedule("0 0 * * *", async () => {
@@ -43,7 +44,7 @@ export const registerUser = expressAsyncHandler(
     const userExist = await User.findOne({ email });
 
     if (userExist) {
-      res.status(400);
+      res.status(HttpStatusCode.BadRequest);
       throw new Error("User already exist");
     }
 
@@ -72,9 +73,11 @@ export const registerUser = expressAsyncHandler(
         maxAge: 30 * 24 * 60 * 60 * 1000,
       });
 
-      res.status(201).json(user);
+      res.status(HttpStatusCode.Created).json(user);
     } else {
-      res.status(400).json({ error: { message: "Invalid user data" } });
+      res
+        .status(HttpStatusCode.BadRequest)
+        .json({ error: { message: "Invalid user data" } });
     }
   }
 );
@@ -154,11 +157,11 @@ export const authUser = expressAsyncHandler(
           .status(201)
           .json({ message: "Login successful", user, posts, users });
       } else {
-        res.status(400);
+        res.status(HttpStatusCode.BadRequest);
         throw new Error("You're blocked by the admin");
       }
     } else {
-      res.status(401);
+      res.status(HttpStatusCode.Unauthorized);
       throw new Error("Invalid email or password");
     }
   }
@@ -168,7 +171,7 @@ export const authUser = expressAsyncHandler(
 export const logoutUser = expressAsyncHandler(
   async (req: Request, res: Response): Promise<void> => {
     res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
-    res.status(200).json({ message: "User logged out" });
+    res.status(HttpStatusCode.OK).json({ message: "User logged out" });
   }
 );
 
@@ -192,13 +195,17 @@ export const getUserPosts = expressAsyncHandler(
         });
 
       if (posts.length > 0) {
-        res.status(200).json({ data: posts });
+        res.status(HttpStatusCode.OK).json({ data: posts });
       } else {
-        res.status(404).json({ message: "No posts found for the user" });
+        res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "No posts found for the user" });
       }
     } catch (error) {
       console.error("Error fetching user posts:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -265,13 +272,15 @@ export const getUsers = expressAsyncHandler(
       }
 
       if (users) {
-        res.status(200).json({ data: users });
+        res.status(HttpStatusCode.OK).json({ data: users });
       } else {
         throw new Error("Users not found");
       }
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -299,14 +308,16 @@ export const getUser = expressAsyncHandler(
         });
 
       if (!user) {
-        res.status(404).json({ message: "User not found" });
+        res.status(HttpStatusCode.NotFound).json({ message: "User not found" });
         return;
       }
 
-      res.status(200).json(user);
+      res.status(HttpStatusCode.OK).json(user);
     } catch (error) {
       console.log(error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -334,19 +345,23 @@ export const blockUser = expressAsyncHandler(async (req: Request, res: any) => {
       });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res
+        .status(HttpStatusCode.NotFound)
+        .json({ message: "User not found" });
     }
     user.blocked = !user.blocked;
 
     await user.save();
 
-    res.status(200).json({
+    res.status(HttpStatusCode.OK).json({
       message: "User block toggled successfully",
       data: user,
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+    res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Internal server error" });
   }
 });
 
@@ -358,12 +373,12 @@ export const sendOtp = expressAsyncHandler(
     const user = await User.findOne({ email });
 
     if (forgotPassword && !user) {
-      res.status(404);
+      res.status(HttpStatusCode.NotFound);
       throw new Error("User doesn't exist");
     }
 
     if (!forgotPassword && user) {
-      res.status(401);
+      res.status(HttpStatusCode.Conflict);
       throw new Error("User already exist");
     }
 
@@ -410,16 +425,22 @@ export const handleForgotPassword = expressAsyncHandler(
       const user = await User.findOne({ email });
 
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "User not found" });
       }
 
       user.password = newPassword;
       await user.save();
 
-      res.status(200).json({ message: "Password updated successfully" });
+      res
+        .status(HttpStatusCode.OK)
+        .json({ message: "Password updated successfully" });
     } catch (error) {
       console.error("Error updating password:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -431,27 +452,37 @@ export const handleChangePassword = expressAsyncHandler(
 
     try {
       if (!currentPassword || !newPassword || !userId) {
-        return res.status(400).json({ message: "Missing required fields" });
+        return res
+          .status(HttpStatusCode.BadRequest)
+          .json({ message: "Missing required fields" });
       }
 
       const user = await User.findById(userId);
 
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "User not found" });
       }
 
       const isPasswordValid = await user.matchPasswords(currentPassword);
       if (!isPasswordValid) {
-        return res.status(400).json({ message: "Incorrect current password" });
+        return res
+          .status(HttpStatusCode.BadRequest)
+          .json({ message: "Incorrect current password" });
       }
 
       user.password = newPassword;
       await user.save();
 
-      res.status(200).json({ message: "Password updated successfully" });
+      res
+        .status(HttpStatusCode.OK)
+        .json({ message: "Password updated successfully" });
     } catch (error) {
       console.error("Error while changing password:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -466,7 +497,9 @@ export const followUser = expressAsyncHandler(
     const following = await User.findById(followingId);
 
     if (!user || !following) {
-      return res.status(401).send({ message: "Bad request" });
+      return res
+        .status(HttpStatusCode.BadRequest)
+        .send({ message: "Bad request" });
     }
 
     // Check if the user is already following the target user
@@ -507,13 +540,15 @@ export const followUser = expressAsyncHandler(
       await user.populate({ path: "followings._id", model: "User" });
       await following.populate({ path: "followers._id", model: "User" });
 
-      return res.status(200).send({
+      return res.status(HttpStatusCode.OK).send({
         message: "User followed successfully",
         data: { followings: user.followings, followers: following.followers },
       });
     }
 
-    return res.status(400).send({ message: "User is already being followed" });
+    return res
+      .status(HttpStatusCode.BadRequest)
+      .send({ message: "User is already being followed" });
   }
 );
 
@@ -527,7 +562,9 @@ export const unfollowUser = expressAsyncHandler(
     const following = await User.findById(followingId);
 
     if (!user || !following) {
-      return res.status(401).send({ message: "Bad request" });
+      return res
+        .status(HttpStatusCode.BadRequest)
+        .send({ message: "Bad request" });
     }
 
     // Check if the user is following the target user
@@ -550,13 +587,15 @@ export const unfollowUser = expressAsyncHandler(
       await user.populate({ path: "followings._id", model: "User" });
       await following.populate({ path: "followers._id", model: "User" });
 
-      return res.status(200).send({
+      return res.status(HttpStatusCode.OK).send({
         message: "User unfollowed successfully",
         data: { followings: user.followings, followers: following.followers },
       });
     }
 
-    return res.status(400).send({ message: "User is not being followed" });
+    return res
+      .status(HttpStatusCode.BadRequest)
+      .send({ message: "User is not being followed" });
   }
 );
 
@@ -570,7 +609,9 @@ export const removeFollower = expressAsyncHandler(
     const follower = await User.findById(followerId);
 
     if (!user || !follower) {
-      return res.status(401).send({ message: "Bad request" });
+      return res
+        .status(HttpStatusCode.BadRequest)
+        .send({ message: "Bad request" });
     }
 
     // Check if the user is following the target user
@@ -594,13 +635,15 @@ export const removeFollower = expressAsyncHandler(
       await user.populate({ path: "followers._id", model: "User" });
       await follower.populate({ path: "followings._id", model: "User" });
 
-      return res.status(200).send({
+      return res.status(HttpStatusCode.OK).send({
         message: "Followers removed successfully",
         data: { followers: user.followers, followings: follower.followings },
       });
     }
 
-    return res.status(400).send({ message: "User is not being followed" });
+    return res
+      .status(HttpStatusCode.BadRequest)
+      .send({ message: "User is not being followed" });
   }
 );
 
@@ -615,11 +658,11 @@ export const getFollowings = expressAsyncHandler(
     });
 
     if (!user) {
-      res.status(404);
+      res.status(HttpStatusCode.NotFound);
       throw new Error("User not found");
     }
 
-    res.status(200).json(user.followings);
+    res.status(HttpStatusCode.OK).json(user.followings);
   }
 );
 
@@ -634,11 +677,11 @@ export const getFollowers = expressAsyncHandler(
     });
 
     if (!user) {
-      res.status(404);
+      res.status(HttpStatusCode.NotFound);
       throw new Error("User not found");
     }
 
-    res.status(200).json(user.followers);
+    res.status(HttpStatusCode.OK).json(user.followers);
   }
 );
 
@@ -647,7 +690,7 @@ export const getSuggestions = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const suggestions = await User.find({});
 
-    res.status(200).json();
+    res.status(HttpStatusCode.OK).json();
   }
 );
 
@@ -665,13 +708,17 @@ export const getActivities = expressAsyncHandler(
         .sort({ createdAt: -1 });
 
       if (activities.length > 0) {
-        res.status(200).json(activities);
+        res.status(HttpStatusCode.OK).json(activities);
       } else {
-        res.status(404).json({ message: "No activities found for the user" });
+        res
+          .status(HttpStatusCode.NotFound)
+          .json({ message: "No activities found for the user" });
       }
     } catch (error) {
       console.error("Error fetching activities:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -685,7 +732,7 @@ export const savePost = expressAsyncHandler(
     const user = await User.findById(userId);
 
     if (!user) {
-      res.status(404);
+      res.status(HttpStatusCode.NotFound);
       throw new Error("User not found");
     }
 
@@ -739,7 +786,7 @@ export const editUser = expressAsyncHandler(
 
     try {
       if (!name || !username || !profileUrl) {
-        res.status(400).json({ message: "Bad request" });
+        res.status(HttpStatusCode.BadRequest).json({ message: "Bad request" });
         return;
       }
 
@@ -762,7 +809,7 @@ export const editUser = expressAsyncHandler(
         });
 
       if (!user) {
-        res.status(404).json({ message: "User not found" });
+        res.status(HttpStatusCode.NotFound).json({ message: "User not found" });
         return;
       }
 
@@ -778,7 +825,9 @@ export const editUser = expressAsyncHandler(
         .json({ message: "User updated successfully", data: user });
     } catch (error) {
       console.error("Error updating user:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal server error" });
     }
   }
 );
@@ -790,7 +839,7 @@ export const addBluetick = expressAsyncHandler(
     const { type } = req.body;
 
     if (!userId || !type) {
-      res.status(400);
+      res.status(HttpStatusCode.BadRequest);
       throw new Error("Bad Request: Missing userId or subscription type");
     }
 
@@ -814,7 +863,7 @@ export const addBluetick = expressAsyncHandler(
         });
 
       if (!user) {
-        res.status(404);
+        res.status(HttpStatusCode.NotFound);
         throw new Error("User not found");
       }
 
@@ -832,9 +881,13 @@ export const addBluetick = expressAsyncHandler(
 
       await user.save();
 
-      res.status(200).json({ message: "Bluetick added", data: user });
+      res
+        .status(HttpStatusCode.OK)
+        .json({ message: "Bluetick added", data: user });
     } catch (error) {
-      res.status(500).json({ message: "Internal Server Error", error });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal Server Error", error });
     }
   }
 );
@@ -845,7 +898,7 @@ export const toggleAccountType = expressAsyncHandler(
     const { userId } = req.params;
 
     if (!userId) {
-      res.status(400);
+      res.status(HttpStatusCode.BadRequest);
       throw new Error("Bad request: Missing userId");
     }
 
@@ -869,7 +922,7 @@ export const toggleAccountType = expressAsyncHandler(
         });
 
       if (!user) {
-        res.status(404);
+        res.status(HttpStatusCode.NotFound);
         throw new Error("User not found");
       }
 
@@ -877,9 +930,13 @@ export const toggleAccountType = expressAsyncHandler(
 
       await user.save();
 
-      res.status(200).json({ message: "Account type toggled", data: user });
+      res
+        .status(HttpStatusCode.OK)
+        .json({ message: "Account type toggled", data: user });
     } catch (error) {
-      res.status(500).json({ message: "Internal Server Error", error });
+      res
+        .status(HttpStatusCode.InternalServerError)
+        .json({ message: "Internal Server Error", error });
     }
   }
 );

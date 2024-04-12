@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import stripe from "../config/stripe";
 import { CLIENT_BASE_URL, STORE_ITEMS } from "../constants";
+import { HttpStatusCode } from "../types";
 
 export const createCheckoutSession = expressAsyncHandler(
   async (req: Request, res: Response) => {
@@ -27,7 +28,7 @@ export const createCheckoutSession = expressAsyncHandler(
           };
         }),
       });
-      res.status(200).json({ url: session.url });
+      res.status(HttpStatusCode.OK).json({ url: session.url });
     } catch (error) {
       console.log("Error creating checkout session:", error);
     }
